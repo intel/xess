@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup Label="Debug" Condition="'$(Configuration.ToLower())' == 'debug'">
+    <NuGetConfiguration>Debug</NuGetConfiguration>
+  </PropertyGroup>
+  <PropertyGroup Label="Non_Debug" Condition="'$(Configuration.ToLower())' != 'debug'">
+    <NuGetConfiguration>Release</NuGetConfiguration>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <directxmesh-LibPath>$(MSBuildThisFileDirectory)..\..\native\lib\$(Platform)\$(NuGetConfiguration)</directxmesh-LibPath>
+  </PropertyGroup>
+
+  <ItemDefinitionGroup>
+    <Link>
+      <AdditionalLibraryDirectories>$(directxmesh-LibPath);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>DirectXMesh.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PreprocessorDefinitions>HAS_DIRECTXMESH;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)..\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+
+</Project>

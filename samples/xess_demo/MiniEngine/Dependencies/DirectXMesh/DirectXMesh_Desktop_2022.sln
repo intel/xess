@@ -1,0 +1,55 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 16.0.28621.142
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DirectXMesh", "DirectXMesh\DirectXMesh_Desktop_2022.vcxproj", "{6857F086-F6FE-4150-9ED7-7446F1C1C220}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "meshconvert", "Meshconvert\Meshconvert_Desktop_2022.vcxproj", "{6D4CFD0E-8772-462A-9AC1-7DBAD9C16880}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D7B83B71-AA03-4455-8959-C90D06581953}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Debug|x64 = Debug|x64
+		Profile|x86 = Profile|x86
+		Profile|x64 = Profile|x64
+		Release|x86 = Release|x86
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6857F086-F6FE-4150-9ED7-7446F1C1C220}.Debug|x86.ActiveCfg = Debug|Win32
+		{6857F086-F6FE-4150-9ED7-7446F1C1C220}.Debug|x86.Build.0 = Debug|Win32
+		{6857F086-F6FE-4150-9ED7-7446F1C1C220}.Debug|x64.ActiveCfg = Debug|x64
+		{6857F086-F6FE-4150-9ED7-7446F1C1C220}.Debug|x64.Build.0 = Debug|x64
+		{6857F086-F6FE-4150-9ED7-7446F1C1C220}.Profile|x86.ActiveCfg = Profile|Win32
+		{6857F086-F6FE-4150-9ED7-7446F1C1C220}.Profile|x86.Build.0 = Profile|Win32
+		{6857F086-F6FE-4150-9ED7-7446F1C1C220}.Profile|x64.ActiveCfg = Profile|x64
+		{6857F086-F6FE-4150-9ED7-7446F1C1C220}.Profile|x64.Build.0 = Profile|x64
+		{6857F086-F6FE-4150-9ED7-7446F1C1C220}.Release|x86.ActiveCfg = Release|Win32
+		{6857F086-F6FE-4150-9ED7-7446F1C1C220}.Release|x86.Build.0 = Release|Win32
+		{6857F086-F6FE-4150-9ED7-7446F1C1C220}.Release|x64.ActiveCfg = Release|x64
+		{6857F086-F6FE-4150-9ED7-7446F1C1C220}.Release|x64.Build.0 = Release|x64
+		{6D4CFD0E-8772-462A-9AC1-7DBAD9C16880}.Debug|x86.ActiveCfg = Debug|Win32
+		{6D4CFD0E-8772-462A-9AC1-7DBAD9C16880}.Debug|x86.Build.0 = Debug|Win32
+		{6D4CFD0E-8772-462A-9AC1-7DBAD9C16880}.Debug|x64.ActiveCfg = Debug|x64
+		{6D4CFD0E-8772-462A-9AC1-7DBAD9C16880}.Debug|x64.Build.0 = Debug|x64
+		{6D4CFD0E-8772-462A-9AC1-7DBAD9C16880}.Profile|x86.ActiveCfg = Profile|Win32
+		{6D4CFD0E-8772-462A-9AC1-7DBAD9C16880}.Profile|x86.Build.0 = Profile|Win32
+		{6D4CFD0E-8772-462A-9AC1-7DBAD9C16880}.Profile|x64.ActiveCfg = Profile|x64
+		{6D4CFD0E-8772-462A-9AC1-7DBAD9C16880}.Profile|x64.Build.0 = Profile|x64
+		{6D4CFD0E-8772-462A-9AC1-7DBAD9C16880}.Release|x86.ActiveCfg = Release|Win32
+		{6D4CFD0E-8772-462A-9AC1-7DBAD9C16880}.Release|x86.Build.0 = Release|Win32
+		{6D4CFD0E-8772-462A-9AC1-7DBAD9C16880}.Release|x64.ActiveCfg = Release|x64
+		{6D4CFD0E-8772-462A-9AC1-7DBAD9C16880}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5C389688-21F3-4661-9802-2A73B2AD857F}
+	EndGlobalSection
+EndGlobal

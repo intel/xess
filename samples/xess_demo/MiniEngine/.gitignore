@@ -1,0 +1,22 @@
+*.user
+*.suo
+*.VC.db*
+*.shader_inc
+*.vspscc
+*.opensdf
+*.sdf
+*.ipch
+*.cache
+*.tlog
+*.lastbuildstate
+*.ilk
+*.log
+* - Copy*.*
+Build_VS11
+Build_VS12
+Build_VS14
+Build_VS15
+Build
+Packages
+/ModelConverter/assimp.dll
+Packages

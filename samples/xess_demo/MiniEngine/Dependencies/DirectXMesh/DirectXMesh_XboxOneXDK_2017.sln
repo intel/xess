@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2000
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DirectXMesh_XboxOneXDK_2017", "DirectXMesh\DirectXMesh_XboxOneXDK_2017.vcxproj", "{1A920EF0-11D7-4A11-9AB7-63C4424AD096}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7DA88FAE-49D7-4C30-8808-5E5642768C8B}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Durango = Debug|Durango
+		Profile|Durango = Profile|Durango
+		Release|Durango = Release|Durango
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1A920EF0-11D7-4A11-9AB7-63C4424AD096}.Debug|Durango.ActiveCfg = Debug|Durango
+		{1A920EF0-11D7-4A11-9AB7-63C4424AD096}.Debug|Durango.Build.0 = Debug|Durango
+		{1A920EF0-11D7-4A11-9AB7-63C4424AD096}.Profile|Durango.ActiveCfg = Profile|Durango
+		{1A920EF0-11D7-4A11-9AB7-63C4424AD096}.Profile|Durango.Build.0 = Profile|Durango
+		{1A920EF0-11D7-4A11-9AB7-63C4424AD096}.Release|Durango.ActiveCfg = Release|Durango
+		{1A920EF0-11D7-4A11-9AB7-63C4424AD096}.Release|Durango.Build.0 = Release|Durango
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A49A6001-B714-4D90-AE67-3ED65B947A1F}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,19 @@
+var searchData=
+[
+  ['xessd3d12buildpipelines_0',['xessD3D12BuildPipelines',['../group__xess-d3d12.html#gac39e8fcd2d1575ab36e54aacbc3d3b6a',1,'xess_d3d12.h']]],
+  ['xessd3d12createcontext_1',['xessD3D12CreateContext',['../group__xess-d3d12.html#ga6b15c60fbdeefc17a1064950c90d2e2d',1,'xess_d3d12.h']]],
+  ['xessd3d12execute_2',['xessD3D12Execute',['../group__xess-d3d12.html#gaf8e15aa3a0915546fdfcaa899f58c102',1,'xess_d3d12.h']]],
+  ['xessd3d12getprofilingdata_3',['xessD3D12GetProfilingData',['../group__xess-d3d12-debug.html#ga3a8e8bee0b8ba06871c765648202c938',1,'xess_d3d12_debug.h']]],
+  ['xessd3d12getresourcestodump_4',['xessD3D12GetResourcesToDump',['../group__xess-d3d12-debug.html#gaf62cb7b5e756de611a19896a5248c92b',1,'xess_d3d12_debug.h']]],
+  ['xessd3d12init_5',['xessD3D12Init',['../group__xess-d3d12.html#gafb211935ba10efefc5a7063b276fce31',1,'xess_d3d12.h']]],
+  ['xessdestroycontext_6',['xessDestroyContext',['../group__xess.html#gae5d88d9bdb50033ab254aa2e692c9bc0',1,'xess.h']]],
+  ['xessgetinputresolution_7',['xessGetInputResolution',['../group__xess.html#ga6ed6ab924e0a41ff56485b562acd5073',1,'xess.h']]],
+  ['xessgetintelxefxversion_8',['xessGetIntelXeFXVersion',['../group__xess.html#ga88ea52641806d14ef5a4995b5d78ea91',1,'xess.h']]],
+  ['xessgetproperties_9',['xessGetProperties',['../group__xess.html#gaae4893a4bfed059402ca55f256738773',1,'xess.h']]],
+  ['xessgetversion_10',['xessGetVersion',['../group__xess.html#ga0fc6e0c7b21322a0af96f1ee1e4667d3',1,'xess.h']]],
+  ['xessselectnetworkmodel_11',['xessSelectNetworkModel',['../group__xess-debug.html#ga596f2374ff85d63d430d885da295818b',1,'xess_debug.h']]],
+  ['xesssetjitterscale_12',['xessSetJitterScale',['../group__xess.html#ga30e9bee98f90568e6a9d39bd7d1ccd74',1,'xess.h']]],
+  ['xesssetloggingcallback_13',['xessSetLoggingCallback',['../group__xess.html#gaaf68a347af5e5c9c1e518f0bc5daaf1c',1,'xess.h']]],
+  ['xesssetvelocityscale_14',['xessSetVelocityScale',['../group__xess.html#ga0f95b12fe2611b877d72efdd9f050639',1,'xess.h']]],
+  ['xessstartdump_15',['xessStartDump',['../group__xess-debug.html#gaa320ed0d9c03d6abb26f37647b12db7e',1,'xess_debug.h']]]
+];
