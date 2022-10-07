@@ -17,3 +17,8 @@ Please see the Developer Guide in the /doc folder for getting started informatio
 | doc | Documentation |
 | licenses | Licenses for the SDK itself and its components |
 | samples | Source code and license for samples |
+
+
+# License
+
+This software is licensed under the [Intel Simplified Software License (v. Aug 2021)](LICENSES/LICENSE).
