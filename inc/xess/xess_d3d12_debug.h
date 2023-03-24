@@ -106,7 +106,7 @@ XESS_API xess_result_t xessD3D12GetResourcesToDump(xess_context_handle_t hContex
  * @brief Query X<sup>e</sup>SS model performance data for past executions. To enable performance collection,
  * context must be initialized with XESS_D3D12_DEBUG_ENABLE_PROFILING flag added to xess_d3d12_init_params_t::initFlags.
  * If profiling is enabled, user must poll for profiling data after executing one or more command lists, otherwise
- * implementation will keep growing internal CPU buffers to accomodate all profiling data available.
+ * implementation will keep growing internal CPU buffers to accommodate all profiling data available.
  * Due to async nature of execution on GPU, data may not be available after submitting command lists to device queue.
  * It is advised to check `any_profiling_data_in_flight` flag in case all workloads has been submitted, but profiling
  * data for some frames is still not available.

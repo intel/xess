@@ -41,18 +41,35 @@ void BaseCamera::SetLookDirection( Vector3 forward, Vector3 up )
 
 void BaseCamera::Update()
 {
-    // Jitter is used in the projection matrix calculation, but jitter should not affect the re-projection between frames.
-    m_PreviousViewProjMatrix = m_ViewProjMatrixNoJitter;
+    // We can use either "jittered" or "unjittered" way to calculate the re-projection matrix.
+    // For demo purpose, we provide both versions here.
+    if (m_IsReprojectMatrixJittered)
+    {
+        // In this "jittered" mode, jitter is applied to both projection and re-projection matrices.
+        m_PreviousViewProjMatrix = m_ViewProjMatrix;
 
-    m_ViewMatrix = Matrix4(~m_CameraToWorld);
-    m_ViewProjMatrix = m_ProjMatrix * m_ViewMatrix;
+        m_ViewMatrix = Matrix4(~m_CameraToWorld);
+        m_ViewProjMatrix = m_ProjMatrix * m_ViewMatrix;
+        m_ReprojectMatrix = m_PreviousViewProjMatrix * Invert(m_ViewProjMatrix);
 
-    // We use "*NoJitter" version of matrices for velocity buffer calculation.
-    m_ViewProjMatrixNoJitter = m_ProjMatrixNoJitter * m_ViewMatrix;
-    m_ReprojectMatrix = m_PreviousViewProjMatrix * Invert(m_ViewProjMatrixNoJitter);
+        m_FrustumVS = Frustum(m_ProjMatrix);
+        m_FrustumWS = m_CameraToWorld * m_FrustumVS;
+    }
+    else
+    {
+        // In this "unjittered" mode, jitter is only applied to the projection matrix calculation. For re-projection matrix, it is not affected by jitter.
+        m_PreviousViewProjMatrix = m_ViewProjMatrixNoJitter;
 
-    m_FrustumVS = Frustum( m_ProjMatrix );
-    m_FrustumWS = m_CameraToWorld * m_FrustumVS;
+        m_ViewMatrix = Matrix4(~m_CameraToWorld);
+        m_ViewProjMatrix = m_ProjMatrix * m_ViewMatrix;
+
+        // We use "*NoJitter" version of matrices for velocity buffer calculation.
+        m_ViewProjMatrixNoJitter = m_ProjMatrixNoJitter * m_ViewMatrix;
+        m_ReprojectMatrix = m_PreviousViewProjMatrix * Invert(m_ViewProjMatrixNoJitter);
+
+        m_FrustumVS = Frustum(m_ProjMatrix);
+        m_FrustumWS = m_CameraToWorld * m_FrustumVS;
+    }
 }
 
 

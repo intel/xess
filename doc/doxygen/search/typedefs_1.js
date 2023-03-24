@@ -1,7 +1,7 @@
 var searchData=
 [
   ['xess_5f2d_5ft_0',['xess_2d_t',['../xess_8h.html#a3839d654f9989ed64bc09f3a93f16bbb',1,'xess.h']]],
-  ['xess_5fapp_5flog_5fcallback_5ft_1',['xess_app_log_callback_t',['../xess_8h.html#a6c757a86356ec78ea12f7a0569a945f8',1,'xess.h']]],
+  ['xess_5fapp_5flog_5fcallback_5ft_1',['xess_app_log_callback_t',['../xess_8h.html#a0d102f62adf531a2cd721e4b78a1cd18',1,'xess.h']]],
   ['xess_5fcontext_5fhandle_5ft_2',['xess_context_handle_t',['../xess_8h.html#af31f441c4909f7bbf9fb4491b5f9b927',1,'xess.h']]],
   ['xess_5fcoord_5ft_3',['xess_coord_t',['../xess_8h.html#ab4b757ead636df148ed7dbcaf8a86d2f',1,'xess.h']]],
   ['xess_5fd3d12_5fexecute_5fparams_5ft_4',['xess_d3d12_execute_params_t',['../xess__d3d12_8h.html#a013d859444728ce4c0b3b95e5437caf5',1,'xess_d3d12.h']]],

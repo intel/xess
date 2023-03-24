@@ -184,7 +184,7 @@ void main(
         }
 
         // update bitmask
-        InterlockedOr(tileLightBitMask[lightIndex / 32], 1 << (lightIndex % 32));
+        InterlockedOr(tileLightBitMask[lightIndex / 32], 1U << (lightIndex % 32));
     }
 
     GroupMemoryBarrierWithGroupSync();

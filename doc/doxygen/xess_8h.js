@@ -10,7 +10,7 @@ var xess_8h =
     [ "XESS_PRAGMA", "xess_8h.html#af3af4f4afda4277313b1b91dbf1f7497", null ],
     [ "sizecheck__LINE__", "xess_8h.html#a8b1577973a08cac2cbbe31bb1297eff5", null ],
     [ "xess_2d_t", "xess_8h.html#a3839d654f9989ed64bc09f3a93f16bbb", null ],
-    [ "xess_app_log_callback_t", "xess_8h.html#a6c757a86356ec78ea12f7a0569a945f8", null ],
+    [ "xess_app_log_callback_t", "xess_8h.html#a0d102f62adf531a2cd721e4b78a1cd18", null ],
     [ "xess_context_handle_t", "xess_8h.html#af31f441c4909f7bbf9fb4491b5f9b927", null ],
     [ "xess_coord_t", "xess_8h.html#ab4b757ead636df148ed7dbcaf8a86d2f", null ],
     [ "xess_init_flags_t", "xess_8h.html#a4d9dd06b8ad6424f988f53522f8969a8", null ],
@@ -28,7 +28,8 @@ var xess_8h =
       [ "XESS_INIT_FLAG_USE_NDC_VELOCITY", "xess_8h.html#a4f25323a8c073a84d49a93e0cdeaddf1a2c868f941d0829edc844b93bd76cf0f2", null ],
       [ "XESS_INIT_FLAG_EXTERNAL_DESCRIPTOR_HEAP", "xess_8h.html#a4f25323a8c073a84d49a93e0cdeaddf1a7a765c7ec24c2b4193baf2e0a30fb4c7", null ],
       [ "XESS_INIT_FLAG_LDR_INPUT_COLOR", "xess_8h.html#a4f25323a8c073a84d49a93e0cdeaddf1a0eb16d799c44bab1bbf3c59dfd97ceb9", null ],
-      [ "XESS_INIT_FLAG_JITTERED_MV", "xess_8h.html#a4f25323a8c073a84d49a93e0cdeaddf1a8390a8a09d1f38a88608644929954028", null ]
+      [ "XESS_INIT_FLAG_JITTERED_MV", "xess_8h.html#a4f25323a8c073a84d49a93e0cdeaddf1a8390a8a09d1f38a88608644929954028", null ],
+      [ "XESS_INIT_FLAG_ENABLE_AUTOEXPOSURE", "xess_8h.html#a4f25323a8c073a84d49a93e0cdeaddf1aa1dd640b8cb314e9c7f312c7da11edc7", null ]
     ] ],
     [ "_xess_logging_level_t", "xess_8h.html#a12f0fd50664b1a61319821499ec24721", [
       [ "XESS_LOGGING_LEVEL_DEBUG", "xess_8h.html#a12f0fd50664b1a61319821499ec24721a526588cb8c0fe38b7bb35479bd44b710", null ],
@@ -44,6 +45,7 @@ var xess_8h =
     ] ],
     [ "_xess_result_t", "xess_8h.html#a31952a580a4d5d26c6224183f62d2612", [
       [ "XESS_RESULT_WARNING_NONEXISTING_FOLDER", "xess_8h.html#a31952a580a4d5d26c6224183f62d2612a7f8d0f6dc01ba497911fdbdb02b05a45", null ],
+      [ "XESS_RESULT_WARNING_OLD_DRIVER", "xess_8h.html#a31952a580a4d5d26c6224183f62d2612a3dd0509c6e5d3a95c852aa92357b8d72", null ],
       [ "XESS_RESULT_SUCCESS", "xess_8h.html#a31952a580a4d5d26c6224183f62d2612afd64586bcb0f0638509e4ae5506c72cf", null ],
       [ "XESS_RESULT_ERROR_UNSUPPORTED_DEVICE", "xess_8h.html#a31952a580a4d5d26c6224183f62d2612a00eab4ebb1fb95a65e2b4d82981fb3f8", null ],
       [ "XESS_RESULT_ERROR_UNSUPPORTED_DRIVER", "xess_8h.html#a31952a580a4d5d26c6224183f62d2612a15bd2bd2e7ae00b9ddd87fa5a43b1ee2", null ],
@@ -61,8 +63,11 @@ var xess_8h =
     [ "xessDestroyContext", "group__xess.html#gae5d88d9bdb50033ab254aa2e692c9bc0", null ],
     [ "xessGetInputResolution", "group__xess.html#ga6ed6ab924e0a41ff56485b562acd5073", null ],
     [ "xessGetIntelXeFXVersion", "group__xess.html#ga88ea52641806d14ef5a4995b5d78ea91", null ],
+    [ "xessGetJitterScale", "group__xess.html#gaaaff5dc2376dd08bd1f451e61fdc8784", null ],
     [ "xessGetProperties", "group__xess.html#gaae4893a4bfed059402ca55f256738773", null ],
+    [ "xessGetVelocityScale", "group__xess.html#ga7c6c49e93cc5f102473c76cfa1081bd5", null ],
     [ "xessGetVersion", "group__xess.html#ga0fc6e0c7b21322a0af96f1ee1e4667d3", null ],
+    [ "xessIsOptimalDriver", "group__xess.html#ga716ee0ab9df5de9726315ba5df21308c", null ],
     [ "xessSetJitterScale", "group__xess.html#ga30e9bee98f90568e6a9d39bd7d1ccd74", null ],
     [ "xessSetLoggingCallback", "group__xess.html#gaaf68a347af5e5c9c1e518f0bc5daaf1c", null ],
     [ "xessSetVelocityScale", "group__xess.html#ga0f95b12fe2611b877d72efdd9f050639", null ]

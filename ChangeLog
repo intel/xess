@@ -1,3 +1,13 @@
+# Release 1.1.0
+- Backwards compatible API with XeSS 1.0
+- Updated XeSS models with improved temporal stability
+- Support for Auto Exposure of input frames
+- API added to detect if recommended Intel driver version is installed
+- Removed dependency on dxcompiler.dll and dxil.dll
+- Bug fixes, stability improvements and performance optimizations
+- On Intel platforms, the graphics driver version 31.0.101.4148 or newer is required (https://www.intel.com/content/www/us/en/search.html#sort=%40lastmodifieddt%20descending&f:@tabfilter=[Downloads]&f:@stm_10385_en=[Graphics])
+- No new driver requirement for non-Intel hardware
+
 # Release 1.0.1
 - Bugfixes for 1.0 release
 - Added Chinese Developer Guide

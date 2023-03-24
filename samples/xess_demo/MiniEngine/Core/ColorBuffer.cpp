@@ -90,6 +90,7 @@ void ColorBuffer::CreateDerivedViews(ID3D12Device* Device, DXGI_FORMAT Format, u
         return;
 
     // Create the UAVs for each mip level (RWTexture2D)
+    ASSERT(NumMips <= _countof(m_UAVHandle));
     for (uint32_t i = 0; i < NumMips; ++i)
     {
         if (m_UAVHandle[i].ptr == D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN)

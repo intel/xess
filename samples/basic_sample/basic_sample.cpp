@@ -151,6 +151,11 @@ void BasicSample::InitXess()
         throw std::runtime_error("Unable to create XeSS context");
     }
 
+    if (XESS_RESULT_WARNING_OLD_DRIVER == xessIsOptimalDriver(m_xessContext))
+    {
+        MessageBox(NULL, L"Please install the latest graphics driver from your vendor for optimal Intel(R) XeSS performance and visual quality", L"Important notice", MB_OK | MB_TOPMOST);
+    }
+
     xess_properties_t props;
     status = xessGetProperties(m_xessContext, &m_desiredOutputResolution, &props);
     if (status != XESS_RESULT_SUCCESS)

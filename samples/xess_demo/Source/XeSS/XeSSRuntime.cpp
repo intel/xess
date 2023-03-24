@@ -119,6 +119,11 @@ namespace XeSS
             return false;
         }
 
+        if (XESS_RESULT_WARNING_OLD_DRIVER == xessIsOptimalDriver(m_Context))
+        {
+            MessageBox(NULL, L"Please install the latest graphics driver from your vendor for optimal Intel(R) XeSS performance and visual quality", L"Important notice", MB_OK | MB_TOPMOST);
+        }
+
         // Set logging callback here.
         ret = xessSetLoggingCallback(m_Context, XESS_LOGGING_LEVEL_DEBUG, LogCallback);
         ASSERT(ret == XESS_RESULT_SUCCESS);
@@ -205,6 +210,14 @@ namespace XeSS
         params.outputResolution.y = Args.OutputHeight;
         params.qualitySetting = ToXeSSQuality(Args.Quality);
         params.initFlags = Args.UseHiResMotionVectors ? XESS_INIT_FLAG_HIGH_RES_MV : 0;
+        if (Args.UseJitteredMotionVectors)
+        {
+            params.initFlags |= XESS_INIT_FLAG_JITTERED_MV;
+        }
+        if (Args.UseMotionVectorsInNDC)
+        {
+            params.initFlags |= XESS_INIT_FLAG_USE_NDC_VELOCITY;
+        }
         if (Args.UseExposureTexture)
         {
             params.initFlags |= XESS_INIT_FLAG_EXPOSURE_SCALE_TEXTURE;
@@ -212,6 +225,10 @@ namespace XeSS
         if (Args.UseResponsiveMask)
         {
             params.initFlags |= XESS_INIT_FLAG_RESPONSIVE_PIXEL_MASK;
+        }
+        if (Args.UseAutoExposure)
+        {
+            params.initFlags |= XESS_INIT_FLAG_ENABLE_AUTOEXPOSURE;
         }
 
         params.pPipelineLibrary = m_PipelineBuilt ? m_PipelineLibrary.Get() : nullptr;

@@ -47,11 +47,13 @@ void Log::SetLevel(LogLevel Level)
 
 void Log::WriteFormat(LogLevel Level, const char* Format, ...)
 {
-    char buffer[256];
     va_list args;
     va_start(args, Format);
-    vsprintf_s(buffer, 256, Format, args);
-    Write(Level, buffer);
+    size_t size = std::vsnprintf(nullptr, 0, Format, args) + 1;
+    std::string buffer(size, '\0');
+    std::vsnprintf(&buffer[0], size, Format, args);
+
+    Write(Level, &buffer[0]);
     va_end(args);
 }
 

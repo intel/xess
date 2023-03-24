@@ -37,7 +37,8 @@ namespace Math
         void SetPosition( Vector3 worldPos );
         void SetTransform( const AffineTransform& xform );
         void SetTransform( const OrthogonalTransform& xform );
-
+        void SetReprojectMatrixJittered(bool Jittered) { m_IsReprojectMatrixJittered = Jittered; };
+        
         const Quaternion GetRotation() const { return m_CameraToWorld.GetRotation(); }
         const Vector3 GetRightVec() const { return m_Basis.GetX(); }
         const Vector3 GetUpVec() const { return m_Basis.GetY(); }
@@ -52,6 +53,8 @@ namespace Math
         const Frustum& GetViewSpaceFrustum() const { return m_FrustumVS; }
         const Frustum& GetWorldSpaceFrustum() const { return m_FrustumWS; }
 
+        bool IsReprojectMatrixJittered() const { return m_IsReprojectMatrixJittered; }
+
     protected:
 
         BaseCamera() : 
@@ -63,7 +66,8 @@ namespace Math
             m_ProjMatrixNoJitter(kIdentity),
             m_ViewProjMatrixNoJitter(kIdentity),
             m_PreviousViewProjMatrix(kIdentity),
-            m_ReprojectMatrix(kIdentity)            
+            m_ReprojectMatrix(kIdentity),
+            m_IsReprojectMatrixJittered(false)
         {
         }
 
@@ -77,19 +81,21 @@ namespace Math
         // Transforms homogeneous coordinates from world space to view space.  In this case, view space is defined as +X is
         // to the right, +Y is up, and -Z is forward.  This has to match what the projection matrix expects, but you might
         // also need to know what the convention is if you work in view space in a shader.
-        Matrix4 m_ViewMatrix;		// i.e. "World-to-View" matrix
+        Matrix4 m_ViewMatrix;       // i.e. "World-to-View" matrix
 
         // The projection matrix transforms view space to clip space.  Once division by W has occurred, the final coordinates
         // can be transformed by the viewport matrix to screen space.  The projection matrix is determined by the screen aspect 
         // and camera field of view.  A projection matrix can also be orthographic.  In that case, field of view would be defined
         // in linear units, not angles.
-        Matrix4 m_ProjMatrix;		// i.e. "View-to-Projection" matrix
+        Matrix4 m_ProjMatrix;       // i.e. "View-to-Projection" matrix
 
         // A concatenation of the view and projection matrices.
-        Matrix4 m_ViewProjMatrix;	// i.e.  "World-To-Projection" matrix.
+        Matrix4 m_ViewProjMatrix;   // i.e.  "World-To-Projection" matrix.
 
-        Matrix4 m_ProjMatrixNoJitter;		// m_ProjMatrix, but without jitter.
-        Matrix4 m_ViewProjMatrixNoJitter;	// m_ViewProjMatrix, but without jitter.
+        Matrix4 m_ProjMatrixNoJitter;       // m_ProjMatrix, but without jitter.
+        Matrix4 m_ViewProjMatrixNoJitter;   // m_ViewProjMatrix, but without jitter.
+
+        bool m_IsReprojectMatrixJittered;     // If Reprojection Matrix is jittered.
 
         // The view-projection matrix from the previous frame
         Matrix4 m_PreviousViewProjMatrix;

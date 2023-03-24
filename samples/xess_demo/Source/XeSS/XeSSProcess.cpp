@@ -36,6 +36,8 @@
 #include "Log.h"
 #include "CompiledShaders/XeSSConvertLowResVelocityCS.h"
 #include "CompiledShaders/XeSSGenerateHiResVelocityCS.h"
+#include "CompiledShaders/XeSSConvertLowResVelocityNDCCS.h"
+#include "CompiledShaders/XeSSGenerateHiResVelocityNDCCS.h"
 #include "CompiledShaders/SharpenCS.h"
 
 using namespace Graphics;
@@ -55,8 +57,11 @@ namespace XeSS
     NumVar Sharpness("XeSS/Sharpness", 0.0f, 0.0f, 1.0f, 0.02f);
 
     eMotionVectorsMode s_MotionVectorsMode = kMotionVectorsHighRes;
+    bool s_MotionVectorsJittered = false;
+    bool s_MotionVectorsInNDC = false;
     eQualityLevel s_Quality = kQualityQuality;
     bool s_ResponsiveMaskEnabled = false;
+    bool s_AutoExposureEnabled = false;
     eMipBiasMode s_MipBiasMode = kMipBiasAutomatic;
     float s_CustomizedMipBias = FLT_MAX;
     bool s_ResetHistory = false;
@@ -71,6 +76,8 @@ namespace XeSS
 
     ComputePSO s_XeSSConvertLowResVelocityCS(L"ConvertLowResVelocityCS");
     ComputePSO s_XeSSGenerateHiResVelocityCS(L"GenerateHiResVelocityCS");
+    ComputePSO s_XeSSConvertLowResVelocityNDCCS(L"ConvertLowResVelocityNDCCS");
+    ComputePSO s_XeSSGenerateHiResVelocityNDCCS(L"GenerateHiResVelocityNDCCS");
     ComputePSO s_SharpenImageCS(L"Sharpen Image CS");
 
     void ConvertLowResVelocity(ComputeContext& Context);
@@ -127,10 +134,13 @@ void XeSS::Initialize()
 
     CreatePSO(s_XeSSConvertLowResVelocityCS, g_pXeSSConvertLowResVelocityCS);
     CreatePSO(s_XeSSGenerateHiResVelocityCS, g_pXeSSGenerateHiResVelocityCS);
+    CreatePSO(s_XeSSConvertLowResVelocityNDCCS, g_pXeSSConvertLowResVelocityNDCCS);
+    CreatePSO(s_XeSSGenerateHiResVelocityNDCCS, g_pXeSSGenerateHiResVelocityNDCCS);
     CreatePSO(s_SharpenImageCS, g_pSharpenCS);
 #undef CreatePSO
 
     SetOutputResolution(g_DisplayWidth, g_DisplayHeight);
+    XeSSDebug::SelectNetworkModel(0);
 }
 
 void XeSS::Shutdown()
@@ -180,6 +190,36 @@ void XeSS::SetMotionVectorsMode(eMotionVectorsMode Mode)
     s_RuntimeDirty = true;
 }
 
+bool XeSS::IsMotionVectorsJittered()
+{
+    return s_MotionVectorsJittered;
+}
+
+void XeSS::SetMotionVectorsJittered(bool Jittered)
+{
+    if (s_MotionVectorsJittered == Jittered)
+        return;
+
+    s_MotionVectorsJittered = Jittered;
+
+    s_RuntimeDirty = true;
+}
+
+bool XeSS::IsMotionVectorsInNDC()
+{
+    return s_MotionVectorsInNDC;
+}
+
+void XeSS::SetMotionVectorsInNDC(bool NDC)
+{
+    if (s_MotionVectorsInNDC == NDC)
+        return;
+
+    s_MotionVectorsInNDC = NDC;
+
+    s_RuntimeDirty = true;
+}
+
 bool XeSS::IsResponsiveMaskEnabled()
 {
     return s_ResponsiveMaskEnabled;
@@ -191,6 +231,21 @@ void XeSS::SetResponsiveMaskEnabled(bool Enabled)
         return;
 
     s_ResponsiveMaskEnabled = Enabled;
+
+    s_RuntimeDirty = true;
+}
+
+bool XeSS::IsAutoExposureEnabled()
+{
+    return s_AutoExposureEnabled;
+}
+
+void XeSS::SetAutoExposureEnabled(bool Enabled)
+{
+    if (s_AutoExposureEnabled == Enabled)
+        return;
+
+    s_AutoExposureEnabled = Enabled;
 
     s_RuntimeDirty = true;
 }
@@ -270,7 +325,10 @@ void XeSS::UpdateRuntime()
     initArgs.OutputHeight = s_OutputHeight;
     initArgs.Quality = s_Quality;
     initArgs.UseHiResMotionVectors = isHiResMode;
+    initArgs.UseJitteredMotionVectors = s_MotionVectorsJittered;
+    initArgs.UseMotionVectorsInNDC = s_MotionVectorsInNDC;
     initArgs.UseResponsiveMask = s_ResponsiveMaskEnabled;
+    initArgs.UseAutoExposure = s_AutoExposureEnabled;
 
     g_XeSSRuntime.Initialize(initArgs);
 
@@ -313,6 +371,11 @@ uint32_t XeSS::GetFrameIndexMod2()
 bool XeSS::IsSupported()
 {
     return s_IsSupported;
+}
+
+void XeSS::ResetHistory()
+{
+    s_ResetHistory = true;
 }
 
 void XeSS::Process(CommandContext& BaseContext, const Camera& camera)
@@ -400,7 +463,20 @@ void XeSS::ConvertLowResVelocity(ComputeContext& Context)
     ScopedTimer _prof(L"Convert Velocity", Context);
 
     Context.SetRootSignature(g_CommonRS);
-    Context.SetPipelineState(s_XeSSConvertLowResVelocityCS);
+    Context.SetPipelineState(s_MotionVectorsInNDC ? s_XeSSConvertLowResVelocityNDCCS : s_XeSSConvertLowResVelocityCS);
+
+    __declspec(align(16)) struct ConstantBuffer
+    {
+        float InBufferDim[2];
+        float RcpInBufferDim[2];
+    };
+
+    ConstantBuffer cbv = {
+        (float)g_VelocityBuffer.GetWidth(), (float)g_VelocityBuffer.GetHeight(),
+        1.0f / g_VelocityBuffer.GetWidth(), 1.0f / g_VelocityBuffer.GetHeight()
+    };
+
+    Context.SetDynamicConstantBufferView(3, sizeof(cbv), &cbv);
 
     Context.TransitionResource(g_VelocityBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
     Context.TransitionResource(g_ConvertedVelocityBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
@@ -420,8 +496,7 @@ void XeSS::GenerateHighResVelocity(ComputeContext& Context, const Matrix4& CurTo
     ScopedTimer _prof(L"Upscale Velocity", Context);
 
     Context.SetRootSignature(g_CommonRS);
-
-    Context.SetPipelineState(s_XeSSGenerateHiResVelocityCS);
+    Context.SetPipelineState(s_MotionVectorsInNDC ? s_XeSSGenerateHiResVelocityNDCCS : s_XeSSGenerateHiResVelocityCS);
 
     __declspec(align(16)) struct ConstantBuffer
     {

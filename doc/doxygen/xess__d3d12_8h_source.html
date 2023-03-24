@@ -26,7 +26,7 @@
  <tr id="projectrow">
   <td id="projectlogo"><img alt="Logo" src="intel-logo.jpg"/></td>
   <td id="projectalign">
-   <div id="projectname">XeSS SDK API Reference Guide<span id="projectnumber">&#160;1.0.0</span>
+   <div id="projectname">XeSS SDK API Reference Guide<span id="projectnumber">&#160;1.1.0</span>
    </div>
   </td>
  </tr>
@@ -87,8 +87,6 @@ $(document).ready(function(){initNavTree('xess__d3d12_8h_source.html',''); initR
 </div><!--header-->
 <div class="contents">
 <a href="xess__d3d12_8h.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span><span class="comment">/*******************************************************************************</span></div>
-<div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span><span class="comment"> * INTEL CONFIDENTIAL</span></div>
-<div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="comment"> *</span></div>
 <div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="comment"> * Copyright (C) 2021 Intel Corporation</span></div>
 <div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="comment"> *</span></div>
 <div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="comment"> * This software and the related documents are Intel copyrighted materials, and</span></div>
@@ -167,14 +165,18 @@ $(document).ready(function(){initNavTree('xess__d3d12_8h_source.html',''); initR
 <div class="line"><a id="l00163" name="l00163"></a><span class="lineno"><a class="line" href="group__xess-d3d12.html#gafb211935ba10efefc5a7063b276fce31">  163</a></span><a class="code hl_define" href="xess_8h.html#ac7ba74abaad1e5cf4ca1fffa7fee838c">XESS_API</a> <a class="code hl_typedef" href="xess_8h.html#a3aa6a07808627ac723a9da324abf10b4">xess_result_t</a> <a class="code hl_function" href="group__xess-d3d12.html#gafb211935ba10efefc5a7063b276fce31">xessD3D12Init</a>(</div>
 <div class="line"><a id="l00164" name="l00164"></a><span class="lineno">  164</span>    <a class="code hl_typedef" href="xess_8h.html#af31f441c4909f7bbf9fb4491b5f9b927">xess_context_handle_t</a> hContext, const <a class="code hl_struct" href="struct__xess__d3d12__init__params__t.html">xess_d3d12_init_params_t</a>* pInitParams);</div>
 <div class="line"><a id="l00165" name="l00165"></a><span class="lineno">  165</span> </div>
-<div class="line"><a id="l00174" name="l00174"></a><span class="lineno"><a class="line" href="group__xess-d3d12.html#gaf8e15aa3a0915546fdfcaa899f58c102">  174</a></span><a class="code hl_define" href="xess_8h.html#ac7ba74abaad1e5cf4ca1fffa7fee838c">XESS_API</a> <a class="code hl_typedef" href="xess_8h.html#a3aa6a07808627ac723a9da324abf10b4">xess_result_t</a> <a class="code hl_function" href="group__xess-d3d12.html#gaf8e15aa3a0915546fdfcaa899f58c102">xessD3D12Execute</a>(<a class="code hl_typedef" href="xess_8h.html#af31f441c4909f7bbf9fb4491b5f9b927">xess_context_handle_t</a> hContext,</div>
-<div class="line"><a id="l00175" name="l00175"></a><span class="lineno">  175</span>    ID3D12GraphicsCommandList* pCommandList, const <a class="code hl_struct" href="struct__xess__d3d12__execute__params__t.html">xess_d3d12_execute_params_t</a>* pExecParams);</div>
-<div class="line"><a id="l00178" name="l00178"></a><span class="lineno">  178</span><span class="preprocessor">#ifdef __cplusplus</span></div>
-<div class="line"><a id="l00179" name="l00179"></a><span class="lineno">  179</span>}</div>
-<div class="line"><a id="l00180" name="l00180"></a><span class="lineno">  180</span><span class="preprocessor">#endif</span></div>
-<div class="line"><a id="l00181" name="l00181"></a><span class="lineno">  181</span> </div>
-<div class="line"><a id="l00182" name="l00182"></a><span class="lineno">  182</span> </div>
-<div class="line"><a id="l00183" name="l00183"></a><span class="lineno">  183</span><span class="preprocessor">#endif  </span><span class="comment">// XESS_D3D12_H</span></div>
+<div class="line"><a id="l00175" name="l00175"></a><span class="lineno"><a class="line" href="group__xess-d3d12.html#ga1208e868c1eac8d1e29f56835903d7c0">  175</a></span><a class="code hl_define" href="xess_8h.html#ac7ba74abaad1e5cf4ca1fffa7fee838c">XESS_API</a> <a class="code hl_typedef" href="xess_8h.html#a3aa6a07808627ac723a9da324abf10b4">xess_result_t</a> <a class="code hl_function" href="group__xess-d3d12.html#ga1208e868c1eac8d1e29f56835903d7c0">xessD3D12GetInitParams</a>(</div>
+<div class="line"><a id="l00176" name="l00176"></a><span class="lineno">  176</span>    <a class="code hl_typedef" href="xess_8h.html#af31f441c4909f7bbf9fb4491b5f9b927">xess_context_handle_t</a> hContext, <a class="code hl_struct" href="struct__xess__d3d12__init__params__t.html">xess_d3d12_init_params_t</a>* pInitParams);</div>
+<div class="line"><a id="l00177" name="l00177"></a><span class="lineno">  177</span> </div>
+<div class="line"><a id="l00186" name="l00186"></a><span class="lineno"><a class="line" href="group__xess-d3d12.html#gaf8e15aa3a0915546fdfcaa899f58c102">  186</a></span><a class="code hl_define" href="xess_8h.html#ac7ba74abaad1e5cf4ca1fffa7fee838c">XESS_API</a> <a class="code hl_typedef" href="xess_8h.html#a3aa6a07808627ac723a9da324abf10b4">xess_result_t</a> <a class="code hl_function" href="group__xess-d3d12.html#gaf8e15aa3a0915546fdfcaa899f58c102">xessD3D12Execute</a>(<a class="code hl_typedef" href="xess_8h.html#af31f441c4909f7bbf9fb4491b5f9b927">xess_context_handle_t</a> hContext,</div>
+<div class="line"><a id="l00187" name="l00187"></a><span class="lineno">  187</span>    ID3D12GraphicsCommandList* pCommandList, const <a class="code hl_struct" href="struct__xess__d3d12__execute__params__t.html">xess_d3d12_execute_params_t</a>* pExecParams);</div>
+<div class="line"><a id="l00190" name="l00190"></a><span class="lineno">  190</span><span class="preprocessor">#ifdef __cplusplus</span></div>
+<div class="line"><a id="l00191" name="l00191"></a><span class="lineno">  191</span>}</div>
+<div class="line"><a id="l00192" name="l00192"></a><span class="lineno">  192</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00193" name="l00193"></a><span class="lineno">  193</span> </div>
+<div class="line"><a id="l00194" name="l00194"></a><span class="lineno">  194</span> </div>
+<div class="line"><a id="l00195" name="l00195"></a><span class="lineno">  195</span><span class="preprocessor">#endif  </span><span class="comment">// XESS_D3D12_H</span></div>
+<div class="ttc" id="agroup__xess-d3d12_html_ga1208e868c1eac8d1e29f56835903d7c0"><div class="ttname"><a href="group__xess-d3d12.html#ga1208e868c1eac8d1e29f56835903d7c0">xessD3D12GetInitParams</a></div><div class="ttdeci">XESS_API xess_result_t xessD3D12GetInitParams(xess_context_handle_t hContext, xess_d3d12_init_params_t *pInitParams)</div><div class="ttdoc">Get XeSS D3D12 initialization parameters.</div></div>
 <div class="ttc" id="agroup__xess-d3d12_html_ga6b15c60fbdeefc17a1064950c90d2e2d"><div class="ttname"><a href="group__xess-d3d12.html#ga6b15c60fbdeefc17a1064950c90d2e2d">xessD3D12CreateContext</a></div><div class="ttdeci">XESS_API xess_result_t xessD3D12CreateContext(ID3D12Device *pDevice, xess_context_handle_t *phContext)</div><div class="ttdoc">Create an XeSS D3D12 context.</div></div>
 <div class="ttc" id="agroup__xess-d3d12_html_gac39e8fcd2d1575ab36e54aacbc3d3b6a"><div class="ttname"><a href="group__xess-d3d12.html#gac39e8fcd2d1575ab36e54aacbc3d3b6a">xessD3D12BuildPipelines</a></div><div class="ttdeci">XESS_API xess_result_t xessD3D12BuildPipelines(xess_context_handle_t hContext, ID3D12PipelineLibrary *pPipelineLibrary, bool blocking, uint32_t initFlags)</div><div class="ttdoc">Initiates pipeline build process This function can only be called between xessD3D12CreateContext and ...</div></div>
 <div class="ttc" id="agroup__xess-d3d12_html_gaf8e15aa3a0915546fdfcaa899f58c102"><div class="ttname"><a href="group__xess-d3d12.html#gaf8e15aa3a0915546fdfcaa899f58c102">xessD3D12Execute</a></div><div class="ttdeci">XESS_API xess_result_t xessD3D12Execute(xess_context_handle_t hContext, ID3D12GraphicsCommandList *pCommandList, const xess_d3d12_execute_params_t *pExecParams)</div><div class="ttdoc">Record XeSS upscaling commands into the command list.</div></div>

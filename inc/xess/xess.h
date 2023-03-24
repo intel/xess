@@ -29,7 +29,7 @@
 #define XESS_API
 #endif
 
-#if !defined _MSC_VER || (_MSC_VER >= 1928)
+#if !defined _MSC_VER || (_MSC_VER >= 1929)
 #define XESS_PRAGMA(x) _Pragma(#x)
 #else
 #define XESS_PRAGMA(x) __pragma(x)
@@ -119,6 +119,8 @@ typedef enum _xess_init_flags_t
     XESS_INIT_FLAG_LDR_INPUT_COLOR = 1 << 6,
     /** Remove jitter from input velocity*/
     XESS_INIT_FLAG_JITTERED_MV = 1 << 7,
+    /** Enable automatic exposure calculation. */
+    XESS_INIT_FLAG_ENABLE_AUTOEXPOSURE = 1 << 8
 } xess_init_flags_t;
 
 XESS_PACK_B()
@@ -143,11 +145,13 @@ typedef enum _xess_result_t
 {
     /** Warning. Folder to store dump data doesn't exist. Write operation skipped.*/
     XESS_RESULT_WARNING_NONEXISTING_FOLDER = 1,
+    /** An old or outdated driver. */
+    XESS_RESULT_WARNING_OLD_DRIVER = 2,
     /** X<sup>e</sup>SS operation was successful. */
     XESS_RESULT_SUCCESS = 0,
     /** X<sup>e</sup>SS not supported on the GPU. An SM 6.4 capable GPU is required. */
     XESS_RESULT_ERROR_UNSUPPORTED_DEVICE = -1,
-    /** An outdated driver. */
+    /** An unsupported driver. */
     XESS_RESULT_ERROR_UNSUPPORTED_DRIVER = -2,
     /** Execute called without initialization. */
     XESS_RESULT_ERROR_UNINITIALIZED = -3,
@@ -167,6 +171,7 @@ typedef enum _xess_result_t
     XESS_RESULT_ERROR_UNSUPPORTED = -10,
     /** The library cannot be loaded. */
     XESS_RESULT_ERROR_CANT_LOAD_LIBRARY = -11,
+
     /** Unknown internal failure */
     XESS_RESULT_ERROR_UNKNOWN = -1000,
 } xess_result_t;
@@ -187,7 +192,7 @@ typedef enum _xess_logging_level_t
  * Message pointer are only valid inside function and may be invalid right after return call.
  * Message is a null-terminated utf-8 string
  */
- typedef void (*xess_app_log_callback_t)(const char *message, xess_logging_level_t loging_level);
+ typedef void (*xess_app_log_callback_t)(const char *message, xess_logging_level_t loggingLevel);
 
 #ifndef XESS_TYPES_ONLY
 
@@ -217,7 +222,7 @@ XESS_API xess_result_t xessGetIntelXeFXVersion(xess_context_handle_t hContext,
  * @brief Gets X<sup>e</sup>SS internal resources properties.
  * @param hContext The X<sup>e</sup>SS context handle.
  * @param pOutputResolution Output resolution to calculate properties for.
- * @param[out] pBindingPropeties Retured properties.
+ * @param[out] pBindingProperties Returned properties.
  * @return X<sup>e</sup>SS return status code.
  */
 XESS_API xess_result_t xessGetProperties(xess_context_handle_t hContext,
@@ -238,6 +243,24 @@ XESS_API xess_result_t xessGetProperties(xess_context_handle_t hContext,
 XESS_API xess_result_t xessGetInputResolution(xess_context_handle_t hContext,
     const xess_2d_t* pOutputResolution, xess_quality_settings_t qualitySettings,
     xess_2d_t* pInputResolution);
+
+/**
+ * @brief Gets jitter scale value.
+ * @param hContext The X<sup>e</sup>SS context handle.
+ * @param[out] pX Jitter scale pointer for the X axis.
+ * @param[out] pY Jitter scale pointer for the Y axis.
+ * @return X<sup>e</sup>SS return status code.
+ */
+XESS_API xess_result_t xessGetJitterScale(xess_context_handle_t hContext, float* pX, float* pY);
+
+/**
+ * @brief Gets velocity scale value.
+ * @param hContext The X<sup>e</sup>SS context handle.
+ * @param[out] pX Velocity scale pointer for the X axis.
+ * @param[out] pY Velocity scale pointer for the Y axis.
+ * @return X<sup>e</sup>SS return status code.
+ */
+XESS_API xess_result_t xessGetVelocityScale(xess_context_handle_t hContext, float* pX, float* pY);
 
 /**
  * @brief Destroys the X<sup>e</sup>SS context.
@@ -275,6 +298,17 @@ XESS_API xess_result_t xessSetVelocityScale(xess_context_handle_t hContext, floa
  */
 XESS_API xess_result_t xessSetLoggingCallback(xess_context_handle_t hContext,
     xess_logging_level_t loggingLevel, xess_app_log_callback_t loggingCallback);
+
+/**
+ * Indicates if the installed driver supports best X<sup>e</sup>SS experience. 
+ *
+ * @param hContext The X<sup>e</sup>SS context handle.
+ * @return xessIsOptimalDriver returns XESS_RESULT_SUCCESS, or XESS_RESULT_WARNING_OLD_DRIVER
+ * if installed driver may result in degraded performance or visual quality.  
+ * xessD3D12CreateContext(..) will return XESS_RESULT_ERROR_UNSUPPORTED_DRIVER if driver does
+ * not support X<sup>e</sup>SS  at all.
+ */
+XESS_API xess_result_t xessIsOptimalDriver(xess_context_handle_t hContext);
 
 /** @}*/
   

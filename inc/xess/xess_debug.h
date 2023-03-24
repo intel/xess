@@ -29,6 +29,11 @@ typedef enum _xess_network_model_t
 {
     XESS_NETWORK_MODEL_KPSS = 0,
     XESS_NETWORK_MODEL_SPLAT = 1,
+    XESS_NETWORK_MODEL_3 = 2,
+    XESS_NETWORK_MODEL_4 = 3,
+    XESS_NETWORK_MODEL_5 = 4,
+    XESS_NETWORK_MODEL_6 = 5,
+    XESS_NETWORK_MODEL_UNKNOWN = 0x7FFFFFFF,
 } xess_network_model_t;
 
 typedef enum _xess_dump_element_bits_t
@@ -64,8 +69,8 @@ typedef struct _xess_dump_parameters_t
      * application
      */
     uint32_t frame_count;
-    /** Bitset showing set of elements that must be dumped. Element will be dumped if it exist
-     * and corrseponding bit is not 0. 
+    /** Bitset showing set of elements that must be dumped. Element will be dumped if it exists
+     * and corresponding bit is not 0.
      * Since it's meaningless to call Dump with empty set value of 0 will mean DUMP_ALL_INPUTS
      */
     xess_dump_elements_mask_t dump_elements_mask;
@@ -100,7 +105,7 @@ XESS_API xess_result_t xessSelectNetworkModel(xess_context_handle_t hContext, xe
  * RAM cache.
  * After @ref xess_dump_parameters_t::frame_count frames application will be blocked on call to
  * @ref xessD3D12Execute in order to save cached frames to disk. This operation can take long time.
- * Repetetive calls to this function can result in XESS_RESULT_ERROR_OPERATION_IN_PROGRESS which means that
+ * Repetitive calls to this function can result in XESS_RESULT_ERROR_OPERATION_IN_PROGRESS which means that
  * frame dump is in progress.
  *
  * @param hContext X<sup>e</sup>SS context

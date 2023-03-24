@@ -26,7 +26,7 @@
  <tr id="projectrow">
   <td id="projectlogo"><img alt="Logo" src="intel-logo.jpg"/></td>
   <td id="projectalign">
-   <div id="projectname">XeSS SDK API Reference Guide<span id="projectnumber">&#160;1.0.0</span>
+   <div id="projectname">XeSS SDK API Reference Guide<span id="projectnumber">&#160;1.1.0</span>
    </div>
   </td>
  </tr>
@@ -156,7 +156,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p >Dumps sequence of frames to the provided folder</p>
-<p >Call to this function initiates a dump for selected elements. X<sup>e</sup>SS SDK uses RAM cache to reduce dump overhead. Application should provide reasonable value for <a class="el" href="struct__xess__dump__parameters__t.html#ae3e00071db1070451c10872b09360cad">xess_dump_parameters_t::frame_count</a> frames (about 50 megs needed per cached frame). To enable several dumps per run application should provide correct <a class="el" href="struct__xess__dump__parameters__t.html#a675e89be435aec170285f3a1e7e25edf">xess_dump_parameters_t::frame_idx</a> value. This value used as a start index for frame dumping. After call to this function - each call to <a class="el" href="group__xess-d3d12.html#gaf8e15aa3a0915546fdfcaa899f58c102">xessD3D12Execute</a> will result in new frame dumped to RAM cache. After <a class="el" href="struct__xess__dump__parameters__t.html#ae3e00071db1070451c10872b09360cad">xess_dump_parameters_t::frame_count</a> frames application will be blocked on call to <a class="el" href="group__xess-d3d12.html#gaf8e15aa3a0915546fdfcaa899f58c102">xessD3D12Execute</a> in order to save cached frames to disk. This operation can take long time. Repetetive calls to this function can result in XESS_RESULT_ERROR_OPERATION_IN_PROGRESS which means that frame dump is in progress.</p>
+<p >Call to this function initiates a dump for selected elements. X<sup>e</sup>SS SDK uses RAM cache to reduce dump overhead. Application should provide reasonable value for <a class="el" href="struct__xess__dump__parameters__t.html#ae3e00071db1070451c10872b09360cad">xess_dump_parameters_t::frame_count</a> frames (about 50 megs needed per cached frame). To enable several dumps per run application should provide correct <a class="el" href="struct__xess__dump__parameters__t.html#a675e89be435aec170285f3a1e7e25edf">xess_dump_parameters_t::frame_idx</a> value. This value used as a start index for frame dumping. After call to this function - each call to <a class="el" href="group__xess-d3d12.html#gaf8e15aa3a0915546fdfcaa899f58c102">xessD3D12Execute</a> will result in new frame dumped to RAM cache. After <a class="el" href="struct__xess__dump__parameters__t.html#ae3e00071db1070451c10872b09360cad">xess_dump_parameters_t::frame_count</a> frames application will be blocked on call to <a class="el" href="group__xess-d3d12.html#gaf8e15aa3a0915546fdfcaa899f58c102">xessD3D12Execute</a> in order to save cached frames to disk. This operation can take long time. Repetitive calls to this function can result in XESS_RESULT_ERROR_OPERATION_IN_PROGRESS which means that frame dump is in progress.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">hContext</td><td>X<sup>e</sup>SS context </td></tr>

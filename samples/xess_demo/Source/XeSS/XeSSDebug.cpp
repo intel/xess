@@ -361,7 +361,7 @@ bool XeSSDebug::SelectNetworkModel(int32_t model)
     if (s_NetworkModel == model)
         return true;
 
-    ASSERT(model == XESS_NETWORK_MODEL_KPSS);
+    //ASSERT(model == XESS_NETWORK_MODEL_KPSS);
 
     // We make sure the previous work is done.
     g_CommandManager.IdleGPU();

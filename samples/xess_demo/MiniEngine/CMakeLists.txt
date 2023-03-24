@@ -53,6 +53,12 @@ file(GLOB_RECURSE SHADER_INCLUDE_FILES
     "Model/Shaders/*.hlsli"
 )
 
+set(ALL_SHADER_FILES
+    ${VERTEX_SHADER_FILES}
+    ${PIXEL_SHADER_FILES}
+    ${COMPUTE_SHADER_FILES}
+)
+
 set(THIRD_PARTY_SOURCE_FILES
     "Dependencies/imgui/imgui.h"
     "Dependencies/imgui/imgui.cpp"
@@ -68,20 +74,9 @@ set(SHADER_INC_PATH
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-include(../Script/utility.cmake)
-
-hlsl_compile("${VERTEX_SHADER_FILES}" Vertex "${SHADER_INC_PATH}" "_GAMING_DESKTOP=1" ENABLE_MINIENGINE_SHADER_DEBUG)
-hlsl_compile("${PIXEL_SHADER_FILES}" Pixel "${SHADER_INC_PATH}" "_GAMING_DESKTOP=1" ENABLE_MINIENGINE_SHADER_DEBUG)
-hlsl_compile("${COMPUTE_SHADER_FILES}" Compute "${SHADER_INC_PATH}" "_GAMING_DESKTOP=1" ENABLE_MINIENGINE_SHADER_DEBUG)
-set_property(SOURCE ${SHADER_INCLUDE_FILES} PROPERTY HEADER_FILE_ONLY true)
-
-set_msvc_precompiled_header(pch.h Core/pch.cpp "${SOURCE_FILES}")
-
 set(SOURCE_FILES
     ${SOURCE_FILES}
-    ${VERTEX_SHADER_FILES}
-    ${PIXEL_SHADER_FILES}
-    ${COMPUTE_SHADER_FILES}
+    ${ALL_SHADER_FILES}
     ${SHADER_INCLUDE_FILES}
     ${THIRD_PARTY_SOURCE_FILES}
 )
@@ -90,12 +85,19 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SOURCE_FILES})
 
 add_library (${TARGET_NAME} STATIC ${SOURCE_FILES})
 
+# Pre-compiled header
+target_precompile_headers(${TARGET_NAME} PRIVATE Core/pch.h)
+set_source_files_properties(${ALL_SHADER_FILES} PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
+set_source_files_properties(${SHADER_INCLUDE_FILES} PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
+set_source_files_properties(${THIRD_PARTY_SOURCE_FILES} PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
+
+
 target_compile_definitions(${TARGET_NAME} PRIVATE 
     UNICODE _UNICODE __WRL_NO_DEFAULT_LIB__ _GAMING_DESKTOP
     $<$<CONFIG:Debug>:_DEBUG> 
     $<$<CONFIG:Release>:RELEASE> 
     $<$<CONFIG:MinSizeRel>:RELEASE> 
-    $<$<CONFIG:RelWithDebInfo>:PROFILE> # We treat RelWithDebInfo as "Profile" config
+    $<$<CONFIG:RelWithDebInfo>:RELEASE>
 )
 
 #set_target_properties(${TARGET_NAME} PROPERTIES LINK_FLAGS "/NODEFAULTLIB:MSVCRT")
@@ -112,6 +114,28 @@ target_include_directories(
     ${TARGET_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/WinPixEventRuntime/Include/WinPixEventRuntime
     ${TARGET_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/imgui
 )
+
+set_source_files_properties(${VERTEX_SHADER_FILES} PROPERTIES ShaderType "vs")
+set_source_files_properties(${PIXEL_SHADER_FILES} PROPERTIES ShaderType "ps")
+set_source_files_properties(${COMPUTE_SHADER_FILES} PROPERTIES ShaderType "cs")
+
+include(../Script/utility.cmake)
+if (NOT (${CMAKE_GENERATOR} STREQUAL "Ninja"))
+    hlsl_compile(${TARGET_NAME} "${VERTEX_SHADER_FILES}" Vertex "${SHADER_INC_PATH}" "_GAMING_DESKTOP=1" ENABLE_MINIENGINE_SHADER_DEBUG)
+    hlsl_compile(${TARGET_NAME} "${PIXEL_SHADER_FILES}" Pixel "${SHADER_INC_PATH}" "_GAMING_DESKTOP=1" ENABLE_MINIENGINE_SHADER_DEBUG)
+    hlsl_compile(${TARGET_NAME} "${COMPUTE_SHADER_FILES}" Compute "${SHADER_INC_PATH}" "_GAMING_DESKTOP=1" ENABLE_MINIENGINE_SHADER_DEBUG)
+else()
+    # For Ninja generator
+    set (ShaderCompileTarget ${TARGET_NAME}_ShaderCompile)
+    # Add an extra shader target
+    add_custom_target(${ShaderCompileTarget})
+    # add dxc commands to the shader target
+    add_target_dxc_commands(${ShaderCompileTarget} "${ALL_SHADER_FILES}" "${SHADER_INCLUDE_FILES}" "${SHADER_INC_PATH}" "_GAMING_DESKTOP=1" ENABLE_MINIENGINE_SHADER_DEBUG)
+    # Make sure main target depends on this shader target
+    add_dependencies(${TARGET_NAME} ${ShaderCompileTarget})
+endif()
+
+set_property(SOURCE ${SHADER_INCLUDE_FILES} PROPERTY HEADER_FILE_ONLY true)
 
 # DirectXMesh dependency
 option(BUILD_TOOLS "" OFF)

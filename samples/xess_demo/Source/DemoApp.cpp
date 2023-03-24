@@ -112,6 +112,18 @@ void DemoApp::Startup()
 {
     SetWindowText(GameCore::g_hWnd, L"XeSS Demo");
 
+    // Enable console for debugging if needed.
+    uint32_t console = 0;
+    if (CommandLineArgs::GetInteger(L"console", console) && console)
+    {
+        if (AllocConsole())
+        {
+            FILE* stream;
+            freopen_s(&stream, "CONOUT$", "w", stderr);
+            freopen_s(&stream, "CONOUT$", "w", stdout);
+        }
+    }
+
     std::wstring cwd = GetWorkingDirectory();
     SetWorkingDirectory(GetProgramDirectory());
 
@@ -137,7 +149,7 @@ void DemoApp::Startup()
 
     XeSS::Initialize();
     XeSS::SetEnabled(true);
-    XeSS::SetQuality(XeSS::kQualityBalanced);
+    XeSS::SetQuality(XeSS::kQualityPerformance);
     XeSS::SetMotionVectorsMode(XeSS::kMotionVectorsHighRes);
     XeSS::SetMipBiasMode(XeSS::kMipBiasAutomatic);
 
@@ -221,6 +233,9 @@ void DemoApp::Update(float deltaTime)
 
     if (m_Technique == kDemoTech_XeSS)
     {
+        // Choose "jittered" or "unjittered" mode for the main camera to work with XeSS.
+        m_Camera.SetReprojectMatrixJittered(XeSS::IsMotionVectorsJittered());
+
         // Apply projection jitter for the main camera.
         float jitterX, jitterY;
         XeSSJitter::GetJitterValues(jitterX, jitterY);
@@ -228,6 +243,9 @@ void DemoApp::Update(float deltaTime)
     }
     else
     {
+        // Only "unjittered" mode is supported by TAA.
+        m_Camera.SetReprojectMatrixJittered(false);
+
         float jitterX, jitterY;
         TemporalEffects::GetJitterOffset(jitterX, jitterY);
 

@@ -29,6 +29,6 @@ namespace DemoGui
     bool Initialize();
     /// Destruction interface.
     void Shutdown();
-    /// Called when GUI to be assembles.
+    /// Called when GUI to be assembled.
     void OnGUI(DemoApp& App);
 } // namespace DemoGui

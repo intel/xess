@@ -93,10 +93,22 @@ namespace XeSS
     eMotionVectorsMode GetMotionVectorsMode();
     /// Set motion vectors mode.
     void SetMotionVectorsMode(eMotionVectorsMode Mode);
+    /// Return if motion vectors are jittered.
+    bool IsMotionVectorsJittered();
+    /// Set motion jittered.
+    void SetMotionVectorsJittered(bool Jittered);
+    /// Return if motion vectors are in Normalized Device Coordinate.
+    bool IsMotionVectorsInNDC();
+    /// Set motion vectors in Normalized Device Coordinate.
+    void SetMotionVectorsInNDC(bool NDC);
     /// Get if responsive mask enabled.
     bool IsResponsiveMaskEnabled();
     /// Set responsive mask enabled.
     void SetResponsiveMaskEnabled(bool Enabled);
+    /// Get if auto exposure enabled.
+    bool IsAutoExposureEnabled();
+    /// Set auto exposure enabled.
+    void SetAutoExposureEnabled(bool Enabled);
     /// Get quality of XeSS.
     eQualityLevel GetQuality();
     /// Set quality of XeSS.
@@ -113,4 +125,6 @@ namespace XeSS
     uint32_t GetFrameIndexMod2();
     /// Is XeSS supported.
     bool IsSupported();
+    /// Reset XeSS history once for debug purposes.
+    void ResetHistory();
 } // namespace XeSS

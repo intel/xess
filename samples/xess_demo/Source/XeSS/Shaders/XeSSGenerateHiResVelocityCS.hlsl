@@ -91,5 +91,9 @@ void main(uint3 DTid : SV_DispatchThreadID, uint GI : SV_GroupIndex, uint3 GTid 
 
 	float2 velocity = prevHPos.xy - curPixel;
 
+#ifdef _XESS_NDC_VELOCITY_ // here we demo NDC space velocity.
+    velocity = float2(velocity.x * 2.0 * RcpOutBufferDim.x, -velocity.y * 2.0 * RcpOutBufferDim.y);
+#endif
+
 	OutVelocityBuffer[st] = velocity;
 }

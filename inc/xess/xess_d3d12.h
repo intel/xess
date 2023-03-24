@@ -162,6 +162,18 @@ XESS_API xess_result_t xessD3D12Init(
     xess_context_handle_t hContext, const xess_d3d12_init_params_t* pInitParams);
 
 /**
+ * @brief Get X<sup>e</sup>SS D3D12 initialization parameters.
+ * 
+ * @note This function will return @ref XESS_RESULT_ERROR_UNINITIALIZED if @ref xessD3D12Init has not been called.
+ *
+ * @param hContext: The X<sup>e</sup>SS context handle.
+ * @param[out] pInitParams: Returned initialization parameters.
+ * @return X<sup>e</sup>SS return status code.
+ */
+XESS_API xess_result_t xessD3D12GetInitParams(
+    xess_context_handle_t hContext, xess_d3d12_init_params_t* pInitParams);
+
+/**
  * @brief Record X<sup>e</sup>SS upscaling commands into the command list.
  * @param hContext: The X<sup>e</sup>SS context handle.
  * @param pCommandList: The command list for X<sup>e</sup>SS commands.

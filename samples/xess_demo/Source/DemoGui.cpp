@@ -289,10 +289,22 @@ void DemoGui::OnGUI_XeSS()
     }
 
     static const char* VELOCITY_MODE_NAMES[] = { "High-Res", "Low-Res" };
-    int velocityMode = XeSS::GetMotionVectorsMode();
-    if (ImGui::Combo("Motion Vectors", &velocityMode, VELOCITY_MODE_NAMES, IM_ARRAYSIZE(VELOCITY_MODE_NAMES)))
+    int MVMode = XeSS::GetMotionVectorsMode();
+    if (ImGui::Combo("Motion Vectors", &MVMode, VELOCITY_MODE_NAMES, IM_ARRAYSIZE(VELOCITY_MODE_NAMES)))
     {
-        XeSS::SetMotionVectorsMode(static_cast<XeSS::eMotionVectorsMode>(velocityMode));
+        XeSS::SetMotionVectorsMode(static_cast<XeSS::eMotionVectorsMode>(MVMode));
+    }
+
+    bool jitteredMV = XeSS::IsMotionVectorsJittered();
+    if (ImGui::Checkbox("Jittered Motion Vectors", &jitteredMV))
+    {
+        XeSS::SetMotionVectorsJittered(jitteredMV);
+    }
+
+    bool MVinNDC = XeSS::IsMotionVectorsInNDC();
+    if (ImGui::Checkbox("NDC Motion Vectors", &MVinNDC))
+    {
+        XeSS::SetMotionVectorsInNDC(MVinNDC);
     }
 
     int mipBiasMode = XeSS::GetMipBiasMode();
@@ -319,6 +331,12 @@ void DemoGui::OnGUI_XeSS()
         XeSS::SetResponsiveMaskEnabled(isResponsiveMaskEnabled);
     }
 
+    bool isAutoExposureEnabled = XeSS::IsAutoExposureEnabled();
+    if (ImGui::Checkbox("Auto Exposure", &isAutoExposureEnabled))
+    {
+        XeSS::SetAutoExposureEnabled(isAutoExposureEnabled);
+    }
+
     if (ImGui::TreeNodeEx("Debug" /*, ImGuiTreeNodeFlags_DefaultOpen*/))
     {
         OnGUI_Debug();
@@ -328,8 +346,18 @@ void DemoGui::OnGUI_XeSS()
 
 void DemoGui::OnGUI_Debug()
 {
+    if (ImGui::Button("Reset History"))
+    {
+        XeSS::ResetHistory();
+    }
+
     static const char* NETWORK_NAMES[] = {
-        "KPSS"
+        "KPSS",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
     };
 
     int networkModel = XeSSDebug::GetNetworkModel();
@@ -410,8 +438,17 @@ void DemoGui::OnGUI_Debug()
 
         if (isDumping)
             ImGui::BeginDisabled(true);
+
+        static bool reset_history = false;
+        ImGui::Checkbox("Reset History Before Dump", &reset_history);
+
         if (ImGui::Button("Dump Static Frames"))
         {
+            if (reset_history)
+            {
+                XeSS::ResetHistory();
+            }
+
             XeSSDebug::BeginFrameDump(false);
         }
         if (isDumping)
@@ -427,6 +464,11 @@ void DemoGui::OnGUI_Debug()
             ImGui::BeginDisabled(true);
         if (ImGui::Button("Dump Dynamic Frames"))
         {
+            if (reset_history)
+            {
+                XeSS::ResetHistory();
+            }
+
             XeSSDebug::BeginFrameDump(true);
         }
         if (isDumping)

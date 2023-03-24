@@ -53,19 +53,28 @@ namespace XeSS
         eQualityLevel Quality;
         /// If we are in High-Res motion vectors mode.
         bool UseHiResMotionVectors;
+        /// If motion vectors are jittered.
+        bool UseJitteredMotionVectors;
+        /// If motion vectors are in Normalized Device Coordinate (NDC).
+        bool UseMotionVectorsInNDC;
         /// If use exposure texture.
         bool UseExposureTexture;
         /// If use responsive mask.
         bool UseResponsiveMask;
+        /// If use auto exposure.
+        bool UseAutoExposure;
 
         /// Constructor.
         InitArguments()
             : OutputWidth(0)
             , OutputHeight(0)
-            , Quality(kQualityQuality)
+            , Quality(kQualityPerformance)
             , UseHiResMotionVectors(false)
+            , UseJitteredMotionVectors(false)
+            , UseMotionVectorsInNDC(false)
             , UseExposureTexture(false)
             , UseResponsiveMask(false)
+            , UseAutoExposure(false)
         {
         }
     };

@@ -20,7 +20,12 @@ var xess__debug_8h =
     ] ],
     [ "_xess_network_model_t", "xess__debug_8h.html#ace50e033796a986a57623170306b41ed", [
       [ "XESS_NETWORK_MODEL_KPSS", "xess__debug_8h.html#ace50e033796a986a57623170306b41eda1489add6542185904900e0b6796b8215", null ],
-      [ "XESS_NETWORK_MODEL_SPLAT", "xess__debug_8h.html#ace50e033796a986a57623170306b41eda89d379244951ad3c2988a0d303b4a0cb", null ]
+      [ "XESS_NETWORK_MODEL_SPLAT", "xess__debug_8h.html#ace50e033796a986a57623170306b41eda89d379244951ad3c2988a0d303b4a0cb", null ],
+      [ "XESS_NETWORK_MODEL_3", "xess__debug_8h.html#ace50e033796a986a57623170306b41edaa0058fc7d00fc843edf2565d02e10efb", null ],
+      [ "XESS_NETWORK_MODEL_4", "xess__debug_8h.html#ace50e033796a986a57623170306b41eda2e8d76631f8e60693e01fac0bea9eae1", null ],
+      [ "XESS_NETWORK_MODEL_5", "xess__debug_8h.html#ace50e033796a986a57623170306b41eda0d0a56b245d86898dc43f4d02891d210", null ],
+      [ "XESS_NETWORK_MODEL_6", "xess__debug_8h.html#ace50e033796a986a57623170306b41edab8ab7ee0a41f01aff572d13e8d6823d3", null ],
+      [ "XESS_NETWORK_MODEL_UNKNOWN", "xess__debug_8h.html#ace50e033796a986a57623170306b41eda9eba0185843c8921f2b8f5ee3679816d", null ]
     ] ],
     [ "xessSelectNetworkModel", "group__xess-debug.html#ga596f2374ff85d63d430d885da295818b", null ],
     [ "xessStartDump", "group__xess-debug.html#gaa320ed0d9c03d6abb26f37647b12db7e", null ]

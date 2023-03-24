@@ -26,6 +26,12 @@
 Texture2D<packed_velocity_t> InVelocityBuffer : register(t0);
 RWTexture2D<float2> OutVelocityBuffer : register(u0);
 
+cbuffer CB1 : register(b1)
+{
+    float2 InBufferDim;
+    float2 RcpInBufferDim;
+}
+
 [RootSignature(Common_RootSig)]
 [numthreads(8, 8, 1)]
 void main(uint3 DTid : SV_DispatchThreadID, uint GI : SV_GroupIndex, uint3 GTid : SV_GroupThreadID, uint3 Gid : SV_GroupID)
@@ -34,6 +40,10 @@ void main(uint3 DTid : SV_DispatchThreadID, uint GI : SV_GroupIndex, uint3 GTid 
 
 	packed_velocity_t velocityPacked = InVelocityBuffer[st];
 	float2 velocity = UnpackVelocity(velocityPacked).xy;
+
+#ifdef _XESS_NDC_VELOCITY_  // here we demo NDC space velocity
+    velocity = float2(velocity.x * 2.0 * RcpInBufferDim.x, -velocity.y * 2.0 * RcpInBufferDim.y);
+#endif
 
 	OutVelocityBuffer[st] = velocity;
 }
