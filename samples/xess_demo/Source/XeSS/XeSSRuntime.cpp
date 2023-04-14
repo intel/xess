@@ -91,6 +91,10 @@ namespace XeSS
         if (!g_Device)
             return false;
 
+        uint32_t console = 0;
+        CommandLineArgs::GetInteger(L"console", console);
+
+
         // Get version of XeSS
         xess_version_t ver;
         xess_result_t ret = xessGetVersion(&ver);
@@ -121,7 +125,14 @@ namespace XeSS
 
         if (XESS_RESULT_WARNING_OLD_DRIVER == xessIsOptimalDriver(m_Context))
         {
-            MessageBox(NULL, L"Please install the latest graphics driver from your vendor for optimal Intel(R) XeSS performance and visual quality", L"Important notice", MB_OK | MB_TOPMOST);
+            if (console)
+            {
+                LOG_ERRORF("Important notice: Please install the latest graphics driver from your vendor for optimal Intel(R) XeSS performance and visual quality.");
+            }
+            else
+            {
+                MessageBox(NULL, L"Please install the latest graphics driver from your vendor for optimal Intel(R) XeSS performance and visual quality", L"Important notice", MB_OK | MB_TOPMOST);
+            }
         }
 
         // Set logging callback here.
