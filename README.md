@@ -3,7 +3,7 @@
 Intel(R) Xe Super Sampling (XeSS) enables an innovative framerate boosting technology supported by Intel(R) Arc(TM) graphics cards and other GPU vendors.
 Using AI deep-learning to perform upscaling, XeSS offers higher framerates without degrading the image.
 
-Please see the Developer Guide in the /doc folder for getting started information and https://www.intel.com/content/www/us/en/products/docs/arc-discrete-graphics/xess.html for more information.
+Please see the Developer Guide in the /doc folder for getting started information, https://www.intel.com/content/www/us/en/products/docs/arc-discrete-graphics/xess.html for more information, and https://github.com/GameTechDev/XeSSUnrealPlugin for plugin which integrates into Unreal Engine.
 
 # Package contents
 

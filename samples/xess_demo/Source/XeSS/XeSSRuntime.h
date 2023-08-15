@@ -23,6 +23,7 @@
 #pragma once
 
 #include "xess/xess.h"
+#include "xess/xess_d3d12.h"
 
 class ColorBuffer;
 class DepthBuffer;
@@ -63,6 +64,8 @@ namespace XeSS
         bool UseResponsiveMask;
         /// If use auto exposure.
         bool UseAutoExposure;
+        /// If enable GPU profiling.
+        bool EnableProfiling;
 
         /// Constructor.
         InitArguments()
@@ -75,6 +78,7 @@ namespace XeSS
             , UseExposureTexture(false)
             , UseResponsiveMask(false)
             , UseAutoExposure(false)
+            , EnableProfiling(false)
         {
         }
     };
@@ -120,6 +124,42 @@ namespace XeSS
         }
     };
 
+    struct PerfRecord 
+    {
+        double Time = 0.0;
+        double Sum = 0.0;
+        double Avg = 0.0;
+        double Min = 0.0;
+        double Max = 0.0;
+        uint32_t Frames = 0;
+        bool Dirty = false;
+
+        void Reset()
+        {
+            Sum = Time;
+            Avg = Time;
+            Min = Time;
+            Max = Time;
+            Frames = 0;
+            Dirty = false;
+        }
+
+        void Accumulate()
+        {
+            Frames++;
+            Sum += Time;
+            Avg = Sum / Frames;
+            Max = max(Max, Time);
+            Min = min(Min, Time);
+            Dirty = false;
+        }
+    };
+
+    using PerfPair = std::pair<std::string, PerfRecord>;
+    using PerfData = std::unordered_map<std::string, PerfRecord>;
+    constexpr size_t PERF_GRAPH_SIZE = 128;
+    using PerfGraphData = std::array<float, PERF_GRAPH_SIZE>;
+
     /// A wrapper of XeSS SDK.
     class XeSSRuntime
     {
@@ -130,7 +170,7 @@ namespace XeSS
         /// Create XeSS context.
         bool CreateContext();
         /// Build pipeline of XeSS.
-        bool InitializePipeline(uint32_t initFlag, bool blocking = false);
+        bool InitializePipeline(uint32_t InitFlag, bool Blocking = false);
         // Destruction interface.
         void Shutdown(void);
         /// Return if runtime is initialized.
@@ -149,6 +189,16 @@ namespace XeSS
         xess_context_handle_t GetContext();
         /// Get version string.
         const std::string& GetVersionString();
+        /// Get GPU profiling data.
+        const PerfData& GetProfilingData() const { return m_DisplayPerfData_; }
+        /// Set perf graph record to generate.
+        void SetPerfGraphRecord(const std::string& RecordName);
+        /// Get Perf graph data.
+        const PerfGraphData& GetPerfGraphData() const { return m_PerfGraphData; }
+        /// GPU side profiling using profiling API
+        void DoGPUProfile();
+
+        void ProcessPerfData();
     private:
         /// Save initialization arguments.
         void SetInitArguments(const InitArguments& Args);
@@ -177,5 +227,16 @@ namespace XeSS
 
         /// DX12 pipeline library object.
         Microsoft::WRL::ComPtr<ID3D12PipelineLibrary> m_PipelineLibrary;
+
+        /// Processed GPU profiling data.
+        PerfData m_PerfData_;
+        /// GPU profiling data being processed.
+        PerfData m_DisplayPerfData_;
+        // Frame count for perf data processing.
+        float m_PerfAccumTime;
+        // Current perf graphics record name.
+        std::string m_PerfGraphRecordName;
+        /// Perf graph data.
+        PerfGraphData m_PerfGraphData;
     };
 } // namespace XeSS

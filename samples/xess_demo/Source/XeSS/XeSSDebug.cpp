@@ -322,7 +322,7 @@ bool XeSSDebug::StartCurrentDump()
     if (!s_DumpEnabled)
         return false;
 
-    xess_dump_parameters_t param = { s_DumpRootFolderAnsi.c_str(), s_DumpFrameIndex, TOTAL_DUMP_COUNT, XESS_DUMP_ALL };
+    xess_dump_parameters_t param = { s_DumpRootFolderAnsi.c_str(), s_DumpFrameIndex, TOTAL_DUMP_COUNT, XESS_DUMP_ALL_INPUTS };
     xess_result_t ret = xessStartDump(g_XeSSRuntime.GetContext(), &param);
 
     ASSERT(ret == XESS_RESULT_SUCCESS);
@@ -361,18 +361,8 @@ bool XeSSDebug::SelectNetworkModel(int32_t model)
     if (s_NetworkModel == model)
         return true;
 
-    //ASSERT(model == XESS_NETWORK_MODEL_KPSS);
-
     // We make sure the previous work is done.
     g_CommandManager.IdleGPU();
-
-    xess_result_t ret = xessSelectNetworkModel(g_XeSSRuntime.GetContext(), static_cast<xess_network_model_t>(XESS_NETWORK_MODEL_KPSS + model));
-    ASSERT(ret == XESS_RESULT_SUCCESS);
-    if (ret != XESS_RESULT_SUCCESS)
-    {
-        LOG_ERRORF("XeSS: Could not select network model to %d. Result - %s.", model, ResultToString(ret));
-        return false;
-    }
 
     s_NetworkModel = model;
 

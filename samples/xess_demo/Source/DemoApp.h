@@ -26,7 +26,6 @@
 #include "ShadowCamera.h"
 #include "DemoExtraBuffers.h"
 #include "DemoLog.h"
-#include <memory>
 
 class CameraController;
 
@@ -79,6 +78,9 @@ private:
 
     /// Load IBL textures for the renderer.
     void LoadIBLTextures();
+
+    /// Render scene
+    void RenderSceneImpl(GraphicsContext& gfxContext);
 
     /// Log object.
     DemoLog m_Log;

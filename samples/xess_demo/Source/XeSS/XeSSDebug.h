@@ -77,4 +77,5 @@ namespace XeSSDebug
 
     /// Update camera yaw. (Used in dynamic camera mode.)
     void UpdateCameraYaw(float& yaw);
+
 } // namespace XeSSDebug

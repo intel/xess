@@ -30,8 +30,9 @@
 #include "DepthBuffer.h"
 #include "CommandContext.h"
 #include "Log.h"
+#include "Display.h"
 
-#include "xess/xess_d3d12.h"
+#include "xess/xess_d3d12_debug.h"
 
 using namespace Graphics;
 
@@ -43,6 +44,7 @@ namespace XeSS
         switch (result)
         {
         case XESS_RESULT_WARNING_NONEXISTING_FOLDER: return "Warning Nonexistent Folder";
+        case XESS_RESULT_WARNING_OLD_DRIVER: return "Warning Old Driver";
         case XESS_RESULT_SUCCESS: return "Success";
         case XESS_RESULT_ERROR_UNSUPPORTED_DEVICE: return "Unsupported Device";
         case XESS_RESULT_ERROR_UNSUPPORTED_DRIVER: return "Unsupported Driver";
@@ -53,6 +55,8 @@ namespace XeSS
         case XESS_RESULT_ERROR_NOT_IMPLEMENTED: return "Not Implemented";
         case XESS_RESULT_ERROR_INVALID_CONTEXT: return "Invalid Context";
         case XESS_RESULT_ERROR_OPERATION_IN_PROGRESS: return "Operation in Progress";
+        case XESS_RESULT_ERROR_UNSUPPORTED: return "Unsupported";
+        case XESS_RESULT_ERROR_CANT_LOAD_LIBRARY: return "Cannot Load Library";
         case XESS_RESULT_ERROR_UNKNOWN:
         default: return "Unknown";
         }
@@ -82,6 +86,8 @@ namespace XeSS
         , m_PipelineBuiltFlag(0)
         , m_Context(nullptr)
         , m_PipelineLibBuilt(false)
+        , m_PerfGraphData({ 0.0f })
+        , m_PerfAccumTime(0.0f)
     {
     }
 
@@ -90,6 +96,9 @@ namespace XeSS
         ASSERT(g_Device);
         if (!g_Device)
             return false;
+
+        uint32_t console = 0;
+        CommandLineArgs::GetInteger(L"console", console);
 
         // Get version of XeSS
         xess_version_t ver;
@@ -121,7 +130,14 @@ namespace XeSS
 
         if (XESS_RESULT_WARNING_OLD_DRIVER == xessIsOptimalDriver(m_Context))
         {
-            MessageBox(NULL, L"Please install the latest graphics driver from your vendor for optimal Intel(R) XeSS performance and visual quality", L"Important notice", MB_OK | MB_TOPMOST);
+            if (console)
+            {
+                LOG_ERRORF("Important notice: Please install the latest graphics driver from your vendor for optimal Intel(R) XeSS performance and visual quality.");
+            }
+            else
+            {
+                MessageBox(NULL, L"Please install the latest graphics driver from your vendor for optimal Intel(R) XeSS performance and visual quality", L"Important notice", MB_OK | MB_TOPMOST);
+            }
         }
 
         // Set logging callback here.
@@ -136,7 +152,7 @@ namespace XeSS
         return true;
     }
 
-    bool XeSSRuntime::InitializePipeline(uint32_t initFlag, bool blocking)
+    bool XeSSRuntime::InitializePipeline(uint32_t InitFlag, bool Blocking)
     {
         // Create the Pipeline Library.
         ComPtr<ID3D12Device1> device1;
@@ -156,7 +172,7 @@ namespace XeSS
 #ifndef RELEASE
         m_PipelineLibrary->SetName(L"XeSS Pipeline Library Object");
 #endif
-        xess_result_t ret = xessD3D12BuildPipelines(m_Context, m_PipelineLibrary.Get(), blocking, initFlag);
+        xess_result_t ret = xessD3D12BuildPipelines(m_Context, m_PipelineLibrary.Get(), Blocking, InitFlag);
         if (ret != XESS_RESULT_SUCCESS)
         {
             LOG_ERRORF("XeSS: Could not build XeSS pipelines. Result - %s.", ResultToString(ret));
@@ -166,8 +182,8 @@ namespace XeSS
         LOG_INFO("XeSS: Built XeSS pipelines.");
 
         m_PipelineBuilt = true;
-        m_PipelineBuiltBlocking = blocking;
-        m_PipelineBuiltFlag = initFlag;
+        m_PipelineBuiltBlocking = Blocking;
+        m_PipelineBuiltFlag = InitFlag;
 
         return true;
     }
@@ -229,6 +245,10 @@ namespace XeSS
         if (Args.UseAutoExposure)
         {
             params.initFlags |= XESS_INIT_FLAG_ENABLE_AUTOEXPOSURE;
+        }
+        if (Args.EnableProfiling)
+        {
+            params.initFlags |= XESS_D3D12_DEBUG_ENABLE_PROFILING;
         }
 
         params.pPipelineLibrary = m_PipelineBuilt ? m_PipelineLibrary.Get() : nullptr;
@@ -358,6 +378,118 @@ namespace XeSS
     const std::string& XeSSRuntime::GetVersionString()
     {
         return m_VersionStr;
+    }
+
+    void XeSSRuntime::SetPerfGraphRecord(const std::string& RecordName)
+    {
+        if (m_PerfGraphRecordName == RecordName)
+            return;
+
+        m_PerfGraphRecordName = RecordName;
+
+        std::fill(m_PerfGraphData.begin(), m_PerfGraphData.end(), 0.0f);
+    }
+
+    void XeSSRuntime::DoGPUProfile()
+    {
+        if (!m_Initialized)
+            return;
+
+        auto ProcessProfilingData = [&](xess_profiling_data_t* Data)
+        {
+            for (uint64_t fi = 0; fi < Data->frame_count; fi++) // for each frame
+            {
+                auto& prof_frame = Data->frames[fi];
+                auto global_frame_index = prof_frame.frame_index;
+
+                for (uint64_t ri = 0; ri < prof_frame.gpu_duration_record_count; ri++) // for each record
+                {
+                    auto it = m_PerfData_.find(prof_frame.gpu_duration_names[ri]);
+                    if (it == m_PerfData_.end()) // new record
+                    {
+                        PerfRecord entry = { 0.0, 0.0, 0.0, 0.0, 0.0, 0 };
+                        it = m_PerfData_.emplace(prof_frame.gpu_duration_names[ri], entry).first;
+                    }
+
+                    // Override the time record.
+                    it->second.Time = prof_frame.gpu_duration_values[ri];
+                    // Mark as dirty.
+                    it->second.Dirty = true;
+                }
+            }
+        };
+
+        xess_profiling_data_t* profilingData = nullptr;
+        do
+        {
+            auto ret = xessD3D12GetProfilingData(m_Context, &profilingData);
+            ASSERT(ret == XESS_RESULT_SUCCESS);
+            if (ret != XESS_RESULT_SUCCESS || profilingData == nullptr)
+            {
+                LOG_ERRORF("XeSS: Could not get profiling data. Result - %s.", ResultToString(ret));
+                return;
+            }
+            ProcessProfilingData(profilingData);
+        } while (profilingData->any_profiling_data_in_flight);
+
+        // Process the raw perf data.
+        ProcessPerfData();
+    }
+
+    void XeSSRuntime::ProcessPerfData()
+    {
+        m_PerfAccumTime += Graphics::GetFrameTime();
+
+        constexpr auto REFRESH_INTERVAL = 1.0f; // seconds.
+        bool reset = (m_PerfAccumTime > REFRESH_INTERVAL);
+
+        if (reset)
+        {
+            // Update display data with accumulated data.
+            m_DisplayPerfData_ = m_PerfData_;
+            m_PerfAccumTime = 0.0f;
+        }
+
+        for (auto& data : m_PerfData_)
+        {
+            // Process perf data.
+            auto& name = data.first;
+            auto& record = data.second;
+
+            // Append new record to perf graph data if any.
+            if (m_PerfGraphRecordName.length() && (m_PerfGraphRecordName == name) && record.Dirty)
+            {
+                for (size_t i = 0; i < m_PerfGraphData.size() - 1; ++i)
+                {
+                    m_PerfGraphData[i] = m_PerfGraphData[i + 1];
+                }
+
+                // We use microseconds.
+                m_PerfGraphData[m_PerfGraphData.size() - 1] = static_cast<float>(record.Time) * 1000.0f * 1000.0f;
+            }
+
+            if (reset)
+            {
+                // Interval-based reset for avg/min/max calculation.
+                record.Reset();
+            }
+            else if (record.Dirty)
+            {
+                // Only process the dirty entries.
+                record.Accumulate();
+            }
+
+            // "Time" is in real-time, so we update it every frame.
+            auto pit = m_DisplayPerfData_.find(name);
+            if (pit == m_DisplayPerfData_.end())
+            {
+                pit = m_DisplayPerfData_.emplace(data).first;
+            }
+
+            pit->second.Time = record.Time;
+        }
+
+        assert(m_PerfData_.size() == m_DisplayPerfData_.size());
     }
 
     void XeSSRuntime::SetInitArguments(const InitArguments& Args)

@@ -23,7 +23,6 @@
 cmake_minimum_required(VERSION 3.16)
 
 option(ENABLE_XESS_DEMO_ASSETS_COPY "Enable XeSS Demo Assets folder copy" ON)
-
 option(ENABLE_XESS_DEMO_SHADER_DEBUG "Enable XeSS Demo shaders debugging and disable optimizations" OFF)
 
 # Set minimum supported SDK and MSVC versions
@@ -105,6 +104,7 @@ target_include_directories(${TARGET_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/So
     ${CMAKE_CURRENT_SOURCE_DIR}/MiniEngine/Dependencies/imgui
     ${CMAKE_SOURCE_DIR}/libxess/include
     ${CMAKE_CURRENT_SOURCE_DIR}/../../inc
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../inc/xess
     ${CMAKE_BINARY_DIR}/bin/$<CONFIG>
     ${PROJECT_BINARY_DIR}/MiniEngine/$<CONFIG>
     ${PROJECT_BINARY_DIR}/$<CONFIG>
@@ -175,10 +175,7 @@ if (NOT XESS_BUILD_INTERNAL_SAMPLE)
     # Custom command for copying SDK dlls.
     set(SRC_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../bin/")
     add_custom_command(TARGET ${TARGET_NAME}
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${SRC_PATH}/igxess.dll" "$<TARGET_FILE_DIR:${TARGET_NAME}>/igxess.dll"
         COMMAND ${CMAKE_COMMAND} -E copy_if_different "${SRC_PATH}/libxess.dll" "$<TARGET_FILE_DIR:${TARGET_NAME}>/libxess.dll"
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${SRC_PATH}/XeFX.dll" "$<TARGET_FILE_DIR:${TARGET_NAME}>/XeFX.dll"
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${SRC_PATH}/XeFX_Loader.dll" "$<TARGET_FILE_DIR:${TARGET_NAME}>/XeFX_Loader.dll"
     )
 
     # Use project folders

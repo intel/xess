@@ -1,3 +1,9 @@
+# Release 1.2.0
+- Backwards compatible API with XeSS 1.0 & 1.1
+- Support for dynamic resolution scaling
+- Bug fixes, stability improvements and performance optimizations
+- New combined libxess.dll library to be redistributed with the application
+
 # Release 1.1.0
 - Backwards compatible API with XeSS 1.0
 - Updated XeSS models with improved temporal stability

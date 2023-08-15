@@ -64,6 +64,7 @@ var xess_8h =
     [ "xessGetInputResolution", "group__xess.html#ga6ed6ab924e0a41ff56485b562acd5073", null ],
     [ "xessGetIntelXeFXVersion", "group__xess.html#ga88ea52641806d14ef5a4995b5d78ea91", null ],
     [ "xessGetJitterScale", "group__xess.html#gaaaff5dc2376dd08bd1f451e61fdc8784", null ],
+    [ "xessGetOptimalInputResolution", "group__xess.html#gadf70f7ff418f9aeb9bf3dbabf2fb50ed", null ],
     [ "xessGetProperties", "group__xess.html#gaae4893a4bfed059402ca55f256738773", null ],
     [ "xessGetVelocityScale", "group__xess.html#ga7c6c49e93cc5f102473c76cfa1081bd5", null ],
     [ "xessGetVersion", "group__xess.html#ga0fc6e0c7b21322a0af96f1ee1e4667d3", null ],

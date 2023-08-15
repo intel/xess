@@ -26,7 +26,7 @@
  <tr id="projectrow">
   <td id="projectlogo"><img alt="Logo" src="intel-logo.jpg"/></td>
   <td id="projectalign">
-   <div id="projectname">XeSS SDK API Reference Guide<span id="projectnumber">&#160;1.1.0</span>
+   <div id="projectname">XeSS SDK API Reference Guide<span id="projectnumber">&#160;1.2.0</span>
    </div>
   </td>
  </tr>
@@ -103,6 +103,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ga6ed6ab924e0a41ff56485b562acd5073"><td class="memItemLeft" align="right" valign="top"><a class="el" href="xess_8h.html#ac7ba74abaad1e5cf4ca1fffa7fee838c">XESS_API</a> <a class="el" href="xess_8h.html#a3aa6a07808627ac723a9da324abf10b4">xess_result_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__xess.html#ga6ed6ab924e0a41ff56485b562acd5073">xessGetInputResolution</a> (<a class="el" href="xess_8h.html#af31f441c4909f7bbf9fb4491b5f9b927">xess_context_handle_t</a> hContext, const <a class="el" href="xess_8h.html#a3839d654f9989ed64bc09f3a93f16bbb">xess_2d_t</a> *pOutputResolution, <a class="el" href="xess_8h.html#a2a85ea1304caf14b2c008457ee75c7cc">xess_quality_settings_t</a> qualitySettings, <a class="el" href="xess_8h.html#a3839d654f9989ed64bc09f3a93f16bbb">xess_2d_t</a> *pInputResolution)</td></tr>
 <tr class="memdesc:ga6ed6ab924e0a41ff56485b562acd5073"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the input resolution for a specified output resolution for a given quality setting. X<sup>e</sup>SS expects all the input buffers except motion vectors to be in the returned resolution. Motion vectors can be either in output resolution (XESS_INIT_FLAG_HIGH_RES_MV) or returned resolution (default).  <a href="group__xess.html#ga6ed6ab924e0a41ff56485b562acd5073">More...</a><br /></td></tr>
 <tr class="separator:ga6ed6ab924e0a41ff56485b562acd5073"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gadf70f7ff418f9aeb9bf3dbabf2fb50ed"><td class="memItemLeft" align="right" valign="top"><a class="el" href="xess_8h.html#ac7ba74abaad1e5cf4ca1fffa7fee838c">XESS_API</a> <a class="el" href="xess_8h.html#a3aa6a07808627ac723a9da324abf10b4">xess_result_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__xess.html#gadf70f7ff418f9aeb9bf3dbabf2fb50ed">xessGetOptimalInputResolution</a> (<a class="el" href="xess_8h.html#af31f441c4909f7bbf9fb4491b5f9b927">xess_context_handle_t</a> hContext, const <a class="el" href="xess_8h.html#a3839d654f9989ed64bc09f3a93f16bbb">xess_2d_t</a> *pOutputResolution, <a class="el" href="xess_8h.html#a2a85ea1304caf14b2c008457ee75c7cc">xess_quality_settings_t</a> qualitySettings, <a class="el" href="xess_8h.html#a3839d654f9989ed64bc09f3a93f16bbb">xess_2d_t</a> *pInputResolutionOptimal, <a class="el" href="xess_8h.html#a3839d654f9989ed64bc09f3a93f16bbb">xess_2d_t</a> *pInputResolutionMin, <a class="el" href="xess_8h.html#a3839d654f9989ed64bc09f3a93f16bbb">xess_2d_t</a> *pInputResolutionMax)</td></tr>
+<tr class="memdesc:gadf70f7ff418f9aeb9bf3dbabf2fb50ed"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the optimal input resolution and possible range for a specified output resolution for a given quality setting. X<sup>e</sup>SS expects all the input buffers except motion vectors to be in the returned resolution range and all input buffers to be in the same resolution. Motion vectors can be either in output resolution (XESS_INIT_FLAG_HIGH_RES_MV) or in the same resolution as other input buffers (by default).  <a href="group__xess.html#gadf70f7ff418f9aeb9bf3dbabf2fb50ed">More...</a><br /></td></tr>
+<tr class="separator:gadf70f7ff418f9aeb9bf3dbabf2fb50ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaaaff5dc2376dd08bd1f451e61fdc8784"><td class="memItemLeft" align="right" valign="top"><a class="el" href="xess_8h.html#ac7ba74abaad1e5cf4ca1fffa7fee838c">XESS_API</a> <a class="el" href="xess_8h.html#a3aa6a07808627ac723a9da324abf10b4">xess_result_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__xess.html#gaaaff5dc2376dd08bd1f451e61fdc8784">xessGetJitterScale</a> (<a class="el" href="xess_8h.html#af31f441c4909f7bbf9fb4491b5f9b927">xess_context_handle_t</a> hContext, float *pX, float *pY)</td></tr>
 <tr class="memdesc:gaaaff5dc2376dd08bd1f451e61fdc8784"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets jitter scale value.  <a href="group__xess.html#gaaaff5dc2376dd08bd1f451e61fdc8784">More...</a><br /></td></tr>
 <tr class="separator:gaaaff5dc2376dd08bd1f451e61fdc8784"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -113,12 +116,16 @@ Functions</h2></td></tr>
 <tr class="memdesc:gae5d88d9bdb50033ab254aa2e692c9bc0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destroys the X<sup>e</sup>SS context. The user must ensure that any pending command lists are completed before destroying the context.  <a href="group__xess.html#gae5d88d9bdb50033ab254aa2e692c9bc0">More...</a><br /></td></tr>
 <tr class="separator:gae5d88d9bdb50033ab254aa2e692c9bc0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga30e9bee98f90568e6a9d39bd7d1ccd74"><td class="memItemLeft" align="right" valign="top"><a class="el" href="xess_8h.html#ac7ba74abaad1e5cf4ca1fffa7fee838c">XESS_API</a> <a class="el" href="xess_8h.html#a3aa6a07808627ac723a9da324abf10b4">xess_result_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__xess.html#ga30e9bee98f90568e6a9d39bd7d1ccd74">xessSetJitterScale</a> (<a class="el" href="xess_8h.html#af31f441c4909f7bbf9fb4491b5f9b927">xess_context_handle_t</a> hContext, float x, float y)</td></tr>
+<tr class="memdesc:ga30e9bee98f90568e6a9d39bd7d1ccd74"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets jitter scale value.  <a href="group__xess.html#ga30e9bee98f90568e6a9d39bd7d1ccd74">More...</a><br /></td></tr>
 <tr class="separator:ga30e9bee98f90568e6a9d39bd7d1ccd74"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga0f95b12fe2611b877d72efdd9f050639"><td class="memItemLeft" align="right" valign="top"><a class="el" href="xess_8h.html#ac7ba74abaad1e5cf4ca1fffa7fee838c">XESS_API</a> <a class="el" href="xess_8h.html#a3aa6a07808627ac723a9da324abf10b4">xess_result_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__xess.html#ga0f95b12fe2611b877d72efdd9f050639">xessSetVelocityScale</a> (<a class="el" href="xess_8h.html#af31f441c4909f7bbf9fb4491b5f9b927">xess_context_handle_t</a> hContext, float x, float y)</td></tr>
+<tr class="memdesc:ga0f95b12fe2611b877d72efdd9f050639"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets velocity scale value.  <a href="group__xess.html#ga0f95b12fe2611b877d72efdd9f050639">More...</a><br /></td></tr>
 <tr class="separator:ga0f95b12fe2611b877d72efdd9f050639"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaaf68a347af5e5c9c1e518f0bc5daaf1c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="xess_8h.html#ac7ba74abaad1e5cf4ca1fffa7fee838c">XESS_API</a> <a class="el" href="xess_8h.html#a3aa6a07808627ac723a9da324abf10b4">xess_result_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__xess.html#gaaf68a347af5e5c9c1e518f0bc5daaf1c">xessSetLoggingCallback</a> (<a class="el" href="xess_8h.html#af31f441c4909f7bbf9fb4491b5f9b927">xess_context_handle_t</a> hContext, <a class="el" href="xess_8h.html#a6432053aa5103ccd9df8618a7eaaacb8">xess_logging_level_t</a> loggingLevel, <a class="el" href="xess_8h.html#a0d102f62adf531a2cd721e4b78a1cd18">xess_app_log_callback_t</a> loggingCallback)</td></tr>
+<tr class="memdesc:gaaf68a347af5e5c9c1e518f0bc5daaf1c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets logging callback.  <a href="group__xess.html#gaaf68a347af5e5c9c1e518f0bc5daaf1c">More...</a><br /></td></tr>
 <tr class="separator:gaaf68a347af5e5c9c1e518f0bc5daaf1c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga716ee0ab9df5de9726315ba5df21308c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="xess_8h.html#ac7ba74abaad1e5cf4ca1fffa7fee838c">XESS_API</a> <a class="el" href="xess_8h.html#a3aa6a07808627ac723a9da324abf10b4">xess_result_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__xess.html#ga716ee0ab9df5de9726315ba5df21308c">xessIsOptimalDriver</a> (<a class="el" href="xess_8h.html#af31f441c4909f7bbf9fb4491b5f9b927">xess_context_handle_t</a> hContext)</td></tr>
+<tr class="memdesc:ga716ee0ab9df5de9726315ba5df21308c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Indicates if the installed driver supports best X<sup>e</sup>SS experience.  <a href="group__xess.html#ga716ee0ab9df5de9726315ba5df21308c">More...</a><br /></td></tr>
 <tr class="separator:ga716ee0ab9df5de9726315ba5df21308c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
@@ -285,6 +292,73 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="gadf70f7ff418f9aeb9bf3dbabf2fb50ed" name="gadf70f7ff418f9aeb9bf3dbabf2fb50ed"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gadf70f7ff418f9aeb9bf3dbabf2fb50ed">&#9670;&nbsp;</a></span>xessGetOptimalInputResolution()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="xess_8h.html#ac7ba74abaad1e5cf4ca1fffa7fee838c">XESS_API</a> <a class="el" href="xess_8h.html#a3aa6a07808627ac723a9da324abf10b4">xess_result_t</a> xessGetOptimalInputResolution </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="xess_8h.html#af31f441c4909f7bbf9fb4491b5f9b927">xess_context_handle_t</a>&#160;</td>
+          <td class="paramname"><em>hContext</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="xess_8h.html#a3839d654f9989ed64bc09f3a93f16bbb">xess_2d_t</a> *&#160;</td>
+          <td class="paramname"><em>pOutputResolution</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="xess_8h.html#a2a85ea1304caf14b2c008457ee75c7cc">xess_quality_settings_t</a>&#160;</td>
+          <td class="paramname"><em>qualitySettings</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="xess_8h.html#a3839d654f9989ed64bc09f3a93f16bbb">xess_2d_t</a> *&#160;</td>
+          <td class="paramname"><em>pInputResolutionOptimal</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="xess_8h.html#a3839d654f9989ed64bc09f3a93f16bbb">xess_2d_t</a> *&#160;</td>
+          <td class="paramname"><em>pInputResolutionMin</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="xess_8h.html#a3839d654f9989ed64bc09f3a93f16bbb">xess_2d_t</a> *&#160;</td>
+          <td class="paramname"><em>pInputResolutionMax</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get the optimal input resolution and possible range for a specified output resolution for a given quality setting. X<sup>e</sup>SS expects all the input buffers except motion vectors to be in the returned resolution range and all input buffers to be in the same resolution. Motion vectors can be either in output resolution (XESS_INIT_FLAG_HIGH_RES_MV) or in the same resolution as other input buffers (by default). </p>
+<dl class="section note"><dt>Note</dt><dd>Aspect ratio of the input resolution must be the same as for the output resoulution.</dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir"></td><td class="paramname">hContext</td><td>The X<sup>e</sup>SS context handle. </td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">pOutputResolution</td><td>Output resolution to calculate input resolution for. </td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">qualitySettings</td><td>Desired quality setting. </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">pInputResolutionOptimal</td><td>Optimal input resolution. </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">pInputResolutionMin</td><td>Required minimal input resolution. </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">pInputResolutionMax</td><td>Required maximal input resolution. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>X<sup>e</sup>SS return status code. </dd></dl>
+
+</div>
+</div>
 <a id="gaae4893a4bfed059402ca55f256738773" name="gaae4893a4bfed059402ca55f256738773"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#gaae4893a4bfed059402ca55f256738773">&#9670;&nbsp;</a></span>xessGetProperties()</h2>
 
@@ -417,7 +491,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Indicates if the installed driver supports best X<sup>e</sup>SS experience.</p>
+
+<p>Indicates if the installed driver supports best X<sup>e</sup>SS experience. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">hContext</td><td>The X<sup>e</sup>SS context handle. </td></tr>
@@ -460,7 +535,9 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Sets jitter scale value </p><dl class="params"><dt>Parameters</dt><dd>
+
+<p>Sets jitter scale value. </p>
+<dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">hContext</td><td>The X<sup>e</sup>SS context handle. </td></tr>
     <tr><td class="paramname">x</td><td>scale for the X axis </td></tr>
@@ -503,7 +580,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Sets logging callback</p>
+
+<p>Sets logging callback. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">hContext</td><td>The X<sup>e</sup>SS context handle. </td></tr>
@@ -547,7 +625,9 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Sets velocity scale value </p><dl class="params"><dt>Parameters</dt><dd>
+
+<p>Sets velocity scale value. </p>
+<dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">hContext</td><td>The X<sup>e</sup>SS context handle. </td></tr>
     <tr><td class="paramname">x</td><td>scale for the X axis </td></tr>

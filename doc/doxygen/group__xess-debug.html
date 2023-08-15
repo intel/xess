@@ -26,7 +26,7 @@
  <tr id="projectrow">
   <td id="projectlogo"><img alt="Logo" src="intel-logo.jpg"/></td>
   <td id="projectalign">
-   <div id="projectname">XeSS SDK API Reference Guide<span id="projectnumber">&#160;1.1.0</span>
+   <div id="projectname">XeSS SDK API Reference Guide<span id="projectnumber">&#160;1.2.0</span>
    </div>
   </td>
  </tr>
@@ -95,6 +95,7 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga596f2374ff85d63d430d885da295818b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Select network to be used by X<sup>e</sup>SS.  <a href="group__xess-debug.html#ga596f2374ff85d63d430d885da295818b">More...</a><br /></td></tr>
 <tr class="separator:ga596f2374ff85d63d430d885da295818b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaa320ed0d9c03d6abb26f37647b12db7e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="xess_8h.html#ac7ba74abaad1e5cf4ca1fffa7fee838c">XESS_API</a> <a class="el" href="xess_8h.html#a3aa6a07808627ac723a9da324abf10b4">xess_result_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__xess-debug.html#gaa320ed0d9c03d6abb26f37647b12db7e">xessStartDump</a> (<a class="el" href="xess_8h.html#af31f441c4909f7bbf9fb4491b5f9b927">xess_context_handle_t</a> hContext, const <a class="el" href="xess__debug_8h.html#a7a40b052b76b6b70177eb6bca388a214">xess_dump_parameters_t</a> *dump_parameters)</td></tr>
+<tr class="memdesc:gaa320ed0d9c03d6abb26f37647b12db7e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Dumps sequence of frames to the provided folder.  <a href="group__xess-debug.html#gaa320ed0d9c03d6abb26f37647b12db7e">More...</a><br /></td></tr>
 <tr class="separator:gaa320ed0d9c03d6abb26f37647b12db7e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
@@ -155,7 +156,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Dumps sequence of frames to the provided folder</p>
+
+<p>Dumps sequence of frames to the provided folder. </p>
 <p >Call to this function initiates a dump for selected elements. X<sup>e</sup>SS SDK uses RAM cache to reduce dump overhead. Application should provide reasonable value for <a class="el" href="struct__xess__dump__parameters__t.html#ae3e00071db1070451c10872b09360cad">xess_dump_parameters_t::frame_count</a> frames (about 50 megs needed per cached frame). To enable several dumps per run application should provide correct <a class="el" href="struct__xess__dump__parameters__t.html#a675e89be435aec170285f3a1e7e25edf">xess_dump_parameters_t::frame_idx</a> value. This value used as a start index for frame dumping. After call to this function - each call to <a class="el" href="group__xess-d3d12.html#gaf8e15aa3a0915546fdfcaa899f58c102">xessD3D12Execute</a> will result in new frame dumped to RAM cache. After <a class="el" href="struct__xess__dump__parameters__t.html#ae3e00071db1070451c10872b09360cad">xess_dump_parameters_t::frame_count</a> frames application will be blocked on call to <a class="el" href="group__xess-d3d12.html#gaf8e15aa3a0915546fdfcaa899f58c102">xessD3D12Execute</a> in order to save cached frames to disk. This operation can take long time. Repetitive calls to this function can result in XESS_RESULT_ERROR_OPERATION_IN_PROGRESS which means that frame dump is in progress.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">

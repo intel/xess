@@ -120,6 +120,10 @@ public:
         return m_CommandList;
     }
 
+    D3D12_COMMAND_LIST_TYPE GetType() {
+        return m_Type;
+    }
+
     void CopyBuffer( GpuResource& Dest, GpuResource& Src );
     void CopyBufferRegion( GpuResource& Dest, size_t DestOffset, GpuResource& Src, size_t SrcOffset, size_t NumBytes );
     void CopySubresource(GpuResource& Dest, UINT DestSubIndex, GpuResource& Src, UINT SrcSubIndex);

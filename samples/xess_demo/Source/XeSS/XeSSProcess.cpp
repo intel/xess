@@ -40,6 +40,8 @@
 #include "CompiledShaders/XeSSGenerateHiResVelocityNDCCS.h"
 #include "CompiledShaders/SharpenCS.h"
 
+#include <iostream>
+
 using namespace Graphics;
 using namespace Math;
 
@@ -65,11 +67,15 @@ namespace XeSS
     eMipBiasMode s_MipBiasMode = kMipBiasAutomatic;
     float s_CustomizedMipBias = FLT_MAX;
     bool s_ResetHistory = false;
+    bool s_DynResEnabled = false;
+    float s_UpscaleFactor = 2.0f;
 
     uint32_t s_InputWidth = 0;
     uint32_t s_InputHeight = 0;
     uint32_t s_OutputWidth = 0;
     uint32_t s_OutputHeight = 0;
+
+    bool s_RuntimeProfilingEnabled = false;
 
     bool s_RuntimeDirty = true;
     bool s_InputResolutionDirty = true;
@@ -157,10 +163,18 @@ void XeSS::Shutdown()
 
 void XeSS::GetInputResolution(uint32_t& Width, uint32_t& Height)
 {
-    Width = g_NativeWidth;
-    Height = g_NativeHeight;
+    if (s_DynResEnabled)
+    {
+        Width = ceil(s_OutputWidth / s_UpscaleFactor);
+        Height = ceil(s_OutputHeight / s_UpscaleFactor);
+    }
+    else
+    {
+        Width = s_OutputWidth;
+        Height = s_OutputHeight;
 
-    GetRuntimeInputResolution(Width, Height);
+        GetRuntimeInputResolution(Width, Height);
+    }
 }
 
 void XeSS::SetOutputResolution(uint32_t Width, uint32_t Height)
@@ -263,6 +277,34 @@ void XeSS::UpdateInputResolution()
     s_InputResolutionDirty = false;
 }
 
+void XeSS::SetDynResEnabled(bool Enabled)
+{
+    if (s_DynResEnabled == Enabled)
+        return;
+
+    s_DynResEnabled = Enabled;
+    s_InputResolutionDirty = true;
+}
+
+bool XeSS::IsDynResEnabled()
+{
+    return s_DynResEnabled;
+}
+
+float XeSS::GetUpscaleFactor()
+{
+    return s_UpscaleFactor;
+}
+
+void XeSS::SetUpscaleFactor(float Upscale)
+{
+    if (s_UpscaleFactor == Upscale)
+        return;
+
+    s_UpscaleFactor = Upscale;
+    s_InputResolutionDirty = true;
+}
+
 XeSS::eQualityLevel XeSS::GetQuality()
 {
     return s_Quality;
@@ -310,10 +352,10 @@ float XeSS::GetMipBias()
     }
 }
 
-void XeSS::SetMipBias(float value)
+void XeSS::SetMipBias(float Value)
 {
     s_MipBiasMode = kMipBiasCustomized;
-    s_CustomizedMipBias = value;
+    s_CustomizedMipBias = Value;
 }
 
 void XeSS::UpdateRuntime()
@@ -329,6 +371,7 @@ void XeSS::UpdateRuntime()
     initArgs.UseMotionVectorsInNDC = s_MotionVectorsInNDC;
     initArgs.UseResponsiveMask = s_ResponsiveMaskEnabled;
     initArgs.UseAutoExposure = s_AutoExposureEnabled;
+    initArgs.EnableProfiling = s_RuntimeProfilingEnabled;
 
     g_XeSSRuntime.Initialize(initArgs);
 
@@ -376,6 +419,20 @@ bool XeSS::IsSupported()
 void XeSS::ResetHistory()
 {
     s_ResetHistory = true;
+}
+
+bool XeSS::IsProfilingEnabled()
+{
+    return s_RuntimeProfilingEnabled;
+}
+
+void XeSS::SetProfilingEnabled(bool Enabled)
+{
+    if (s_RuntimeProfilingEnabled == Enabled)
+        return;
+
+    s_RuntimeProfilingEnabled = Enabled;
+    s_RuntimeDirty = true;
 }
 
 void XeSS::Process(CommandContext& BaseContext, const Camera& camera)

@@ -38,12 +38,16 @@
 #include "DemoCameraController.h"
 #include "Renderer.h"
 
+#include <iterator>
+
 using namespace Graphics;
 using namespace XeSS;
 
 namespace DemoGui
 {
     static const ImVec4 DEF_TEXT_COLOR(0.94f, 0.94f, 0.94f, 1.00f);
+    static const ImVec4 DEF_TEXT_GREY(0.5f, 0.5f, 0.5f, 1.00f);
+    static const ImVec4 DEF_GRAPH_GREEN(0.0f, 1.0f, 0.0f, 1.00f);
 
     bool m_ShowUI = true;
     bool m_ShowLog = false;
@@ -61,6 +65,7 @@ namespace DemoGui
     void DPIGetWindowRect(bool& resize, ImVec4& winRect);
 
     void OnGUI_XeSS();
+    void OnGUI_Profiling();
     void OnGUI_Debug();
     void OnGUI_Rendering();
     void OnGUI_Camera(DemoApp& App);
@@ -256,6 +261,8 @@ void DemoGui::OnGUI(DemoApp& App)
     {
         // Buffer viewer windows
         OnGUI_DebugBufferWindows();
+
+        OnGUI_Profiling();
     }
 
     // Log window.
@@ -286,6 +293,21 @@ void DemoGui::OnGUI_XeSS()
     if (ImGui::Combo("Quality", &quality, QUALITY_NAMES, IM_ARRAYSIZE(QUALITY_NAMES)))
     {
         XeSS::SetQuality(static_cast<XeSS::eQualityLevel>(quality));
+    }
+
+    bool dynRes = XeSS::IsDynResEnabled();
+    if (ImGui::Checkbox("Dynamic Resolution", &dynRes))
+    {
+        XeSS::SetDynResEnabled(dynRes);
+    }
+
+    if (dynRes)
+    {
+        float upscale = XeSS::GetUpscaleFactor();
+        if (ImGui::DragFloat("Upscale Factor", &upscale, 0.01f, 1.0f, 2.0f, "%.2f"));
+        {
+            XeSS::SetUpscaleFactor(upscale);
+        }
     }
 
     static const char* VELOCITY_MODE_NAMES[] = { "High-Res", "Low-Res" };
@@ -344,8 +366,226 @@ void DemoGui::OnGUI_XeSS()
     }
 }
 
+void DemoGui::OnGUI_Profiling()
+{
+    bool profilingEnabled = XeSS::IsProfilingEnabled();
+    if (!profilingEnabled)
+        return;
+
+    constexpr auto WIDTH = 800.0f;
+    constexpr auto HEIGHT = 700.0f;
+
+    ImGui::SetNextWindowPos(DESIGN_SIZE(ImVec2(ImGui::GetIO().DisplaySize.x - WIDTH - 10, 10)), ImGuiCond_Once);
+    ImGui::SetNextWindowSize(DESIGN_SIZE(ImVec2(WIDTH, HEIGHT)), ImGuiCond_Once);
+
+    static bool adjust = false;
+    static ImVec4 winRect;
+    DPISetNextWindowRect(adjust, winRect);
+
+    // Name of the total GPU time record.
+    constexpr auto TOTAL_RECORD_NAME = "Execute";
+
+    // Current selected record.
+    static std::string selectedRecord;
+    if (!selectedRecord.length())
+    {
+        selectedRecord = TOTAL_RECORD_NAME;
+        XeSS::g_XeSSRuntime.SetPerfGraphRecord(selectedRecord);
+    }
+
+    if (ImGui::Begin("GPU Profiling Data", &profilingEnabled))
+    {
+        DPIGetWindowRect(adjust, winRect);
+
+        static bool showAsMicroSec = true;
+
+        constexpr auto TEXT_AS_MICRO = "Use Microseconds";
+        constexpr auto TEXT_AS_MILLI = "Use Milliseconds";
+
+        if (ImGui::Button(showAsMicroSec ? TEXT_AS_MILLI : TEXT_AS_MICRO))
+        {
+            showAsMicroSec = !showAsMicroSec;
+        }
+
+        ImGui::Separator();
+
+        // Draw GPU duration text.
+        auto DrawTimeText = [=](double time)
+        {
+            // Time
+            if (showAsMicroSec)
+                ImGui::Text("%.2f ", time * 1000.0 * 1000.0);
+            else
+                ImGui::Text("%.2f ", time * 1000.0);
+
+            // Unit
+            ImGui::PushStyleColor(ImGuiCol_Text, DEF_TEXT_GREY);
+            ImGui::SameLine(0, 0);
+            ImGui::TextUnformatted(showAsMicroSec ? "us" : "ms");
+            ImGui::PopStyleColor();
+        };
+
+
+        auto& perfData = XeSS::g_XeSSRuntime.GetProfilingData();
+
+        std::vector<PerfPair> displayData;
+        std::transform(perfData.begin(), perfData.end(),
+            std::back_inserter(displayData), [](const auto& elem)
+            { return elem; });
+
+        enum ColumType
+        {
+            kColRecord = 0,
+            kColTime,
+            kColAvg,
+            kColMin,
+            kColMax,
+            kColNum
+        };
+
+        constexpr ImGuiTableFlags flags = ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Sortable | ImGuiTableFlags_SizingStretchSame;
+        const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
+
+        if (ImGui::BeginTable("Profiling Table", kColNum, flags, ImVec2(0.0f, TEXT_BASE_HEIGHT * displayData.size() + 2)))
+        {
+            ImGui::TableSetupScrollFreeze(0, 1);
+
+            constexpr ImGuiTableColumnFlags COLUMN_FLAGS = ImGuiTableColumnFlags_DefaultSort | ImGuiTableColumnFlags_WidthStretch;
+            ImGui::TableSetupColumn("Record", COLUMN_FLAGS, 0, kColRecord);
+            ImGui::TableSetupColumn("GPU Duration", COLUMN_FLAGS, 0, kColTime);
+            ImGui::TableSetupColumn("Avg", COLUMN_FLAGS, 0, kColAvg);
+            ImGui::TableSetupColumn("Min", COLUMN_FLAGS, 0, kColMin);
+            ImGui::TableSetupColumn("Max", COLUMN_FLAGS, 0, kColMax);
+            ImGui::TableHeadersRow();
+
+            // Sort
+            ImGuiTableSortSpecs* sort_specs = ImGui::TableGetSortSpecs();
+            if (sort_specs)
+            {
+                if (displayData.size() > 1)
+                {
+                    std::sort(displayData.begin(), displayData.end(),
+                        [&](const auto& a, const auto& b)
+                        {
+                            // Make "Execute" record pinned on the top.
+                            if (a.first == TOTAL_RECORD_NAME)
+                                return true;
+                            else if (b.first == TOTAL_RECORD_NAME)
+                                return false;
+
+                            // Sort rest of the entries.
+                            for (int i = 0; i < sort_specs->SpecsCount; ++i)
+                            {
+                                const auto& spec = sort_specs->Specs[i];
+
+                                bool flag = true;
+                                bool decend = spec.SortDirection == ImGuiSortDirection_Descending;
+                                switch (spec.ColumnUserID)
+                                {
+                                case kColRecord:
+                                    flag = decend ? (a.first > b.first) : (a.first < b.first);
+                                    break;
+                                case kColTime:
+                                    flag = decend ? (a.second.Time > b.second.Time) : (a.second.Time < b.second.Time);
+                                    break;
+                                case kColAvg:
+                                    flag = decend ? (a.second.Avg > b.second.Avg) : (a.second.Avg < b.second.Avg);
+                                    break;
+                                case kColMin:
+                                    flag = decend ? (a.second.Min > b.second.Min) : (a.second.Min < b.second.Min);
+                                    break;
+                                case kColMax:
+                                    flag = decend ? (a.second.Max > b.second.Max) : (a.second.Max < b.second.Max);
+                                    break;
+                                default:
+                                    assert(0 && "Invalid table column for sort");
+                                    break;
+                                }
+
+                                return flag;
+                            }
+
+                            return a.first < b.first;
+                        });
+                }
+            }
+
+            // Draw
+            ImGuiListClipper clipper;
+            clipper.Begin((int)displayData.size());
+            while (clipper.Step())
+            {
+                for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; ++i)
+                {
+                    auto& it = displayData[i];
+                    ImGui::TableNextRow();
+                    ImGui::TableNextColumn();
+
+                    bool selected = (selectedRecord == it.first);
+                    if (ImGui::Selectable(it.first.c_str(), &selected, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap))
+                    {
+                        if (selected)
+                        {
+                            selectedRecord = it.first;
+                            XeSS::g_XeSSRuntime.SetPerfGraphRecord(selectedRecord);
+                        }
+                    }
+
+                    // Time
+                    ImGui::TableNextColumn();
+                    DrawTimeText(it.second.Time);
+
+                    // Avg
+                    ImGui::TableNextColumn();
+                    DrawTimeText(it.second.Avg);
+
+                    // Min
+                    ImGui::TableNextColumn();
+                    DrawTimeText(it.second.Min);
+
+                    // Max
+                    ImGui::TableNextColumn();
+                    DrawTimeText(it.second.Max);
+                }
+            }
+
+            ImGui::EndTable();
+        }
+
+        // Time graph
+        if (selectedRecord.length())
+        {
+            auto& graphData = XeSS::g_XeSSRuntime.GetPerfGraphData();
+
+            float max_height = *std::max_element(graphData.begin(), graphData.end()) * 1.2f;
+            const float width = ImGui::GetContentRegionAvailWidth();
+
+            ImGui::PushStyleColor(ImGuiCol_PlotLines, DEF_GRAPH_GREEN);
+
+            std::string lable ="GPU Duration of " + selectedRecord + " (us)";
+            ImGui::PlotLines("##gpu_graph", graphData.data(), graphData.size(), 0, 
+                lable.c_str(), 0.0f, max_height, ImVec2(width, 70));
+            ImGui::PopStyleColor();
+        }
+    }
+
+    ImGui::End();
+
+    // When window is closed, we disable profiling.
+    if (!profilingEnabled)
+    {
+        XeSS::SetProfilingEnabled(false);
+    }
+}
+
 void DemoGui::OnGUI_Debug()
 {
+    bool gpuProfiling = XeSS::IsProfilingEnabled();
+    if (ImGui::Checkbox("GPU Profiling", &gpuProfiling))
+    {
+        XeSS::SetProfilingEnabled(gpuProfiling);
+    }
+
     if (ImGui::Button("Reset History"))
     {
         XeSS::ResetHistory();

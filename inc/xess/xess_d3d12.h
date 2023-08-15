@@ -1,12 +1,12 @@
 /*******************************************************************************
  * Copyright (C) 2021 Intel Corporation
- *
+ * 
  * This software and the related documents are Intel copyrighted materials, and
  * your use of them is governed by the express license under which they were
  * provided to you ("License"). Unless the License provides otherwise, you may
  * not use, modify, copy, publish, distribute, disclose or transmit this
  * software or the related documents without Intel's prior written permission.
- *
+ * 
  * This software and the related documents are provided as is, with no express
  * or implied warranties, other than those that are expressly stated in the
  * License.
@@ -129,16 +129,16 @@ XESS_API xess_result_t xessD3D12CreateContext(
  * This function can only be called between @ref xessD3D12CreateContext and
  * @ref xessD3D12Init
  * This call initiates build of DX12 pipelines and kernel compilation
- * This call can be blocking (if @ref blocking set to true) or non-blocking.
+ * This call can be blocking (if @p blocking set to true) or non-blocking.
  * In case of non-blocking call library will wait for pipeline build on call to
  * @ref xessD3D12Init
- * If @ref pPipelineLibrary passed to this call - same pipeline library must be passed
+ * If @p pPipelineLibrary passed to this call - same pipeline library must be passed
  * to @ref xessD3D12Init
  *
  * @param hContext The X<sup>e</sup>SS context handle.
  * @param pPipelineLibrary Optional pointer to pipeline library for pipeline caching.
  * @param blocking Wait for kernel compilation and pipeline creation to finish or not
- * @param init_flags Initialization flags. *Must* be identical to flags passed to @ref xessD3D12Init
+ * @param initFlags Initialization flags. *Must* be identical to flags passed to @ref xessD3D12Init
  */
 XESS_API xess_result_t xessD3D12BuildPipelines(xess_context_handle_t hContext,
     ID3D12PipelineLibrary *pPipelineLibrary, bool blocking, uint32_t initFlags);

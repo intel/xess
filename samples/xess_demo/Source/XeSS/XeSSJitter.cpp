@@ -31,6 +31,7 @@ using namespace Graphics;
 namespace XeSSJitter
 {
     std::vector<std::pair<float, float>> g_HaltonSamples;
+    std::vector<std::pair<float, float>>& haltonSamples = g_HaltonSamples;
 
     size_t s_JitterIndex = 0;
 
@@ -67,6 +68,8 @@ namespace XeSSJitter
         g_HaltonSamples.clear();
 
         GenerateHalton(g_HaltonSamples, 2, 3, 1, 32, -0.5f, -0.5f);
+
+        haltonSamples = g_HaltonSamples;
     }
 
     void Reset()
@@ -80,7 +83,7 @@ namespace XeSSJitter
 
     void FrameMove()
     {
-        s_JitterIndex = (s_JitterIndex + 1) % g_HaltonSamples.size();
+        s_JitterIndex = (s_JitterIndex + 1) % haltonSamples.size();
 
 #if _XESS_DEBUG_JITTER_
         LOG_DEBUG("XeSS Jitter: Frame Move.");
@@ -89,8 +92,8 @@ namespace XeSSJitter
 
     void GetJitterValues(float& JitterX, float& JitterY)
     {
-        ASSERT(!g_HaltonSamples.empty());
-        auto haltonValue = g_HaltonSamples[s_JitterIndex];
+        ASSERT(!haltonSamples.empty());
+        auto haltonValue = haltonSamples[s_JitterIndex];
         JitterX = haltonValue.first;
         JitterY = haltonValue.second;
     }

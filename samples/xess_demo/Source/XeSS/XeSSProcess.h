@@ -120,11 +120,24 @@ namespace XeSS
     /// Get mip-bias value.
     float GetMipBias();
     /// Set mip-bias Value.
-    void SetMipBias(float value);
+    void SetMipBias(float Value);
     /// Returns (frame-index % 2).
     uint32_t GetFrameIndexMod2();
     /// Is XeSS supported.
     bool IsSupported();
     /// Reset XeSS history once for debug purposes.
     void ResetHistory();
+    /// Returns if GPU profiling is enabled.
+    bool IsProfilingEnabled();
+    /// Set GPU profiling enabled.
+    void SetProfilingEnabled(bool Enabled);
+
+    /// Return if dynamic resolution is enabled.
+    bool IsDynResEnabled();
+    /// Set if dynamic resolution is enabled.
+    void SetDynResEnabled(bool Enabled);
+
+    float GetUpscaleFactor();
+    void SetUpscaleFactor(float Upscale);
+
 } // namespace XeSS

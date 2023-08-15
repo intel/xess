@@ -81,6 +81,12 @@ set(LIBRARY_SOURCES
     DirectXTex/DirectXTexTGA.cpp
     DirectXTex/DirectXTexUtil.cpp)
 
+if(XESS_BUILD_INTERNAL_SAMPLE)
+list(APPEND LIBRARY_SOURCES
+    DirectXTex/DirectXTexEXR.cpp
+)
+endif(XESS_BUILD_INTERNAL_SAMPLE)
+
 if(WIN32)
    set(LIBRARY_SOURCES ${LIBRARY_SOURCES}
        DirectXTex/DirectXTexFlipRotate.cpp
@@ -151,6 +157,13 @@ source_group(${PROJECT_NAME} REGULAR_EXPRESSION DirectXTex/*.*)
 target_include_directories(${PROJECT_NAME} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/DirectXTex>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+
+if(XESS_BUILD_INTERNAL_SAMPLE)
+target_include_directories(${PROJECT_NAME} PRIVATE 
+  ../../../../../third_party/openexr3/include
+  ../../../../../third_party/openexr3/include/Imath
+  ../../../../../third_party/openexr3/include/OpenEXR)
+endif(XESS_BUILD_INTERNAL_SAMPLE)
 
 if(ENABLE_OPENEXR_SUPPORT)
   find_package(OpenEXR REQUIRED)

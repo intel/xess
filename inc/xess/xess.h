@@ -234,7 +234,7 @@ XESS_API xess_result_t xessGetProperties(xess_context_handle_t hContext,
  * Motion vectors can be either in output resolution (XESS_INIT_FLAG_HIGH_RES_MV) or
  * returned resolution (default).
  *
- * @param hContext: The X<sup>e</sup>SS context handle.
+ * @param hContext The X<sup>e</sup>SS context handle.
  * @param pOutputResolution Output resolution to calculate input resolution for.
  * @param qualitySettings Desired quality setting.
  * @param[out] pInputResolution Required input resolution.
@@ -243,6 +243,27 @@ XESS_API xess_result_t xessGetProperties(xess_context_handle_t hContext,
 XESS_API xess_result_t xessGetInputResolution(xess_context_handle_t hContext,
     const xess_2d_t* pOutputResolution, xess_quality_settings_t qualitySettings,
     xess_2d_t* pInputResolution);
+
+/**
+ * @brief Get the optimal input resolution and possible range for a specified output resolution for a given quality setting.
+ * X<sup>e</sup>SS expects all the input buffers except motion vectors to be in the returned resolution range 
+ * and all input buffers to be in the same resolution.
+ * Motion vectors can be either in output resolution (XESS_INIT_FLAG_HIGH_RES_MV) or
+ * in the same resolution as other input buffers (by default).
+ *
+ * @note Aspect ratio of the input resolution must be the same as for the output resoulution.
+ *
+ * @param hContext The X<sup>e</sup>SS context handle.
+ * @param pOutputResolution Output resolution to calculate input resolution for.
+ * @param qualitySettings Desired quality setting.
+ * @param[out] pInputResolutionOptimal Optimal input resolution.
+ * @param[out] pInputResolutionMin Required minimal input resolution.
+ * @param[out] pInputResolutionMax Required maximal input resolution.
+ * @return X<sup>e</sup>SS return status code.
+ */
+XESS_API xess_result_t xessGetOptimalInputResolution(xess_context_handle_t hContext,
+    const xess_2d_t* pOutputResolution, xess_quality_settings_t qualitySettings,
+    xess_2d_t* pInputResolutionOptimal, xess_2d_t* pInputResolutionMin, xess_2d_t* pInputResolutionMax);
 
 /**
  * @brief Gets jitter scale value.
@@ -271,7 +292,8 @@ XESS_API xess_result_t xessGetVelocityScale(xess_context_handle_t hContext, floa
 XESS_API xess_result_t xessDestroyContext(xess_context_handle_t hContext);
 
 /**
- * Sets jitter scale value
+ * @brief Sets jitter scale value
+ *
  * @param hContext The X<sup>e</sup>SS context handle.
  * @param x scale for the X axis
  * @param y scale for the Y axis
@@ -280,7 +302,8 @@ XESS_API xess_result_t xessDestroyContext(xess_context_handle_t hContext);
 XESS_API xess_result_t xessSetJitterScale(xess_context_handle_t hContext, float x, float y);
 
 /**
- * Sets velocity scale value
+ * @brief Sets velocity scale value
+ *
  * @param hContext The X<sup>e</sup>SS context handle.
  * @param x scale for the X axis
  * @param y scale for the Y axis
@@ -289,7 +312,7 @@ XESS_API xess_result_t xessSetJitterScale(xess_context_handle_t hContext, float 
 XESS_API xess_result_t xessSetVelocityScale(xess_context_handle_t hContext, float x, float y);
 
 /**
- * Sets logging callback
+ * @brief Sets logging callback
  *
  * @param hContext The X<sup>e</sup>SS context handle.
  * @param loggingLevel Minimum logging level for logging callback.
@@ -300,7 +323,7 @@ XESS_API xess_result_t xessSetLoggingCallback(xess_context_handle_t hContext,
     xess_logging_level_t loggingLevel, xess_app_log_callback_t loggingCallback);
 
 /**
- * Indicates if the installed driver supports best X<sup>e</sup>SS experience. 
+ * @brief Indicates if the installed driver supports best X<sup>e</sup>SS experience.
  *
  * @param hContext The X<sup>e</sup>SS context handle.
  * @return xessIsOptimalDriver returns XESS_RESULT_SUCCESS, or XESS_RESULT_WARNING_OLD_DRIVER

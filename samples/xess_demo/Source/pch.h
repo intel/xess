@@ -49,6 +49,8 @@
 #include <queue>
 #include <array>
 #include <memory>
+#include <map>
+#include <unordered_map>
 #include <string>
 #include <exception>
 

@@ -43,9 +43,13 @@
 #include "DemoGui.h"
 #include "XeSS/XeSSJitter.h"
 #include "XeSS/XeSSProcess.h"
+#include "XeSS/XeSSRuntime.h"
 #include "ModelLoader.h"
 #include "LightManager.h"
 #include "ParticleEffects.h"
+
+#include "xess/xess_d3d12_debug.h"
+
 
 CREATE_APPLICATION(DemoApp)
 
@@ -322,7 +326,17 @@ void DemoApp::UpdateResolution()
 void DemoApp::RenderScene(void)
 {
     GraphicsContext& gfxContext = GraphicsContext::Begin(L"Scene Render");
+    RenderSceneImpl(gfxContext);
+    gfxContext.Finish();
 
+    if (XeSS::IsProfilingEnabled())
+    {
+        XeSS::g_XeSSRuntime.DoGPUProfile();
+    }
+}
+
+void DemoApp::RenderSceneImpl(GraphicsContext& gfxContext)
+{
     uint32_t FrameIndex = TemporalEffects::GetFrameIndexMod2();
     const D3D12_VIEWPORT& viewport = m_MainViewport;
     const D3D12_RECT& scissor = m_MainScissor;
@@ -492,8 +506,6 @@ void DemoApp::RenderScene(void)
     }
 
     MotionBlur::RenderObjectBlur(gfxContext, g_VelocityBuffer);
-
-    gfxContext.Finish();
 }
 
 void DemoApp::RenderUI(GraphicsContext& Context)
