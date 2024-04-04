@@ -38,10 +38,13 @@ var xess_8h =
       [ "XESS_LOGGING_LEVEL_ERROR", "xess_8h.html#a12f0fd50664b1a61319821499ec24721a7142dcde3f8100558086ad32c674242b", null ]
     ] ],
     [ "_xess_quality_settings_t", "xess_8h.html#acc1be3e82183f25c7188fa6b5cbf1e34", [
+      [ "XESS_QUALITY_SETTING_ULTRA_PERFORMANCE", "xess_8h.html#acc1be3e82183f25c7188fa6b5cbf1e34a5803e825cd025c644427e6e16316e182", null ],
       [ "XESS_QUALITY_SETTING_PERFORMANCE", "xess_8h.html#acc1be3e82183f25c7188fa6b5cbf1e34a375807073d5e41d49599bc4c3796a298", null ],
       [ "XESS_QUALITY_SETTING_BALANCED", "xess_8h.html#acc1be3e82183f25c7188fa6b5cbf1e34af42585b087b48ac84f15147eca7f84fc", null ],
       [ "XESS_QUALITY_SETTING_QUALITY", "xess_8h.html#acc1be3e82183f25c7188fa6b5cbf1e34aad6611bfc9d8b4367d40cc4341781071", null ],
-      [ "XESS_QUALITY_SETTING_ULTRA_QUALITY", "xess_8h.html#acc1be3e82183f25c7188fa6b5cbf1e34a2307f69631f48661ec35997e6b9dfa7b", null ]
+      [ "XESS_QUALITY_SETTING_ULTRA_QUALITY", "xess_8h.html#acc1be3e82183f25c7188fa6b5cbf1e34a2307f69631f48661ec35997e6b9dfa7b", null ],
+      [ "XESS_QUALITY_SETTING_ULTRA_QUALITY_PLUS", "xess_8h.html#acc1be3e82183f25c7188fa6b5cbf1e34af8274e9b7edb2c2bba9f4f68f7ebce53", null ],
+      [ "XESS_QUALITY_SETTING_AA", "xess_8h.html#acc1be3e82183f25c7188fa6b5cbf1e34a4f1f0df837971632fff6cf8d85779b36", null ]
     ] ],
     [ "_xess_result_t", "xess_8h.html#a31952a580a4d5d26c6224183f62d2612", [
       [ "XESS_RESULT_WARNING_NONEXISTING_FOLDER", "xess_8h.html#a31952a580a4d5d26c6224183f62d2612a7f8d0f6dc01ba497911fdbdb02b05a45", null ],
@@ -61,6 +64,8 @@ var xess_8h =
       [ "XESS_RESULT_ERROR_UNKNOWN", "xess_8h.html#a31952a580a4d5d26c6224183f62d2612a1a08d6aec7e38e2f0bd03893c05b9d2f", null ]
     ] ],
     [ "xessDestroyContext", "group__xess.html#gae5d88d9bdb50033ab254aa2e692c9bc0", null ],
+    [ "xessForceLegacyScaleFactors", "group__xess.html#ga016818ad0a8454cfce7a2316450df20e", null ],
+    [ "xessGetExposureMultiplier", "group__xess.html#ga84293d9d7a2331dcac496a3dbb8a9a7c", null ],
     [ "xessGetInputResolution", "group__xess.html#ga6ed6ab924e0a41ff56485b562acd5073", null ],
     [ "xessGetIntelXeFXVersion", "group__xess.html#ga88ea52641806d14ef5a4995b5d78ea91", null ],
     [ "xessGetJitterScale", "group__xess.html#gaaaff5dc2376dd08bd1f451e61fdc8784", null ],
@@ -69,6 +74,7 @@ var xess_8h =
     [ "xessGetVelocityScale", "group__xess.html#ga7c6c49e93cc5f102473c76cfa1081bd5", null ],
     [ "xessGetVersion", "group__xess.html#ga0fc6e0c7b21322a0af96f1ee1e4667d3", null ],
     [ "xessIsOptimalDriver", "group__xess.html#ga716ee0ab9df5de9726315ba5df21308c", null ],
+    [ "xessSetExposureMultiplier", "group__xess.html#gae86133e9850ce4926f97e96a888259cc", null ],
     [ "xessSetJitterScale", "group__xess.html#ga30e9bee98f90568e6a9d39bd7d1ccd74", null ],
     [ "xessSetLoggingCallback", "group__xess.html#gaaf68a347af5e5c9c1e518f0bc5daaf1c", null ],
     [ "xessSetVelocityScale", "group__xess.html#ga0f95b12fe2611b877d72efdd9f050639", null ]

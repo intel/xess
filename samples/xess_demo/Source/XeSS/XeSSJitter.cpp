@@ -67,7 +67,7 @@ namespace XeSSJitter
         s_JitterIndex = 0;
         g_HaltonSamples.clear();
 
-        GenerateHalton(g_HaltonSamples, 2, 3, 1, 32, -0.5f, -0.5f);
+        GenerateHalton(g_HaltonSamples, 2, 3, 1, 1024, -0.5f, -0.5f);
 
         haltonSamples = g_HaltonSamples;
     }

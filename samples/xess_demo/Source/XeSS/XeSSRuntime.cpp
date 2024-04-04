@@ -65,14 +65,17 @@ namespace XeSS
     /// Convert application level Quality to
     static _xess_quality_settings_t ToXeSSQuality(eQualityLevel Quality)
     {
-        _xess_quality_settings_t qualityXeSS = static_cast<_xess_quality_settings_t>(XESS_QUALITY_SETTING_PERFORMANCE + Quality);
-        ASSERT(qualityXeSS >= XESS_QUALITY_SETTING_PERFORMANCE && qualityXeSS <= XESS_QUALITY_SETTING_ULTRA_QUALITY);
-        if (qualityXeSS < XESS_QUALITY_SETTING_PERFORMANCE)
-            qualityXeSS = XESS_QUALITY_SETTING_PERFORMANCE;
-        else if (qualityXeSS > XESS_QUALITY_SETTING_ULTRA_QUALITY)
-            qualityXeSS = XESS_QUALITY_SETTING_ULTRA_QUALITY;
-
-        return qualityXeSS;
+        switch (Quality)
+        {
+            case kQualityUltraPerformance: return XESS_QUALITY_SETTING_ULTRA_PERFORMANCE;
+            case kQualityPerformance: return XESS_QUALITY_SETTING_PERFORMANCE;
+            case kQualityBalanced: return XESS_QUALITY_SETTING_BALANCED;
+            case kQualityQuality: return XESS_QUALITY_SETTING_QUALITY;
+            case kQualityUltraQuality: return XESS_QUALITY_SETTING_ULTRA_QUALITY;
+            case kQualityAA: return XESS_QUALITY_SETTING_AA;
+            case kQualityUltraQualityPlus: return XESS_QUALITY_SETTING_ULTRA_QUALITY_PLUS;
+            default: return XESS_QUALITY_SETTING_PERFORMANCE;
+        }
     }
 
     void LogCallback(const char* Message, xess_logging_level_t Level)
@@ -284,6 +287,11 @@ namespace XeSS
             || (m_InitArguments.UseResponsiveMask && !ExeArgs.ResponsiveMask))
             return;
 
+        if (m_InitArguments.EnableProfiling)
+        {
+            m_PerfAccumTime += Graphics::GetFrameTime();
+        }
+
         float jitterX, jitterY;
         XeSSJitter::GetJitterValues(jitterX, jitterY);
 
@@ -370,6 +378,19 @@ namespace XeSS
         return true;
     }
 
+    bool XeSSRuntime::SetExposureScale(float scale)
+    {
+        xess_result_t ret = xessSetExposureMultiplier(m_Context, scale);
+        ASSERT(ret == XESS_RESULT_SUCCESS);
+        if (ret != XESS_RESULT_SUCCESS)
+        {
+            LOG_ERRORF("XeSS: Could not set exposure scale. Result - %s.", ResultToString(ret));
+            return false;
+        }
+
+        return true;
+    }
+
     xess_context_handle_t XeSSRuntime::GetContext()
     {
         return m_Context;
@@ -438,8 +459,6 @@ namespace XeSS
 
     void XeSSRuntime::ProcessPerfData()
     {
-        m_PerfAccumTime += Graphics::GetFrameTime();
-
         constexpr auto REFRESH_INTERVAL = 1.0f; // seconds.
         bool reset = (m_PerfAccumTime > REFRESH_INTERVAL);
 
@@ -495,6 +514,11 @@ namespace XeSS
     void XeSSRuntime::SetInitArguments(const InitArguments& Args)
     {
         m_InitArguments = Args;
+    }
+
+    void XeSSRuntime::ForceLegacyScaleFactors(bool force)
+    {
+        xessForceLegacyScaleFactors(m_Context, force);
     }
 
 } // namespace XeSS

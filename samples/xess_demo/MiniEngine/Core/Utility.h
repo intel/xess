@@ -27,20 +27,20 @@ namespace Utility
 
     inline void Printf( const char* format, ... )
     {
-        char buffer[256];
+        char buffer[8192];
         va_list ap;
         va_start(ap, format);
-        vsprintf_s(buffer, 256, format, ap);
+        vsprintf_s(buffer, 8191, format, ap);
         va_end(ap);
         Print(buffer);
     }
 
     inline void Printf( const wchar_t* format, ... )
     {
-        wchar_t buffer[256];
+        wchar_t buffer[4192];
         va_list ap;
         va_start(ap, format);
-        vswprintf(buffer, 256, format, ap);
+        vswprintf(buffer, 4192, format, ap);
         va_end(ap);
         Print(buffer);
     }

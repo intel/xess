@@ -326,10 +326,15 @@ void DemoApp::UpdateResolution()
 void DemoApp::RenderScene(void)
 {
     GraphicsContext& gfxContext = GraphicsContext::Begin(L"Scene Render");
-    RenderSceneImpl(gfxContext);
-    gfxContext.Finish();
 
-    if (XeSS::IsProfilingEnabled())
+    RenderSceneImpl(gfxContext);
+
+    constexpr uint32_t PROFILING_FRAMES = 10;
+    bool profiling = (XeSS::IsProfilingEnabled() && (Graphics::GetFrameCount() % PROFILING_FRAMES == 0));
+
+    gfxContext.Finish(profiling);
+
+    if (profiling)
     {
         XeSS::g_XeSSRuntime.DoGPUProfile();
     }

@@ -37,10 +37,13 @@ namespace XeSS
     /// Quality level of XeSS.
     enum eQualityLevel
     {
-        kQualityPerformance = 0,
+        kQualityUltraPerformance,
+        kQualityPerformance,
         kQualityBalanced,
         kQualityQuality,
-        kQualityUltraQuality
+        kQualityUltraQuality,
+        kQualityUltraQualityPlus,
+        kQualityAA,
     };
 
     /// Arguments for initialization of XeSS.
@@ -185,6 +188,8 @@ namespace XeSS
         bool SetJitterScale(float X, float Y);
         /// Set velocity scale values.
         bool SetVelocityScale(float X, float Y);
+        /// Set exposure scale velues.
+        bool SetExposureScale(float scale);
         /// Get XeSS Context.
         xess_context_handle_t GetContext();
         /// Get version string.
@@ -197,6 +202,8 @@ namespace XeSS
         const PerfGraphData& GetPerfGraphData() const { return m_PerfGraphData; }
         /// GPU side profiling using profiling API
         void DoGPUProfile();
+
+        void ForceLegacyScaleFactors(bool force);
 
         void ProcessPerfData();
     private:

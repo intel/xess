@@ -26,7 +26,7 @@
 #elif defined(_GAMING_XBOX)
 #include <d3d12_x.h>
 #elif defined(_XBOX_ONE) && defined(_TITLE)
-#include <d3d11_x.h>
+#error This library no longer supports legacy Xbox One XDK
 #else
 #include <d3d11_1.h>
 #endif
@@ -40,7 +40,7 @@
 #include <DirectXCollision.h>
 #include <DirectXPackedVector.h>
 
-#define DIRECTX_MESH_VERSION 163
+#define DIRECTX_MESH_VERSION 164
 
 
 namespace DirectX

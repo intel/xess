@@ -6,18 +6,72 @@ Release available for download on [GitHub](https://github.com/microsoft/DirectXT
 
 ## Release History
 
+### June 13, 2023
+* Added ``TEX_FILTER_RGB_COPY_ALPHA`` flag and support for ``DXGI_FORMAT_A4B4G4R4_UNORM``
+* DDS loader now supports 'swizzled' DXT5 variant FourCCs
+* CMake project updates
+* texconv: Added ``-f BC3n``,  ``-f DXT5nm``, and ``-f RXBG`` support; ``.ddx`` file extension; and ``-tgazeroalpha`` switch
+* texassemble/texconv/texdiag: Fix minor display issue with error messages
+* texassemble/texconv/texdiag: Supports Long Paths on Windows 10, Version 1607 or later
+
+### April 28, 2023
+* Updated D3DX12 internal copy with latest changes from DirectX-Headers GitHub
+* CMake project updates and fixes for clang/LLVM v16 warnings
+* texassemble/texconv/texdiag: Windows on ARM64 version
+
+### March 30, 2023
+* Fix for `SRGB_IN` / `SRGB_OUT` flag handling for GPU BC7 compressor
+* Fix to clamp negative values when encoding with the GPU BC6H compressor
+* GPU BC6H/BC7 encoder updated to make optional use of DirectCompute 5.0
+* CMake project updates
+* Code review
+* Retired VS 2017 legacy Xbox One XDK projects
+* texassemble/texconv/texdiag: Updated to support Windows or UNIX-style path separators
+
+### January 31, 2023
+* Fixed memory overwrite bug in **ConvertToSinglePlane** that can lead to a potential security issue for untrusted planar video format DDS files
+* Make sure ScratchImage zero-fills image memory
+* Fix DirectX12 GPU-validation warnings for texture loaders
+* Minor fix for non-Win32 builds
+* ddsview: Updated sample app with a ``-forcesrgb`` command-line switch
+
+### December 15, 2022
+* ARM/ARM64 platform fix for 16bpp pixel conversion
+* Updated D3DX12 internal copy with latest changes from DirectX-Headers GitHub
+* CMake project updated to require 3.20 or later
+* CMake and MSBuild project updates
+* Added Azure Dev Ops Pipeline YAML files
+* ``Auxiliary`` folder added with DirectXEXR.h/.cpp optional module
+* Test suite updated with CTest support
+* Spectre-mitigated libraries added to NuGet packages
+* texassemble: added commands *v-cross-fnz*, *h-tee*, and *cube-from-\**
+* texconv: Fixed minor printf output issue
+
+### October 17, 2022
+* Minor fix for ``CompileShaders.cmd`` to address additional 'paths with spaces' issues
+* Minor CMake and CMakePresets updates
+* Code review
+
+### July 29, 2022
+* Added ``MakeLinear`` DXGI_FORMAT utility function.
+* *breaking change* ``CreateTextureEx`` and ``CreateShaderResourceViewEx`` functions now use ``CREATETEX_FLAGS`` instead of a ``bool forceSRGB`` parameter.
+* Updates for MinGW ABI fixes for DirectX12 in the latest DirectX-Headers.
+* CMake and MSBuild project updates
+* Code review
+* `DDSTextureLoader11` and ``DDSTextureLoader12`` sync'd up with *DirectX Tool Kit* July 2022 changes.
+
 ### May 9, 2022
 * TGA reader updated to support 24-bit paletted uncompressed color-mapped images (used by a DCC application)
-* Added IsBGR utility method
-* Workaround for driver issue on some systems using DirectX 11 Capture method
-* Fix for problem with resizing/mipmaps generation for HDR content which should avoid going through WIC code paths
+* Added `IsBGR` utility method
+* Workaround for driver issue on some systems using DirectX 11 `Capture` method
+* Fix for problem with resizing/mipmaps generation for HDR content using box/fant filter which should avoid going through WIC code paths
 * Minor updates for VS 2022 (17.2)
 * CMake project updates (now supports MSVC, clang/LLVM, and MinGW)
 * Updated D3DX12 internal copy with latest changes from DirectX-Headers GitHub
 * Retired VS 2017 projects
 * Code cleanup
 * Reformat source using updated .editorconfig settings
-* texconv: Improve -nmap handling for 16-bit sources going to BC formats
+* texconv: Improve `-nmap` handling for 16-bit sources going to BC formats
 
 ### March 24, 2022
 * Fixed end-point bounds issue with BC6H CPU compressor if none of the pixels are in 0-1 range
@@ -252,7 +306,7 @@ Release available for download on [GitHub](https://github.com/microsoft/DirectXT
 ### July 26, 2017
 * Support for reading non-standard DDS files written by nVidia Texture Tools (NVTT)
 * Fix for **ComputeMSE** when using ``CMSE_IMAGE2_X2_BIAS``
-* Fix for WIC writer then codec target format requires a palette    
+* Fix for WIC writer then codec target format requires a palette
 * Code cleanup
 
 ### April 24, 2017

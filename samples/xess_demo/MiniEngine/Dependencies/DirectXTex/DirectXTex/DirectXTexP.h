@@ -12,7 +12,7 @@
 #pragma once
 
 // Off by default warnings
-#pragma warning(disable : 4619 4616 4061 4265 4365 4571 4623 4625 4626 4628 4668 4710 4711 4746 4774 4820 4987 5026 5027 5031 5032 5039 5045 5219 5246 26812)
+#pragma warning(disable : 4619 4616 4061 4265 4365 4571 4623 4625 4626 4628 4668 4710 4711 4746 4774 4820 4987 5026 5027 5031 5032 5039 5045 5219 5246 5264 26812)
 // C4619/4616 #pragma warning warnings
 // C4061 enumerator 'X' in switch of enum 'X' is not explicitly handled by a case label
 // C4265 class has virtual functions, but destructor is not virtual
@@ -36,6 +36,7 @@
 // C5045 Spectre mitigation warning
 // C5219 implicit conversion from 'int' to 'float', possible loss of data
 // C5246 the initialization of a subobject should be wrapped in braces
+// C5264 'const' variable is not used
 // 26812: The enum type 'x' is unscoped. Prefer 'enum class' over 'enum' (Enum.3).
 
 // Windows 8.1 SDK related Off by default warnings
@@ -69,6 +70,7 @@
 #pragma clang diagnostic ignored "-Wswitch-enum"
 #pragma clang diagnostic ignored "-Wtautological-type-limit-compare"
 #pragma clang diagnostic ignored "-Wunknown-pragmas"
+#pragma clang diagnostic ignored "-Wundef"
 #endif
 
 #ifdef _WIN32
@@ -153,9 +155,9 @@
 
 #include "DirectXTex.h"
 
+#ifdef _WIN32
 #include <malloc.h>
 
-#ifdef _WIN32
 #if defined(NTDDI_WIN10_FE) || defined(__MINGW32__)
 #include <ole2.h>
 #else
@@ -184,6 +186,8 @@ using WICPixelFormatGUID = GUID;
 #endif
 
 #define XBOX_DXGI_FORMAT_R4G4_UNORM DXGI_FORMAT(190)
+
+#define WIN11_DXGI_FORMAT_A4B4G4R4_UNORM DXGI_FORMAT(191)
 
 #if defined(__MINGW32__) && !defined(E_BOUNDS)
 #define E_BOUNDS static_cast<HRESULT>(0x8000000BL)
@@ -308,7 +312,7 @@ namespace DirectX
 
         //---------------------------------------------------------------------------------
         // Image helper functions
-        _Success_(return) bool __cdecl DetermineImageArray(
+        HRESULT __cdecl DetermineImageArray(
             _In_ const TexMetadata& metadata, _In_ CP_FLAGS cpFlags,
             _Out_ size_t& nImages, _Out_ size_t& pixelSize) noexcept;
 
@@ -435,16 +439,4 @@ namespace DirectX
     #endif
 
     } // namespace Internal
-
-    //---------------------------------------------------------------------------------
-        // EXR helper functions
-    HRESULT __cdecl GetMetadataFromEXRFile(
-        _In_z_ const wchar_t* szFile,
-        _Out_ TexMetadata& metadata);
-
-    HRESULT __cdecl LoadFromEXRFile(
-        _In_z_ const wchar_t* szFile,
-        _Out_opt_ TexMetadata* metadata, _Out_ ScratchImage& image);
-
-    HRESULT __cdecl SaveToEXRFile(_In_ const Image& image, _In_z_ const wchar_t* szFile);
 } // namespace DirectX

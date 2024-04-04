@@ -4,18 +4,26 @@
   <PropertyGroup Label="Debug" Condition="'$(Configuration.ToLower())' == 'debug'">
     <NuGetConfiguration>Debug</NuGetConfiguration>
   </PropertyGroup>
-  <PropertyGroup Label="Non_Debug" Condition="'$(Configuration.ToLower())' != 'debug'">
+  <PropertyGroup Label="Non_Debug" Condition="'$(Configuration.ToLower())' == 'profile'">
+    <NuGetConfiguration>Release</NuGetConfiguration>
+  </PropertyGroup>
+  <PropertyGroup Label="Non_Debug" Condition="'$(Configuration.ToLower())' == 'release'">
+    <NuGetConfiguration>Release</NuGetConfiguration>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(NuGetConfiguration)' == ''">
     <NuGetConfiguration>Release</NuGetConfiguration>
   </PropertyGroup>
 
   <PropertyGroup>
-    <directxtex-LibPath>$(MSBuildThisFileDirectory)..\..\native\lib\$(Platform)\$(NuGetConfiguration)</directxtex-LibPath>
+    <directxtex-LibPath>$(MSBuildThisFileDirectory)..\..\native\lib\$(PlatformTarget)\$(NuGetConfiguration)</directxtex-LibPath>
+    <directxtex-LibName Condition="'$(SpectreMitigation)'!='' AND '$(SpectreMitigation)'!='false'">DirectXTex_Spectre</directxtex-LibName>
+    <directxtex-LibName Condition="'$(directxtex-LibName)'==''">DirectXTex</directxtex-LibName>
   </PropertyGroup>
 
   <ItemDefinitionGroup>
     <Link>
       <AdditionalLibraryDirectories>$(directxtex-LibPath);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>DirectXTex.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(directxtex-LibName).lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
 

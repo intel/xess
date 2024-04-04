@@ -26,7 +26,7 @@
  <tr id="projectrow">
   <td id="projectlogo"><img alt="Logo" src="intel-logo.jpg"/></td>
   <td id="projectalign">
-   <div id="projectname">XeSS SDK API Reference Guide<span id="projectnumber">&#160;1.2.0</span>
+   <div id="projectname">XeSS SDK API Reference Guide<span id="projectnumber">&#160;1.3.0</span>
    </div>
   </td>
  </tr>
@@ -156,10 +156,16 @@ Typedefs</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="enum-members" name="enum-members"></a>
 Enumerations</h2></td></tr>
-<tr class="memitem:acc1be3e82183f25c7188fa6b5cbf1e34"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="xess_8h.html#acc1be3e82183f25c7188fa6b5cbf1e34">_xess_quality_settings_t</a> { <a class="el" href="xess_8h.html#acc1be3e82183f25c7188fa6b5cbf1e34a375807073d5e41d49599bc4c3796a298">XESS_QUALITY_SETTING_PERFORMANCE</a> = 101
+<tr class="memitem:acc1be3e82183f25c7188fa6b5cbf1e34"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="xess_8h.html#acc1be3e82183f25c7188fa6b5cbf1e34">_xess_quality_settings_t</a> { <br />
+&#160;&#160;<a class="el" href="xess_8h.html#acc1be3e82183f25c7188fa6b5cbf1e34a5803e825cd025c644427e6e16316e182">XESS_QUALITY_SETTING_ULTRA_PERFORMANCE</a> = 100
+, <a class="el" href="xess_8h.html#acc1be3e82183f25c7188fa6b5cbf1e34a375807073d5e41d49599bc4c3796a298">XESS_QUALITY_SETTING_PERFORMANCE</a> = 101
 , <a class="el" href="xess_8h.html#acc1be3e82183f25c7188fa6b5cbf1e34af42585b087b48ac84f15147eca7f84fc">XESS_QUALITY_SETTING_BALANCED</a> = 102
 , <a class="el" href="xess_8h.html#acc1be3e82183f25c7188fa6b5cbf1e34aad6611bfc9d8b4367d40cc4341781071">XESS_QUALITY_SETTING_QUALITY</a> = 103
-, <a class="el" href="xess_8h.html#acc1be3e82183f25c7188fa6b5cbf1e34a2307f69631f48661ec35997e6b9dfa7b">XESS_QUALITY_SETTING_ULTRA_QUALITY</a> = 104
+, <br />
+&#160;&#160;<a class="el" href="xess_8h.html#acc1be3e82183f25c7188fa6b5cbf1e34a2307f69631f48661ec35997e6b9dfa7b">XESS_QUALITY_SETTING_ULTRA_QUALITY</a> = 104
+, <a class="el" href="xess_8h.html#acc1be3e82183f25c7188fa6b5cbf1e34af8274e9b7edb2c2bba9f4f68f7ebce53">XESS_QUALITY_SETTING_ULTRA_QUALITY_PLUS</a> = 105
+, <a class="el" href="xess_8h.html#acc1be3e82183f25c7188fa6b5cbf1e34a4f1f0df837971632fff6cf8d85779b36">XESS_QUALITY_SETTING_AA</a> = 106
+<br />
  }</td></tr>
 <tr class="memdesc:acc1be3e82183f25c7188fa6b5cbf1e34"><td class="mdescLeft">&#160;</td><td class="mdescRight">X<sup>e</sup>SS quality settings.  <a href="xess_8h.html#acc1be3e82183f25c7188fa6b5cbf1e34">More...</a><br /></td></tr>
 <tr class="separator:acc1be3e82183f25c7188fa6b5cbf1e34"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -243,12 +249,21 @@ Functions</h2></td></tr>
 <tr class="memitem:ga0f95b12fe2611b877d72efdd9f050639"><td class="memItemLeft" align="right" valign="top"><a class="el" href="xess_8h.html#ac7ba74abaad1e5cf4ca1fffa7fee838c">XESS_API</a> <a class="el" href="xess_8h.html#a3aa6a07808627ac723a9da324abf10b4">xess_result_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__xess.html#ga0f95b12fe2611b877d72efdd9f050639">xessSetVelocityScale</a> (<a class="el" href="xess_8h.html#af31f441c4909f7bbf9fb4491b5f9b927">xess_context_handle_t</a> hContext, float x, float y)</td></tr>
 <tr class="memdesc:ga0f95b12fe2611b877d72efdd9f050639"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets velocity scale value.  <a href="group__xess.html#ga0f95b12fe2611b877d72efdd9f050639">More...</a><br /></td></tr>
 <tr class="separator:ga0f95b12fe2611b877d72efdd9f050639"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae86133e9850ce4926f97e96a888259cc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="xess_8h.html#ac7ba74abaad1e5cf4ca1fffa7fee838c">XESS_API</a> <a class="el" href="xess_8h.html#a3aa6a07808627ac723a9da324abf10b4">xess_result_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__xess.html#gae86133e9850ce4926f97e96a888259cc">xessSetExposureMultiplier</a> (<a class="el" href="xess_8h.html#af31f441c4909f7bbf9fb4491b5f9b927">xess_context_handle_t</a> hContext, float scale)</td></tr>
+<tr class="memdesc:gae86133e9850ce4926f97e96a888259cc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets exposure scale value.  <a href="group__xess.html#gae86133e9850ce4926f97e96a888259cc">More...</a><br /></td></tr>
+<tr class="separator:gae86133e9850ce4926f97e96a888259cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga84293d9d7a2331dcac496a3dbb8a9a7c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="xess_8h.html#ac7ba74abaad1e5cf4ca1fffa7fee838c">XESS_API</a> <a class="el" href="xess_8h.html#a3aa6a07808627ac723a9da324abf10b4">xess_result_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__xess.html#ga84293d9d7a2331dcac496a3dbb8a9a7c">xessGetExposureMultiplier</a> (<a class="el" href="xess_8h.html#af31f441c4909f7bbf9fb4491b5f9b927">xess_context_handle_t</a> hContext, float *pScale)</td></tr>
+<tr class="memdesc:ga84293d9d7a2331dcac496a3dbb8a9a7c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets exposure scale value.  <a href="group__xess.html#ga84293d9d7a2331dcac496a3dbb8a9a7c">More...</a><br /></td></tr>
+<tr class="separator:ga84293d9d7a2331dcac496a3dbb8a9a7c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaaf68a347af5e5c9c1e518f0bc5daaf1c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="xess_8h.html#ac7ba74abaad1e5cf4ca1fffa7fee838c">XESS_API</a> <a class="el" href="xess_8h.html#a3aa6a07808627ac723a9da324abf10b4">xess_result_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__xess.html#gaaf68a347af5e5c9c1e518f0bc5daaf1c">xessSetLoggingCallback</a> (<a class="el" href="xess_8h.html#af31f441c4909f7bbf9fb4491b5f9b927">xess_context_handle_t</a> hContext, <a class="el" href="xess_8h.html#a6432053aa5103ccd9df8618a7eaaacb8">xess_logging_level_t</a> loggingLevel, <a class="el" href="xess_8h.html#a0d102f62adf531a2cd721e4b78a1cd18">xess_app_log_callback_t</a> loggingCallback)</td></tr>
 <tr class="memdesc:gaaf68a347af5e5c9c1e518f0bc5daaf1c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets logging callback.  <a href="group__xess.html#gaaf68a347af5e5c9c1e518f0bc5daaf1c">More...</a><br /></td></tr>
 <tr class="separator:gaaf68a347af5e5c9c1e518f0bc5daaf1c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga716ee0ab9df5de9726315ba5df21308c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="xess_8h.html#ac7ba74abaad1e5cf4ca1fffa7fee838c">XESS_API</a> <a class="el" href="xess_8h.html#a3aa6a07808627ac723a9da324abf10b4">xess_result_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__xess.html#ga716ee0ab9df5de9726315ba5df21308c">xessIsOptimalDriver</a> (<a class="el" href="xess_8h.html#af31f441c4909f7bbf9fb4491b5f9b927">xess_context_handle_t</a> hContext)</td></tr>
 <tr class="memdesc:ga716ee0ab9df5de9726315ba5df21308c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Indicates if the installed driver supports best X<sup>e</sup>SS experience.  <a href="group__xess.html#ga716ee0ab9df5de9726315ba5df21308c">More...</a><br /></td></tr>
 <tr class="separator:ga716ee0ab9df5de9726315ba5df21308c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga016818ad0a8454cfce7a2316450df20e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="xess_8h.html#ac7ba74abaad1e5cf4ca1fffa7fee838c">XESS_API</a> <a class="el" href="xess_8h.html#a3aa6a07808627ac723a9da324abf10b4">xess_result_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__xess.html#ga016818ad0a8454cfce7a2316450df20e">xessForceLegacyScaleFactors</a> (<a class="el" href="xess_8h.html#af31f441c4909f7bbf9fb4491b5f9b927">xess_context_handle_t</a> hContext, bool force)</td></tr>
+<tr class="memdesc:ga016818ad0a8454cfce7a2316450df20e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Forces usage of legacy (pre 1.3.0) scale factors.  <a href="group__xess.html#ga016818ad0a8454cfce7a2316450df20e">More...</a><br /></td></tr>
+<tr class="separator:ga016818ad0a8454cfce7a2316450df20e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Macro Definition Documentation</h2>
 <a id="ac7ba74abaad1e5cf4ca1fffa7fee838c" name="ac7ba74abaad1e5cf4ca1fffa7fee838c"></a>
@@ -358,7 +373,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="xess_8h_source.html#l00341">341</a> of file <a class="el" href="xess_8h_source.html">xess.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="xess_8h_source.html#l00385">385</a> of file <a class="el" href="xess_8h_source.html">xess.h</a>.</p>
 
 </div>
 </div>
@@ -391,7 +406,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p >A logging callback provided by the application. This callback can be called from other threads. Message pointer are only valid inside function and may be invalid right after return call. Message is a null-terminated utf-8 string </p>
 
-<p class="definition">Definition at line <a class="el" href="xess_8h_source.html#l00195">195</a> of file <a class="el" href="xess_8h_source.html">xess.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="xess_8h_source.html#l00198">198</a> of file <a class="el" href="xess_8h_source.html">xess.h</a>.</p>
 
 </div>
 </div>
@@ -562,7 +577,7 @@ Functions</h2></td></tr>
 </td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="xess_8h_source.html#l00103">103</a> of file <a class="el" href="xess_8h_source.html">xess.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="xess_8h_source.html#l00106">106</a> of file <a class="el" href="xess_8h_source.html">xess.h</a>.</p>
 
 </div>
 </div>
@@ -586,7 +601,7 @@ Functions</h2></td></tr>
 <tr><td class="fieldname"><a id="a12f0fd50664b1a61319821499ec24721a7142dcde3f8100558086ad32c674242b" name="a12f0fd50664b1a61319821499ec24721a7142dcde3f8100558086ad32c674242b"></a>XESS_LOGGING_LEVEL_ERROR&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="xess_8h_source.html#l00182">182</a> of file <a class="el" href="xess_8h_source.html">xess.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="xess_8h_source.html#l00185">185</a> of file <a class="el" href="xess_8h_source.html">xess.h</a>.</p>
 
 </div>
 </div>
@@ -604,10 +619,13 @@ Functions</h2></td></tr>
 
 <p>X<sup>e</sup>SS quality settings. </p>
 <table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="acc1be3e82183f25c7188fa6b5cbf1e34a375807073d5e41d49599bc4c3796a298" name="acc1be3e82183f25c7188fa6b5cbf1e34a375807073d5e41d49599bc4c3796a298"></a>XESS_QUALITY_SETTING_PERFORMANCE&#160;</td><td class="fielddoc"></td></tr>
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="acc1be3e82183f25c7188fa6b5cbf1e34a5803e825cd025c644427e6e16316e182" name="acc1be3e82183f25c7188fa6b5cbf1e34a5803e825cd025c644427e6e16316e182"></a>XESS_QUALITY_SETTING_ULTRA_PERFORMANCE&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="acc1be3e82183f25c7188fa6b5cbf1e34a375807073d5e41d49599bc4c3796a298" name="acc1be3e82183f25c7188fa6b5cbf1e34a375807073d5e41d49599bc4c3796a298"></a>XESS_QUALITY_SETTING_PERFORMANCE&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="acc1be3e82183f25c7188fa6b5cbf1e34af42585b087b48ac84f15147eca7f84fc" name="acc1be3e82183f25c7188fa6b5cbf1e34af42585b087b48ac84f15147eca7f84fc"></a>XESS_QUALITY_SETTING_BALANCED&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="acc1be3e82183f25c7188fa6b5cbf1e34aad6611bfc9d8b4367d40cc4341781071" name="acc1be3e82183f25c7188fa6b5cbf1e34aad6611bfc9d8b4367d40cc4341781071"></a>XESS_QUALITY_SETTING_QUALITY&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="acc1be3e82183f25c7188fa6b5cbf1e34a2307f69631f48661ec35997e6b9dfa7b" name="acc1be3e82183f25c7188fa6b5cbf1e34a2307f69631f48661ec35997e6b9dfa7b"></a>XESS_QUALITY_SETTING_ULTRA_QUALITY&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="acc1be3e82183f25c7188fa6b5cbf1e34af8274e9b7edb2c2bba9f4f68f7ebce53" name="acc1be3e82183f25c7188fa6b5cbf1e34af8274e9b7edb2c2bba9f4f68f7ebce53"></a>XESS_QUALITY_SETTING_ULTRA_QUALITY_PLUS&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="acc1be3e82183f25c7188fa6b5cbf1e34a4f1f0df837971632fff6cf8d85779b36" name="acc1be3e82183f25c7188fa6b5cbf1e34a4f1f0df837971632fff6cf8d85779b36"></a>XESS_QUALITY_SETTING_AA&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
 <p class="definition">Definition at line <a class="el" href="xess_8h_source.html#l00092">92</a> of file <a class="el" href="xess_8h_source.html">xess.h</a>.</p>
@@ -660,7 +678,7 @@ Functions</h2></td></tr>
 </td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="xess_8h_source.html#l00144">144</a> of file <a class="el" href="xess_8h_source.html">xess.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="xess_8h_source.html#l00147">147</a> of file <a class="el" href="xess_8h_source.html">xess.h</a>.</p>
 
 </div>
 </div>

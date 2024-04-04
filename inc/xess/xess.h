@@ -91,10 +91,13 @@ typedef xess_2d_t xess_coord_t;
  */
 typedef enum _xess_quality_settings_t
 {
+    XESS_QUALITY_SETTING_ULTRA_PERFORMANCE = 100,
     XESS_QUALITY_SETTING_PERFORMANCE = 101,
     XESS_QUALITY_SETTING_BALANCED = 102,
     XESS_QUALITY_SETTING_QUALITY = 103,
     XESS_QUALITY_SETTING_ULTRA_QUALITY = 104,
+    XESS_QUALITY_SETTING_ULTRA_QUALITY_PLUS = 105,
+    XESS_QUALITY_SETTING_AA = 106,
 } xess_quality_settings_t;
 
 /**
@@ -251,7 +254,7 @@ XESS_API xess_result_t xessGetInputResolution(xess_context_handle_t hContext,
  * Motion vectors can be either in output resolution (XESS_INIT_FLAG_HIGH_RES_MV) or
  * in the same resolution as other input buffers (by default).
  *
- * @note Aspect ratio of the input resolution must be the same as for the output resoulution.
+ * @note Aspect ratio of the input resolution must be the same as for the output resolution.
  *
  * @param hContext The X<sup>e</sup>SS context handle.
  * @param pOutputResolution Output resolution to calculate input resolution for.
@@ -312,6 +315,26 @@ XESS_API xess_result_t xessSetJitterScale(xess_context_handle_t hContext, float 
 XESS_API xess_result_t xessSetVelocityScale(xess_context_handle_t hContext, float x, float y);
 
 /**
+ * @brief Sets exposure scale value
+ *
+ * This value will be applied on top of any passed exposure value or automatically calculated exposure.
+ *
+ * @param hContext The X<sup>e</sup>SS context handle.
+ * @param scale scale value.
+ * @return X<sup>e</sup>SS return status code.
+ */
+XESS_API xess_result_t xessSetExposureMultiplier(xess_context_handle_t hContext, float scale);
+
+/**
+ * @brief Gets exposure scale value
+ *
+ * @param hContext The X<sup>e</sup>SS context handle.
+ * @param[out] pScale Exposure scale pointer.
+ * @return X<sup>e</sup>SS return status code.
+ */
+XESS_API xess_result_t xessGetExposureMultiplier(xess_context_handle_t hContext, float *pScale);
+
+/**
  * @brief Sets logging callback
  *
  * @param hContext The X<sup>e</sup>SS context handle.
@@ -332,6 +355,27 @@ XESS_API xess_result_t xessSetLoggingCallback(xess_context_handle_t hContext,
  * not support X<sup>e</sup>SS  at all.
  */
 XESS_API xess_result_t xessIsOptimalDriver(xess_context_handle_t hContext);
+
+/**
+ * @brief Forces usage of legacy (pre 1.3.0) scale factors
+ *
+ * Following scale factors will be appied:
+ * @li XESS_QUALITY_SETTING_ULTRA_PERFORMANCE: 3.0
+ * @li XESS_QUALITY_SETTING_PERFORMANCE: 2.0
+ * @li XESS_QUALITY_SETTING_BALANCED: 1.7
+ * @li XESS_QUALITY_SETTING_QUALITY: 1.5
+ * @li XESS_QUALITY_SETTING_ULTRA_QUALITY: 1.3
+ * @li XESS_QUALITY_SETTING_AA: 1.0
+ * In order to apply new scale factors application should call xessGetOptimalInputResolution and
+ * initialization function (xess*Init)
+ *
+ * @param hContext The X<sup>e</sup>SS context handle.
+ * @param force if set to true legacy scale factors will be forced, if set to false - scale factors
+ * will be selected by X<sup>e</sup>SS
+ *
+ * @return X<sup>e</sup>SS return status code.
+ */
+XESS_API xess_result_t xessForceLegacyScaleFactors(xess_context_handle_t hContext, bool force);
 
 /** @}*/
   

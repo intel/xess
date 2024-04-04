@@ -162,7 +162,7 @@ void Graphics::Initialize(void)
 
     uint32_t useDebugLayers = 0;
     CommandLineArgs::GetInteger(L"debug", useDebugLayers);
-#if _DEBUG
+#if 0
     // Default to true for debug builds
     useDebugLayers = 1;
 #endif
@@ -192,7 +192,7 @@ void Graphics::Initialize(void)
             LOG_WARN("WARNING:  Unable to enable D3D12 debug validation layer.");
         }
 
-#if _DEBUG
+#if 0
         ComPtr<IDXGIInfoQueue> dxgiInfoQueue;
         if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(dxgiInfoQueue.GetAddressOf()))))
         {
@@ -297,7 +297,7 @@ void Graphics::Initialize(void)
 
         // Prevent the GPU from overclocking or underclocking to get consistent timings
         if (DeveloperModeEnabled)
-            g_Device->SetStablePowerState(TRUE);
+            g_Device->SetStablePowerState(false);
     }
 #endif	
 

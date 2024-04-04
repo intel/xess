@@ -6,6 +6,35 @@ Releases available for download on [GitHub](https://github.com/microsoft/DirectX
 
 ## Release History
 
+### June 13, 2023
+* CMake project updates
+* meshconvert: Fix minor display issue with error messages
+* meshconvert: Supports Long Paths on Windows 10, Version 1607 or later
+
+### April 28, 2023
+* CMake project updates and fixes for clang/LLVM v16 warnings
+* meshconvert: Windows on ARM64 version
+
+### March 30, 2023
+* CMake project updates
+* Minor code review
+* Retired VS 2017 legacy Xbox One XDK projects
+* meshconvert: Updated to support Windows or UNIX-style path separators
+
+### December 15, 2022
+* ARM/ARM64 platform fix for VBWriter 16bpp conversion
+* CMake project updated to require 3.20 or later
+* CMake and MSBuild project updates
+* Added Azure Dev Ops Pipeline YAML files
+* Test suite updated with CTest support
+* Spectre-mitigated libraries added to NuGet packages
+
+### October 17, 2022
+* Minor CMake and CMakePresets updates
+
+### July 29, 2022
+* CMake and MSBuild project updates
+
 ### May 9, 2022
 * Minor updates for VS 2022 (17.2)
 * CMake project updates (now supports MSVC, clang/LLVM, and MinGW)

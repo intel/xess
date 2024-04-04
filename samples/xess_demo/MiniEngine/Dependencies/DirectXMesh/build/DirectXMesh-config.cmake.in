@@ -1,0 +1,21 @@
+@PACKAGE_INIT@
+
+if ((NOT directxmesh_FIND_COMPONENTS) OR ("library" IN_LIST directxmesh_FIND_COMPONENTS))
+  include(${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@-targets.cmake)
+endif()
+
+if ("utils" IN_LIST directxmesh_FIND_COMPONENTS)
+  include(${CMAKE_CURRENT_LIST_DIR}/Utilities-targets.cmake)
+endif()
+
+include(CMakeFindDependencyMacro)
+
+if(MINGW OR (NOT WIN32))
+    find_dependency(directx-headers)
+    find_dependency(directxmath)
+else()
+    find_package(directx-headers CONFIG QUIET)
+    find_package(directxmath CONFIG QUIET)
+endif()
+
+check_required_components("@PROJECT_NAME@")

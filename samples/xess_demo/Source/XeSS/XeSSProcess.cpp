@@ -68,7 +68,9 @@ namespace XeSS
     float s_CustomizedMipBias = FLT_MAX;
     bool s_ResetHistory = false;
     bool s_DynResEnabled = false;
+    bool s_DynResAnimationEnabled = false;
     float s_UpscaleFactor = 2.0f;
+    bool s_ForceLegacyScaleFactors = false;
 
     uint32_t s_InputWidth = 0;
     uint32_t s_InputHeight = 0;
@@ -146,7 +148,6 @@ void XeSS::Initialize()
 #undef CreatePSO
 
     SetOutputResolution(g_DisplayWidth, g_DisplayHeight);
-    XeSSDebug::SelectNetworkModel(0);
 }
 
 void XeSS::Shutdown()
@@ -165,8 +166,19 @@ void XeSS::GetInputResolution(uint32_t& Width, uint32_t& Height)
 {
     if (s_DynResEnabled)
     {
-        Width = ceil(s_OutputWidth / s_UpscaleFactor);
-        Height = ceil(s_OutputHeight / s_UpscaleFactor);
+        if (s_DynResAnimationEnabled)
+        {
+            Width = ceil(s_OutputWidth / s_UpscaleFactor);
+            Height = ceil(s_OutputHeight / s_UpscaleFactor);
+            Height -= (rand() % (Height) - Height / 2);
+            Height = min(Height, s_OutputHeight); // Clip to output size
+
+        }
+        else
+        {
+            Width = ceil(s_OutputWidth / s_UpscaleFactor);
+            Height = ceil(s_OutputHeight / s_UpscaleFactor);
+        }
     }
     else
     {
@@ -291,6 +303,19 @@ bool XeSS::IsDynResEnabled()
     return s_DynResEnabled;
 }
 
+bool XeSS::IsDynResAnimationEnabled()
+{
+    return s_DynResAnimationEnabled;
+}
+
+void XeSS::SetDynResAnimationEnabled(bool Enabled)
+{
+    if (s_DynResAnimationEnabled == Enabled)
+        return;
+
+    s_DynResAnimationEnabled = Enabled;
+}
+
 float XeSS::GetUpscaleFactor()
 {
     return s_UpscaleFactor;
@@ -373,6 +398,8 @@ void XeSS::UpdateRuntime()
     initArgs.UseAutoExposure = s_AutoExposureEnabled;
     initArgs.EnableProfiling = s_RuntimeProfilingEnabled;
 
+    g_XeSSRuntime.ForceLegacyScaleFactors(s_ForceLegacyScaleFactors);
+
     g_XeSSRuntime.Initialize(initArgs);
 
     s_RuntimeDirty = false;
@@ -434,6 +461,19 @@ void XeSS::SetProfilingEnabled(bool Enabled)
     s_RuntimeProfilingEnabled = Enabled;
     s_RuntimeDirty = true;
 }
+
+bool XeSS::IsLegacyScaleFactorsForced()
+{
+    return s_ForceLegacyScaleFactors;
+}
+void XeSS::ForceLegacyScaleFactors(bool force)
+{
+    if (s_ForceLegacyScaleFactors == force) return;
+    s_ForceLegacyScaleFactors = force;
+    s_InputResolutionDirty = true;
+    s_RuntimeDirty = true;
+}
+
 
 void XeSS::Process(CommandContext& BaseContext, const Camera& camera)
 {

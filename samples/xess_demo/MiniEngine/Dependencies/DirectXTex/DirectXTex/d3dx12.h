@@ -12,6 +12,13 @@
 
 #if defined( __cplusplus )
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wfloat-equal"
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+#endif
+
 struct CD3DX12_DEFAULT {};
 extern const DECLSPEC_SELECTANY CD3DX12_DEFAULT D3D12_DEFAULT;
 
@@ -76,7 +83,12 @@ struct CD3DX12_VIEWPORT : public D3D12_VIEWPORT
         FLOAT minDepth = D3D12_MIN_DEPTH,
         FLOAT maxDepth = D3D12_MAX_DEPTH ) noexcept
     {
+#if defined(_MSC_VER) || !defined(_WIN32)
         const auto Desc = pResource->GetDesc();
+#else
+        D3D12_RESOURCE_DESC tmpDesc;
+        const auto& Desc = *pResource->GetDesc(&tmpDesc);
+#endif
         const UINT64 SubresourceWidth = Desc.Width >> mipSlice;
         const UINT64 SubresourceHeight = Desc.Height >> mipSlice;
         switch (Desc.Dimension)
@@ -310,6 +322,133 @@ struct CD3DX12_DEPTH_STENCIL_DESC1 : public D3D12_DEPTH_STENCIL_DESC1
 };
 
 //------------------------------------------------------------------------------------------------
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 606)
+struct CD3DX12_DEPTH_STENCIL_DESC2 : public D3D12_DEPTH_STENCIL_DESC2
+{
+    CD3DX12_DEPTH_STENCIL_DESC2() = default;
+    explicit CD3DX12_DEPTH_STENCIL_DESC2( const D3D12_DEPTH_STENCIL_DESC2& o ) noexcept :
+        D3D12_DEPTH_STENCIL_DESC2( o )
+    {}
+    explicit CD3DX12_DEPTH_STENCIL_DESC2( const D3D12_DEPTH_STENCIL_DESC1& o ) noexcept
+    {
+        DepthEnable                  = o.DepthEnable;
+        DepthWriteMask               = o.DepthWriteMask;
+        DepthFunc                    = o.DepthFunc;
+        StencilEnable                = o.StencilEnable;
+        FrontFace.StencilFailOp      = o.FrontFace.StencilFailOp;
+        FrontFace.StencilDepthFailOp = o.FrontFace.StencilDepthFailOp;
+        FrontFace.StencilPassOp      = o.FrontFace.StencilPassOp;
+        FrontFace.StencilFunc        = o.FrontFace.StencilFunc;
+        FrontFace.StencilReadMask    = o.StencilReadMask;
+        FrontFace.StencilWriteMask   = o.StencilWriteMask;
+
+        BackFace.StencilFailOp       = o.BackFace.StencilFailOp;
+        BackFace.StencilDepthFailOp  = o.BackFace.StencilDepthFailOp;
+        BackFace.StencilPassOp       = o.BackFace.StencilPassOp;
+        BackFace.StencilFunc         = o.BackFace.StencilFunc;
+        BackFace.StencilReadMask     = o.StencilReadMask;
+        BackFace.StencilWriteMask    = o.StencilWriteMask;
+        DepthBoundsTestEnable        = o.DepthBoundsTestEnable;
+    }
+    explicit CD3DX12_DEPTH_STENCIL_DESC2( const D3D12_DEPTH_STENCIL_DESC& o ) noexcept
+    {
+        DepthEnable                  = o.DepthEnable;
+        DepthWriteMask               = o.DepthWriteMask;
+        DepthFunc                    = o.DepthFunc;
+        StencilEnable                = o.StencilEnable;
+
+        FrontFace.StencilFailOp      = o.FrontFace.StencilFailOp;
+        FrontFace.StencilDepthFailOp = o.FrontFace.StencilDepthFailOp;
+        FrontFace.StencilPassOp      = o.FrontFace.StencilPassOp;
+        FrontFace.StencilFunc        = o.FrontFace.StencilFunc;
+        FrontFace.StencilReadMask    = o.StencilReadMask;
+        FrontFace.StencilWriteMask   = o.StencilWriteMask;
+
+        BackFace.StencilFailOp       = o.BackFace.StencilFailOp;
+        BackFace.StencilDepthFailOp  = o.BackFace.StencilDepthFailOp;
+        BackFace.StencilPassOp       = o.BackFace.StencilPassOp;
+        BackFace.StencilFunc         = o.BackFace.StencilFunc;
+        BackFace.StencilReadMask     = o.StencilReadMask;
+        BackFace.StencilWriteMask    = o.StencilWriteMask;
+
+        DepthBoundsTestEnable        = FALSE;
+    }
+    explicit CD3DX12_DEPTH_STENCIL_DESC2( CD3DX12_DEFAULT ) noexcept
+    {
+        DepthEnable = TRUE;
+        DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+        DepthFunc = D3D12_COMPARISON_FUNC_LESS;
+        StencilEnable = FALSE;
+        const D3D12_DEPTH_STENCILOP_DESC1 defaultStencilOp =
+        { D3D12_STENCIL_OP_KEEP, D3D12_STENCIL_OP_KEEP, D3D12_STENCIL_OP_KEEP, D3D12_COMPARISON_FUNC_ALWAYS, D3D12_DEFAULT_STENCIL_READ_MASK, D3D12_DEFAULT_STENCIL_WRITE_MASK };
+        FrontFace = defaultStencilOp;
+        BackFace = defaultStencilOp;
+        DepthBoundsTestEnable = FALSE;
+    }
+    explicit CD3DX12_DEPTH_STENCIL_DESC2(
+        BOOL depthEnable,
+        D3D12_DEPTH_WRITE_MASK depthWriteMask,
+        D3D12_COMPARISON_FUNC depthFunc,
+        BOOL stencilEnable,
+        D3D12_STENCIL_OP frontStencilFailOp,
+        D3D12_STENCIL_OP frontStencilDepthFailOp,
+        D3D12_STENCIL_OP frontStencilPassOp,
+        D3D12_COMPARISON_FUNC frontStencilFunc,
+        UINT8 frontStencilReadMask,
+        UINT8 frontStencilWriteMask,
+        D3D12_STENCIL_OP backStencilFailOp,
+        D3D12_STENCIL_OP backStencilDepthFailOp,
+        D3D12_STENCIL_OP backStencilPassOp,
+        D3D12_COMPARISON_FUNC backStencilFunc,
+        UINT8 backStencilReadMask,
+        UINT8 backStencilWriteMask,
+        BOOL depthBoundsTestEnable ) noexcept
+    {
+        DepthEnable = depthEnable;
+        DepthWriteMask = depthWriteMask;
+        DepthFunc = depthFunc;
+        StencilEnable = stencilEnable;
+
+        FrontFace.StencilFailOp = frontStencilFailOp;
+        FrontFace.StencilDepthFailOp = frontStencilDepthFailOp;
+        FrontFace.StencilPassOp = frontStencilPassOp;
+        FrontFace.StencilFunc = frontStencilFunc;
+        FrontFace.StencilReadMask = frontStencilReadMask;
+        FrontFace.StencilWriteMask = frontStencilWriteMask;
+
+        BackFace.StencilFailOp = backStencilFailOp;
+        BackFace.StencilDepthFailOp = backStencilDepthFailOp;
+        BackFace.StencilPassOp = backStencilPassOp;
+        BackFace.StencilFunc = backStencilFunc;
+        BackFace.StencilReadMask = backStencilReadMask;
+        BackFace.StencilWriteMask = backStencilWriteMask;
+
+        DepthBoundsTestEnable = depthBoundsTestEnable;
+    }
+
+    operator D3D12_DEPTH_STENCIL_DESC() const noexcept
+    {
+        D3D12_DEPTH_STENCIL_DESC D;
+        D.DepthEnable = DepthEnable;
+        D.DepthWriteMask = DepthWriteMask;
+        D.DepthFunc = DepthFunc;
+        D.StencilEnable = StencilEnable;
+        D.StencilReadMask = FrontFace.StencilReadMask;
+        D.StencilWriteMask = FrontFace.StencilWriteMask;
+        D.FrontFace.StencilFailOp = FrontFace.StencilFailOp;
+        D.FrontFace.StencilDepthFailOp = FrontFace.StencilDepthFailOp;
+        D.FrontFace.StencilPassOp = FrontFace.StencilPassOp;
+        D.FrontFace.StencilFunc = FrontFace.StencilFunc;
+        D.BackFace.StencilFailOp = BackFace.StencilFailOp;
+        D.BackFace.StencilDepthFailOp = BackFace.StencilDepthFailOp;
+        D.BackFace.StencilPassOp = BackFace.StencilPassOp;
+        D.BackFace.StencilFunc = BackFace.StencilFunc;
+        return D;
+    }
+};
+#endif // D3D12_SDK_VERSION >= 606
+
+//------------------------------------------------------------------------------------------------
 struct CD3DX12_BLEND_DESC : public D3D12_BLEND_DESC
 {
     CD3DX12_BLEND_DESC() = default;
@@ -382,6 +521,198 @@ struct CD3DX12_RASTERIZER_DESC : public D3D12_RASTERIZER_DESC
 };
 
 //------------------------------------------------------------------------------------------------
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 608)
+struct CD3DX12_RASTERIZER_DESC1 : public D3D12_RASTERIZER_DESC1
+{
+    CD3DX12_RASTERIZER_DESC1() = default;
+    explicit CD3DX12_RASTERIZER_DESC1(const D3D12_RASTERIZER_DESC1& o) noexcept :
+        D3D12_RASTERIZER_DESC1(o)
+
+    {
+    }
+    explicit CD3DX12_RASTERIZER_DESC1(const D3D12_RASTERIZER_DESC& o) noexcept
+    {
+        FillMode = o.FillMode;
+        CullMode = o.CullMode;
+        FrontCounterClockwise = o.FrontCounterClockwise;
+        DepthBias = static_cast<FLOAT>(o.DepthBias);
+        DepthBiasClamp = o.DepthBiasClamp;
+        SlopeScaledDepthBias = o.SlopeScaledDepthBias;
+        DepthClipEnable = o.DepthClipEnable;
+        MultisampleEnable = o.MultisampleEnable;
+        AntialiasedLineEnable = o.AntialiasedLineEnable;
+        ForcedSampleCount = o.ForcedSampleCount;
+        ConservativeRaster = o.ConservativeRaster;
+    }
+    explicit CD3DX12_RASTERIZER_DESC1(CD3DX12_DEFAULT) noexcept
+    {
+        FillMode = D3D12_FILL_MODE_SOLID;
+        CullMode = D3D12_CULL_MODE_BACK;
+        FrontCounterClockwise = FALSE;
+        DepthBias = D3D12_DEFAULT_DEPTH_BIAS;
+        DepthBiasClamp = D3D12_DEFAULT_DEPTH_BIAS_CLAMP;
+        SlopeScaledDepthBias = D3D12_DEFAULT_SLOPE_SCALED_DEPTH_BIAS;
+        DepthClipEnable = TRUE;
+        MultisampleEnable = FALSE;
+        AntialiasedLineEnable = FALSE;
+        ForcedSampleCount = 0;
+        ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
+    }
+    explicit CD3DX12_RASTERIZER_DESC1(
+        D3D12_FILL_MODE fillMode,
+        D3D12_CULL_MODE cullMode,
+        BOOL frontCounterClockwise,
+        FLOAT depthBias,
+        FLOAT depthBiasClamp,
+        FLOAT slopeScaledDepthBias,
+        BOOL depthClipEnable,
+        BOOL multisampleEnable,
+        BOOL antialiasedLineEnable,
+        UINT forcedSampleCount,
+        D3D12_CONSERVATIVE_RASTERIZATION_MODE conservativeRaster) noexcept
+    {
+        FillMode = fillMode;
+        CullMode = cullMode;
+        FrontCounterClockwise = frontCounterClockwise;
+        DepthBias = depthBias;
+        DepthBiasClamp = depthBiasClamp;
+        SlopeScaledDepthBias = slopeScaledDepthBias;
+        DepthClipEnable = depthClipEnable;
+        MultisampleEnable = multisampleEnable;
+        AntialiasedLineEnable = antialiasedLineEnable;
+        ForcedSampleCount = forcedSampleCount;
+        ConservativeRaster = conservativeRaster;
+    }
+
+
+    operator D3D12_RASTERIZER_DESC() const noexcept
+    {
+        D3D12_RASTERIZER_DESC o;
+
+        o.FillMode = FillMode;
+        o.CullMode = CullMode;
+        o.FrontCounterClockwise = FrontCounterClockwise;
+        o.DepthBias = static_cast<INT>(DepthBias);
+        o.DepthBiasClamp = DepthBiasClamp;
+        o.SlopeScaledDepthBias = SlopeScaledDepthBias;
+        o.DepthClipEnable = DepthClipEnable;
+        o.MultisampleEnable = MultisampleEnable;
+        o.AntialiasedLineEnable = AntialiasedLineEnable;
+        o.ForcedSampleCount = ForcedSampleCount;
+        o.ConservativeRaster = ConservativeRaster;
+
+        return o;
+    }
+};
+#endif // D3D12_SDK_VERSION >= 608
+
+//------------------------------------------------------------------------------------------------
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 610)
+struct CD3DX12_RASTERIZER_DESC2 : public D3D12_RASTERIZER_DESC2
+{
+    CD3DX12_RASTERIZER_DESC2() = default;
+    explicit CD3DX12_RASTERIZER_DESC2(const D3D12_RASTERIZER_DESC2& o) noexcept :
+        D3D12_RASTERIZER_DESC2(o)
+
+    {
+    }
+    explicit CD3DX12_RASTERIZER_DESC2(const D3D12_RASTERIZER_DESC1& o) noexcept
+    {
+        FillMode = o.FillMode;
+        CullMode = o.CullMode;
+        FrontCounterClockwise = o.FrontCounterClockwise;
+        DepthBias = o.DepthBias;
+        DepthBiasClamp = o.DepthBiasClamp;
+        SlopeScaledDepthBias = o.SlopeScaledDepthBias;
+        DepthClipEnable = o.DepthClipEnable;
+        LineRasterizationMode = D3D12_LINE_RASTERIZATION_MODE_ALIASED;
+        if (o.MultisampleEnable)
+        {
+            LineRasterizationMode = D3D12_LINE_RASTERIZATION_MODE_QUADRILATERAL_WIDE;
+        }
+        else if (o.AntialiasedLineEnable)
+        {
+            LineRasterizationMode = D3D12_LINE_RASTERIZATION_MODE_ALPHA_ANTIALIASED;
+        }
+        ForcedSampleCount = o.ForcedSampleCount;
+        ConservativeRaster = o.ConservativeRaster;
+    }
+    explicit CD3DX12_RASTERIZER_DESC2(const D3D12_RASTERIZER_DESC& o) noexcept
+        : CD3DX12_RASTERIZER_DESC2(CD3DX12_RASTERIZER_DESC1(o))
+    {
+    }
+    explicit CD3DX12_RASTERIZER_DESC2(CD3DX12_DEFAULT) noexcept
+    {
+        FillMode = D3D12_FILL_MODE_SOLID;
+        CullMode = D3D12_CULL_MODE_BACK;
+        FrontCounterClockwise = FALSE;
+        DepthBias = D3D12_DEFAULT_DEPTH_BIAS;
+        DepthBiasClamp = D3D12_DEFAULT_DEPTH_BIAS_CLAMP;
+        SlopeScaledDepthBias = D3D12_DEFAULT_SLOPE_SCALED_DEPTH_BIAS;
+        DepthClipEnable = TRUE;
+        LineRasterizationMode = D3D12_LINE_RASTERIZATION_MODE_ALIASED;
+        ForcedSampleCount = 0;
+        ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
+    }
+    explicit CD3DX12_RASTERIZER_DESC2(
+        D3D12_FILL_MODE fillMode,
+        D3D12_CULL_MODE cullMode,
+        BOOL frontCounterClockwise,
+        FLOAT depthBias,
+        FLOAT depthBiasClamp,
+        FLOAT slopeScaledDepthBias,
+        BOOL depthClipEnable,
+        D3D12_LINE_RASTERIZATION_MODE lineRasterizationMode,
+        UINT forcedSampleCount,
+        D3D12_CONSERVATIVE_RASTERIZATION_MODE conservativeRaster) noexcept
+    {
+        FillMode = fillMode;
+        CullMode = cullMode;
+        FrontCounterClockwise = frontCounterClockwise;
+        DepthBias = depthBias;
+        DepthBiasClamp = depthBiasClamp;
+        SlopeScaledDepthBias = slopeScaledDepthBias;
+        DepthClipEnable = depthClipEnable;
+        LineRasterizationMode = lineRasterizationMode;
+        ForcedSampleCount = forcedSampleCount;
+        ConservativeRaster = conservativeRaster;
+    }
+
+
+    operator D3D12_RASTERIZER_DESC1() const noexcept
+    {
+        D3D12_RASTERIZER_DESC1 o;
+
+        o.FillMode = FillMode;
+        o.CullMode = CullMode;
+        o.FrontCounterClockwise = FrontCounterClockwise;
+        o.DepthBias = DepthBias;
+        o.DepthBiasClamp = DepthBiasClamp;
+        o.SlopeScaledDepthBias = SlopeScaledDepthBias;
+        o.DepthClipEnable = DepthClipEnable;
+        o.MultisampleEnable = FALSE;
+        o.AntialiasedLineEnable = FALSE;
+        if (LineRasterizationMode == D3D12_LINE_RASTERIZATION_MODE_ALPHA_ANTIALIASED)
+        {
+            o.AntialiasedLineEnable = TRUE;
+        }
+        else if (LineRasterizationMode != D3D12_LINE_RASTERIZATION_MODE_ALIASED)
+        {
+            o.MultisampleEnable = TRUE;
+        }
+        o.ForcedSampleCount = ForcedSampleCount;
+        o.ConservativeRaster = ConservativeRaster;
+
+        return o;
+    }
+    operator D3D12_RASTERIZER_DESC() const noexcept
+    {
+        return (D3D12_RASTERIZER_DESC)CD3DX12_RASTERIZER_DESC1((D3D12_RASTERIZER_DESC1)*this);
+    }
+};
+#endif // D3D12_SDK_VERSION >= 610
+
+//------------------------------------------------------------------------------------------------
 struct CD3DX12_RESOURCE_ALLOCATION_INFO : public D3D12_RESOURCE_ALLOCATION_INFO
 {
     CD3DX12_RESOURCE_ALLOCATION_INFO() = default;
@@ -429,8 +760,12 @@ struct CD3DX12_HEAP_PROPERTIES : public D3D12_HEAP_PROPERTIES
     }
     bool IsCPUAccessible() const noexcept
     {
-        return Type == D3D12_HEAP_TYPE_UPLOAD || Type == D3D12_HEAP_TYPE_READBACK || (Type == D3D12_HEAP_TYPE_CUSTOM &&
-            (CPUPageProperty == D3D12_CPU_PAGE_PROPERTY_WRITE_COMBINE || CPUPageProperty == D3D12_CPU_PAGE_PROPERTY_WRITE_BACK));
+        return Type == D3D12_HEAP_TYPE_UPLOAD || Type == D3D12_HEAP_TYPE_READBACK
+#if 0
+            || Type == D3D12_HEAP_TYPE_GPU_UPLOAD
+#endif
+            || (Type == D3D12_HEAP_TYPE_CUSTOM &&
+                (CPUPageProperty == D3D12_CPU_PAGE_PROPERTY_WRITE_COMBINE || CPUPageProperty == D3D12_CPU_PAGE_PROPERTY_WRITE_BACK));
     }
 };
 inline bool operator==( const D3D12_HEAP_PROPERTIES& l, const D3D12_HEAP_PROPERTIES& r ) noexcept
@@ -554,6 +889,25 @@ struct CD3DX12_CLEAR_VALUE : public D3D12_CLEAR_VALUE
         DepthStencil.Stencil = stencil;
     }
 };
+
+//------------------------------------------------------------------------------------------------
+inline bool operator==( const D3D12_CLEAR_VALUE &a, const D3D12_CLEAR_VALUE &b) noexcept
+{
+    if (a.Format != b.Format) return false;
+    if (a.Format == DXGI_FORMAT_D24_UNORM_S8_UINT
+     || a.Format == DXGI_FORMAT_D16_UNORM
+     || a.Format == DXGI_FORMAT_D32_FLOAT
+     || a.Format == DXGI_FORMAT_D32_FLOAT_S8X24_UINT)
+    {
+        return (a.DepthStencil.Depth == b.DepthStencil.Depth) &&
+          (a.DepthStencil.Stencil == b.DepthStencil.Stencil);
+    } else {
+        return (a.Color[0] == b.Color[0]) &&
+               (a.Color[1] == b.Color[1]) &&
+               (a.Color[2] == b.Color[2]) &&
+               (a.Color[3] == b.Color[3]);
+    }
+}
 
 //------------------------------------------------------------------------------------------------
 struct CD3DX12_RANGE : public D3D12_RANGE
@@ -739,8 +1093,8 @@ struct CD3DX12_RESOURCE_BARRIER : public D3D12_RESOURCE_BARRIER
         return result;
     }
     static inline CD3DX12_RESOURCE_BARRIER Aliasing(
-        _In_ ID3D12Resource* pResourceBefore,
-        _In_ ID3D12Resource* pResourceAfter) noexcept
+        _In_opt_ ID3D12Resource* pResourceBefore,
+        _In_opt_ ID3D12Resource* pResourceAfter) noexcept
     {
         CD3DX12_RESOURCE_BARRIER result = {};
         D3D12_RESOURCE_BARRIER &barrier = result;
@@ -750,7 +1104,7 @@ struct CD3DX12_RESOURCE_BARRIER : public D3D12_RESOURCE_BARRIER
         return result;
     }
     static inline CD3DX12_RESOURCE_BARRIER UAV(
-        _In_ ID3D12Resource* pResource) noexcept
+        _In_opt_ ID3D12Resource* pResource) noexcept
     {
         CD3DX12_RESOURCE_BARRIER result = {};
         D3D12_RESOURCE_BARRIER &barrier = result;
@@ -1189,6 +1543,120 @@ struct CD3DX12_STATIC_SAMPLER_DESC : public D3D12_STATIC_SAMPLER_DESC
 };
 
 //------------------------------------------------------------------------------------------------
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 609)
+struct CD3DX12_STATIC_SAMPLER_DESC1 : public D3D12_STATIC_SAMPLER_DESC1
+{
+    CD3DX12_STATIC_SAMPLER_DESC1() = default;
+    explicit CD3DX12_STATIC_SAMPLER_DESC1(const D3D12_STATIC_SAMPLER_DESC &o) noexcept
+    {
+        memcpy(this, &o, sizeof(D3D12_STATIC_SAMPLER_DESC));
+        Flags = D3D12_SAMPLER_FLAGS::D3D12_SAMPLER_FLAG_NONE;
+    }
+    explicit CD3DX12_STATIC_SAMPLER_DESC1(const D3D12_STATIC_SAMPLER_DESC1 & o) noexcept :
+        D3D12_STATIC_SAMPLER_DESC1(o)
+    {}
+    CD3DX12_STATIC_SAMPLER_DESC1(
+         UINT shaderRegister,
+         D3D12_FILTER filter = D3D12_FILTER_ANISOTROPIC,
+         D3D12_TEXTURE_ADDRESS_MODE addressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP,
+         D3D12_TEXTURE_ADDRESS_MODE addressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP,
+         D3D12_TEXTURE_ADDRESS_MODE addressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP,
+         FLOAT mipLODBias = 0,
+         UINT maxAnisotropy = 16,
+         D3D12_COMPARISON_FUNC comparisonFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL,
+         D3D12_STATIC_BORDER_COLOR borderColor = D3D12_STATIC_BORDER_COLOR_OPAQUE_WHITE,
+         FLOAT minLOD = 0.f,
+         FLOAT maxLOD = D3D12_FLOAT32_MAX,
+         D3D12_SHADER_VISIBILITY shaderVisibility = D3D12_SHADER_VISIBILITY_ALL,
+         UINT registerSpace = 0,
+         D3D12_SAMPLER_FLAGS flags = D3D12_SAMPLER_FLAGS::D3D12_SAMPLER_FLAG_NONE) noexcept
+    {
+        Init(
+            shaderRegister,
+            filter,
+            addressU,
+            addressV,
+            addressW,
+            mipLODBias,
+            maxAnisotropy,
+            comparisonFunc,
+            borderColor,
+            minLOD,
+            maxLOD,
+            shaderVisibility,
+            registerSpace,
+            flags);
+    }
+
+    static inline void Init(
+        _Out_ D3D12_STATIC_SAMPLER_DESC1 &samplerDesc,
+         UINT shaderRegister,
+         D3D12_FILTER filter = D3D12_FILTER_ANISOTROPIC,
+         D3D12_TEXTURE_ADDRESS_MODE addressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP,
+         D3D12_TEXTURE_ADDRESS_MODE addressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP,
+         D3D12_TEXTURE_ADDRESS_MODE addressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP,
+         FLOAT mipLODBias = 0,
+         UINT maxAnisotropy = 16,
+         D3D12_COMPARISON_FUNC comparisonFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL,
+         D3D12_STATIC_BORDER_COLOR borderColor = D3D12_STATIC_BORDER_COLOR_OPAQUE_WHITE,
+         FLOAT minLOD = 0.f,
+         FLOAT maxLOD = D3D12_FLOAT32_MAX,
+         D3D12_SHADER_VISIBILITY shaderVisibility = D3D12_SHADER_VISIBILITY_ALL,
+         UINT registerSpace = 0,
+        D3D12_SAMPLER_FLAGS flags = D3D12_SAMPLER_FLAGS::D3D12_SAMPLER_FLAG_NONE) noexcept
+    {
+        samplerDesc.ShaderRegister = shaderRegister;
+        samplerDesc.Filter = filter;
+        samplerDesc.AddressU = addressU;
+        samplerDesc.AddressV = addressV;
+        samplerDesc.AddressW = addressW;
+        samplerDesc.MipLODBias = mipLODBias;
+        samplerDesc.MaxAnisotropy = maxAnisotropy;
+        samplerDesc.ComparisonFunc = comparisonFunc;
+        samplerDesc.BorderColor = borderColor;
+        samplerDesc.MinLOD = minLOD;
+        samplerDesc.MaxLOD = maxLOD;
+        samplerDesc.ShaderVisibility = shaderVisibility;
+        samplerDesc.RegisterSpace = registerSpace;
+        samplerDesc.Flags = flags;
+    }
+    inline void Init(
+         UINT shaderRegister,
+         D3D12_FILTER filter = D3D12_FILTER_ANISOTROPIC,
+         D3D12_TEXTURE_ADDRESS_MODE addressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP,
+         D3D12_TEXTURE_ADDRESS_MODE addressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP,
+         D3D12_TEXTURE_ADDRESS_MODE addressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP,
+         FLOAT mipLODBias = 0,
+         UINT maxAnisotropy = 16,
+         D3D12_COMPARISON_FUNC comparisonFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL,
+         D3D12_STATIC_BORDER_COLOR borderColor = D3D12_STATIC_BORDER_COLOR_OPAQUE_WHITE,
+         FLOAT minLOD = 0.f,
+         FLOAT maxLOD = D3D12_FLOAT32_MAX,
+         D3D12_SHADER_VISIBILITY shaderVisibility = D3D12_SHADER_VISIBILITY_ALL,
+         UINT registerSpace = 0,
+         D3D12_SAMPLER_FLAGS flags = D3D12_SAMPLER_FLAGS::D3D12_SAMPLER_FLAG_NONE) noexcept
+    {
+        Init(
+            *this,
+            shaderRegister,
+            filter,
+            addressU,
+            addressV,
+            addressW,
+            mipLODBias,
+            maxAnisotropy,
+            comparisonFunc,
+            borderColor,
+            minLOD,
+            maxLOD,
+            shaderVisibility,
+            registerSpace,
+            flags);
+    }
+};
+#endif // D3D12_SDK_VERSION >= 609
+
+//------------------------------------------------------------------------------------------------
 struct CD3DX12_ROOT_SIGNATURE_DESC : public D3D12_ROOT_SIGNATURE_DESC
 {
     CD3DX12_ROOT_SIGNATURE_DESC() = default;
@@ -1480,6 +1948,13 @@ struct CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC : public D3D12_VERSIONED_ROOT_SIGNA
         Version = D3D_ROOT_SIGNATURE_VERSION_1_1;
         Desc_1_1 = o;
     }
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 609)
+    explicit CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC(const D3D12_ROOT_SIGNATURE_DESC2& o) noexcept
+    {
+        Version = D3D_ROOT_SIGNATURE_VERSION_1_2;
+        Desc_1_2 = o;
+    }
+#endif
     CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC(
         UINT numParameters,
         _In_reads_opt_(numParameters) const D3D12_ROOT_PARAMETER* _pParameters,
@@ -1554,6 +2029,23 @@ struct CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC : public D3D12_VERSIONED_ROOT_SIGNA
         desc.Desc_1_1.pStaticSamplers = _pStaticSamplers;
         desc.Desc_1_1.Flags = flags;
     }
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 609)
+    static inline void Init_1_2(
+        _Out_ D3D12_VERSIONED_ROOT_SIGNATURE_DESC& desc,
+        UINT numParameters,
+        _In_reads_opt_(numParameters) const D3D12_ROOT_PARAMETER1* _pParameters,
+        UINT numStaticSamplers = 0,
+        _In_reads_opt_(numStaticSamplers) const D3D12_STATIC_SAMPLER_DESC1* _pStaticSamplers = nullptr,
+        D3D12_ROOT_SIGNATURE_FLAGS flags = D3D12_ROOT_SIGNATURE_FLAG_NONE) noexcept
+    {
+        desc.Version = D3D_ROOT_SIGNATURE_VERSION_1_2;
+        desc.Desc_1_2.NumParameters = numParameters;
+        desc.Desc_1_2.pParameters = _pParameters;
+        desc.Desc_1_2.NumStaticSamplers = numStaticSamplers;
+        desc.Desc_1_2.pStaticSamplers = _pStaticSamplers;
+        desc.Desc_1_2.Flags = flags;
+    }
+#endif
 };
 
 //------------------------------------------------------------------------------------------------
@@ -2040,7 +2532,12 @@ inline UINT64 GetRequiredIntermediateSize(
     _In_range_(0,D3D12_REQ_SUBRESOURCES) UINT FirstSubresource,
     _In_range_(0,D3D12_REQ_SUBRESOURCES-FirstSubresource) UINT NumSubresources) noexcept
 {
+#if defined(_MSC_VER) || !defined(_WIN32)
     const auto Desc = pDestinationResource->GetDesc();
+#else
+    D3D12_RESOURCE_DESC tmpDesc;
+    const auto& Desc = *pDestinationResource->GetDesc(&tmpDesc);
+#endif
     UINT64 RequiredSize = 0;
 
     ID3D12Device* pDevice = nullptr;
@@ -2066,8 +2563,14 @@ inline UINT64 UpdateSubresources(
     _In_reads_(NumSubresources) const D3D12_SUBRESOURCE_DATA* pSrcData) noexcept
 {
     // Minor validation
+#if defined(_MSC_VER) || !defined(_WIN32)
     const auto IntermediateDesc = pIntermediate->GetDesc();
     const auto DestinationDesc = pDestinationResource->GetDesc();
+#else
+    D3D12_RESOURCE_DESC tmpDesc1, tmpDesc2;
+    const auto& IntermediateDesc = *pIntermediate->GetDesc(&tmpDesc1);
+    const auto& DestinationDesc = *pDestinationResource->GetDesc(&tmpDesc2);
+#endif
     if (IntermediateDesc.Dimension != D3D12_RESOURCE_DIMENSION_BUFFER ||
         IntermediateDesc.Width < RequiredSize + pLayouts[0].Offset ||
         RequiredSize > SIZE_T(-1) ||
@@ -2125,8 +2628,14 @@ inline UINT64 UpdateSubresources(
     _In_reads_(NumSubresources) const D3D12_SUBRESOURCE_INFO* pSrcData) noexcept
 {
     // Minor validation
+#if defined(_MSC_VER) || !defined(_WIN32)
     const auto IntermediateDesc = pIntermediate->GetDesc();
     const auto DestinationDesc = pDestinationResource->GetDesc();
+#else
+    D3D12_RESOURCE_DESC tmpDesc1, tmpDesc2;
+    const auto& IntermediateDesc = *pIntermediate->GetDesc(&tmpDesc1);
+    const auto& DestinationDesc = *pDestinationResource->GetDesc(&tmpDesc2);
+#endif
     if (IntermediateDesc.Dimension != D3D12_RESOURCE_DIMENSION_BUFFER ||
         IntermediateDesc.Width < RequiredSize + pLayouts[0].Offset ||
         RequiredSize > SIZE_T(-1) ||
@@ -2194,7 +2703,12 @@ inline UINT64 UpdateSubresources(
     auto pRowSizesInBytes = reinterpret_cast<UINT64*>(pLayouts + NumSubresources);
     auto pNumRows = reinterpret_cast<UINT*>(pRowSizesInBytes + NumSubresources);
 
+#if defined(_MSC_VER) || !defined(_WIN32)
     const auto Desc = pDestinationResource->GetDesc();
+#else
+    D3D12_RESOURCE_DESC tmpDesc;
+    const auto& Desc = *pDestinationResource->GetDesc(&tmpDesc);
+#endif
     ID3D12Device* pDevice = nullptr;
     pDestinationResource->GetDevice(IID_ID3D12Device, reinterpret_cast<void**>(&pDevice));
     pDevice->GetCopyableFootprints(&Desc, FirstSubresource, NumSubresources, IntermediateOffset, pLayouts, pNumRows, pRowSizesInBytes, &RequiredSize);
@@ -2232,7 +2746,12 @@ inline UINT64 UpdateSubresources(
     auto pRowSizesInBytes = reinterpret_cast<UINT64*>(pLayouts + NumSubresources);
     auto pNumRows = reinterpret_cast<UINT*>(pRowSizesInBytes + NumSubresources);
 
+#if defined(_MSC_VER) || !defined(_WIN32)
     const auto Desc = pDestinationResource->GetDesc();
+#else
+    D3D12_RESOURCE_DESC tmpDesc;
+    const auto& Desc = *pDestinationResource->GetDesc(&tmpDesc);
+#endif
     ID3D12Device* pDevice = nullptr;
     pDestinationResource->GetDevice(IID_ID3D12Device, reinterpret_cast<void**>(&pDevice));
     pDevice->GetCopyableFootprints(&Desc, FirstSubresource, NumSubresources, IntermediateOffset, pLayouts, pNumRows, pRowSizesInBytes, &RequiredSize);
@@ -2260,7 +2779,12 @@ inline UINT64 UpdateSubresources(
     UINT NumRows[MaxSubresources];
     UINT64 RowSizesInBytes[MaxSubresources];
 
+#if defined(_MSC_VER) || !defined(_WIN32)
     const auto Desc = pDestinationResource->GetDesc();
+#else
+    D3D12_RESOURCE_DESC tmpDesc;
+    const auto& Desc = *pDestinationResource->GetDesc(&tmpDesc);
+#endif
     ID3D12Device* pDevice = nullptr;
     pDestinationResource->GetDevice(IID_ID3D12Device, reinterpret_cast<void**>(&pDevice));
     pDevice->GetCopyableFootprints(&Desc, FirstSubresource, NumSubresources, IntermediateOffset, Layouts, NumRows, RowSizesInBytes, &RequiredSize);
@@ -2287,7 +2811,12 @@ inline UINT64 UpdateSubresources(
     UINT NumRows[MaxSubresources];
     UINT64 RowSizesInBytes[MaxSubresources];
 
+#if defined(_MSC_VER) || !defined(_WIN32)
     const auto Desc = pDestinationResource->GetDesc();
+#else
+    D3D12_RESOURCE_DESC tmpDesc;
+    const auto& Desc = *pDestinationResource->GetDesc(&tmpDesc);
+#endif
     ID3D12Device* pDevice = nullptr;
     pDestinationResource->GetDevice(IID_ID3D12Device, reinterpret_cast<void**>(&pDevice));
     pDevice->GetCopyableFootprints(&Desc, FirstSubresource, NumSubresources, IntermediateOffset, Layouts, NumRows, RowSizesInBytes, &RequiredSize);
@@ -2336,6 +2865,9 @@ inline HRESULT D3DX12SerializeVersionedRootSignature(
                     return D3D12SerializeRootSignature(&pRootSignatureDesc->Desc_1_0, D3D_ROOT_SIGNATURE_VERSION_1, ppBlob, ppErrorBlob);
 
                 case D3D_ROOT_SIGNATURE_VERSION_1_1:
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 609)
+                case D3D_ROOT_SIGNATURE_VERSION_1_2:
+#endif
                 {
                     HRESULT hr = S_OK;
                     const D3D12_ROOT_SIGNATURE_DESC1& desc_1_1 = pRootSignatureDesc->Desc_1_1;
@@ -2426,6 +2958,9 @@ inline HRESULT D3DX12SerializeVersionedRootSignature(
             break;
 
         case D3D_ROOT_SIGNATURE_VERSION_1_1:
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 609)
+        case D3D_ROOT_SIGNATURE_VERSION_1_2:
+#endif
             return D3D12SerializeVersionedRootSignature(pRootSignatureDesc, ppBlob, ppErrorBlob);
     }
 
@@ -2493,8 +3028,17 @@ typedef CD3DX12_PIPELINE_STATE_STREAM_SUBOBJECT< D3D12_SHADER_BYTECODE,         
 typedef CD3DX12_PIPELINE_STATE_STREAM_SUBOBJECT< CD3DX12_BLEND_DESC,                 D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_BLEND,          CD3DX12_DEFAULT>   CD3DX12_PIPELINE_STATE_STREAM_BLEND_DESC;
 typedef CD3DX12_PIPELINE_STATE_STREAM_SUBOBJECT< CD3DX12_DEPTH_STENCIL_DESC,         D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_DEPTH_STENCIL,  CD3DX12_DEFAULT>   CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL;
 typedef CD3DX12_PIPELINE_STATE_STREAM_SUBOBJECT< CD3DX12_DEPTH_STENCIL_DESC1,        D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_DEPTH_STENCIL1, CD3DX12_DEFAULT>   CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL1;
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 606)
+typedef CD3DX12_PIPELINE_STATE_STREAM_SUBOBJECT< CD3DX12_DEPTH_STENCIL_DESC2,        D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_DEPTH_STENCIL2, CD3DX12_DEFAULT>   CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL2;
+#endif
 typedef CD3DX12_PIPELINE_STATE_STREAM_SUBOBJECT< DXGI_FORMAT,                        D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_DEPTH_STENCIL_FORMAT>              CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL_FORMAT;
 typedef CD3DX12_PIPELINE_STATE_STREAM_SUBOBJECT< CD3DX12_RASTERIZER_DESC,            D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_RASTERIZER,     CD3DX12_DEFAULT>   CD3DX12_PIPELINE_STATE_STREAM_RASTERIZER;
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 608)
+typedef CD3DX12_PIPELINE_STATE_STREAM_SUBOBJECT< CD3DX12_RASTERIZER_DESC1,           D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_RASTERIZER1,    CD3DX12_DEFAULT>   CD3DX12_PIPELINE_STATE_STREAM_RASTERIZER1;
+#endif
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 610)
+typedef CD3DX12_PIPELINE_STATE_STREAM_SUBOBJECT< CD3DX12_RASTERIZER_DESC2,           D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_RASTERIZER2,    CD3DX12_DEFAULT>   CD3DX12_PIPELINE_STATE_STREAM_RASTERIZER2;
+#endif
 typedef CD3DX12_PIPELINE_STATE_STREAM_SUBOBJECT< D3D12_RT_FORMAT_ARRAY,              D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_RENDER_TARGET_FORMATS>             CD3DX12_PIPELINE_STATE_STREAM_RENDER_TARGET_FORMATS;
 typedef CD3DX12_PIPELINE_STATE_STREAM_SUBOBJECT< DXGI_SAMPLE_DESC,                   D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_SAMPLE_DESC,    DefaultSampleDesc> CD3DX12_PIPELINE_STATE_STREAM_SAMPLE_DESC;
 typedef CD3DX12_PIPELINE_STATE_STREAM_SUBOBJECT< UINT,                               D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_SAMPLE_MASK,    DefaultSampleMask> CD3DX12_PIPELINE_STATE_STREAM_SAMPLE_MASK;
@@ -2525,8 +3069,17 @@ struct ID3DX12PipelineParserCallbacks
     virtual void BlendStateCb(const D3D12_BLEND_DESC&) {}
     virtual void DepthStencilStateCb(const D3D12_DEPTH_STENCIL_DESC&) {}
     virtual void DepthStencilState1Cb(const D3D12_DEPTH_STENCIL_DESC1&) {}
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 606)
+    virtual void DepthStencilState2Cb(const D3D12_DEPTH_STENCIL_DESC2&) {}
+#endif
     virtual void DSVFormatCb(DXGI_FORMAT) {}
     virtual void RasterizerStateCb(const D3D12_RASTERIZER_DESC&) {}
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 608)
+    virtual void RasterizerState1Cb(const D3D12_RASTERIZER_DESC1&) {}
+#endif
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 610)
+    virtual void RasterizerState2Cb(const D3D12_RASTERIZER_DESC2&) {}
+#endif
     virtual void RTVFormatsCb(const D3D12_RT_FORMAT_ARRAY&) {}
     virtual void SampleDescCb(const DXGI_SAMPLE_DESC&) {}
     virtual void SampleMaskCb(UINT) {}
@@ -2560,6 +3113,378 @@ struct D3DX12_MESH_SHADER_PIPELINE_STATE_DESC
     D3D12_CACHED_PIPELINE_STATE   CachedPSO;
     D3D12_PIPELINE_STATE_FLAGS    Flags;
 };
+
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 610)
+// Use CD3DX12_PIPELINE_STATE_STREAM5 for D3D12_RASTERIZER_DESC2 when CheckFeatureSupport returns true for Options19::RasterizerDesc2Supported is true
+// Use CD3DX12_PIPELINE_STATE_STREAM4 for D3D12_RASTERIZER_DESC1 when CheckFeatureSupport returns true for Options16::DynamicDepthBiasSupported is true
+// Use CD3DX12_PIPELINE_STATE_STREAM3 for D3D12_DEPTH_STENCIL_DESC2 when CheckFeatureSupport returns true for Options14::IndependentFrontAndBackStencilSupported is true
+// Use CD3DX12_PIPELINE_STATE_STREAM2 for OS Build 19041+ (where there is a new mesh shader pipeline).
+// Use CD3DX12_PIPELINE_STATE_STREAM1 for OS Build 16299+ (where there is a new view instancing subobject).
+// Use CD3DX12_PIPELINE_STATE_STREAM for OS Build 15063+ support.
+struct CD3DX12_PIPELINE_STATE_STREAM5
+{
+    CD3DX12_PIPELINE_STATE_STREAM5() = default;
+    // Mesh and amplification shaders must be set manually, since they do not have representation in D3D12_GRAPHICS_PIPELINE_STATE_DESC
+    CD3DX12_PIPELINE_STATE_STREAM5(const D3D12_GRAPHICS_PIPELINE_STATE_DESC& Desc) noexcept
+        : Flags(Desc.Flags)
+        , NodeMask(Desc.NodeMask)
+        , pRootSignature(Desc.pRootSignature)
+        , InputLayout(Desc.InputLayout)
+        , IBStripCutValue(Desc.IBStripCutValue)
+        , PrimitiveTopologyType(Desc.PrimitiveTopologyType)
+        , VS(Desc.VS)
+        , GS(Desc.GS)
+        , StreamOutput(Desc.StreamOutput)
+        , HS(Desc.HS)
+        , DS(Desc.DS)
+        , PS(Desc.PS)
+        , BlendState(CD3DX12_BLEND_DESC(Desc.BlendState))
+        , DepthStencilState(CD3DX12_DEPTH_STENCIL_DESC2(Desc.DepthStencilState))
+        , DSVFormat(Desc.DSVFormat)
+        , RasterizerState(CD3DX12_RASTERIZER_DESC2(Desc.RasterizerState))
+        , RTVFormats(CD3DX12_RT_FORMAT_ARRAY(Desc.RTVFormats, Desc.NumRenderTargets))
+        , SampleDesc(Desc.SampleDesc)
+        , SampleMask(Desc.SampleMask)
+        , CachedPSO(Desc.CachedPSO)
+        , ViewInstancingDesc(CD3DX12_VIEW_INSTANCING_DESC(CD3DX12_DEFAULT()))
+    {}
+    CD3DX12_PIPELINE_STATE_STREAM5(const D3DX12_MESH_SHADER_PIPELINE_STATE_DESC& Desc) noexcept
+        : Flags(Desc.Flags)
+        , NodeMask(Desc.NodeMask)
+        , pRootSignature(Desc.pRootSignature)
+        , PrimitiveTopologyType(Desc.PrimitiveTopologyType)
+        , PS(Desc.PS)
+        , AS(Desc.AS)
+        , MS(Desc.MS)
+        , BlendState(CD3DX12_BLEND_DESC(Desc.BlendState))
+        , DepthStencilState(CD3DX12_DEPTH_STENCIL_DESC2(Desc.DepthStencilState))
+        , DSVFormat(Desc.DSVFormat)
+        , RasterizerState(CD3DX12_RASTERIZER_DESC2(Desc.RasterizerState))
+        , RTVFormats(CD3DX12_RT_FORMAT_ARRAY(Desc.RTVFormats, Desc.NumRenderTargets))
+        , SampleDesc(Desc.SampleDesc)
+        , SampleMask(Desc.SampleMask)
+        , CachedPSO(Desc.CachedPSO)
+        , ViewInstancingDesc(CD3DX12_VIEW_INSTANCING_DESC(CD3DX12_DEFAULT()))
+    {}
+    CD3DX12_PIPELINE_STATE_STREAM5(const D3D12_COMPUTE_PIPELINE_STATE_DESC& Desc) noexcept
+        : Flags(Desc.Flags)
+        , NodeMask(Desc.NodeMask)
+        , pRootSignature(Desc.pRootSignature)
+        , CS(CD3DX12_SHADER_BYTECODE(Desc.CS))
+        , CachedPSO(Desc.CachedPSO)
+    {
+        static_cast<D3D12_DEPTH_STENCIL_DESC2&>(DepthStencilState).DepthEnable = false;
+    }
+    CD3DX12_PIPELINE_STATE_STREAM_FLAGS Flags;
+    CD3DX12_PIPELINE_STATE_STREAM_NODE_MASK NodeMask;
+    CD3DX12_PIPELINE_STATE_STREAM_ROOT_SIGNATURE pRootSignature;
+    CD3DX12_PIPELINE_STATE_STREAM_INPUT_LAYOUT InputLayout;
+    CD3DX12_PIPELINE_STATE_STREAM_IB_STRIP_CUT_VALUE IBStripCutValue;
+    CD3DX12_PIPELINE_STATE_STREAM_PRIMITIVE_TOPOLOGY PrimitiveTopologyType;
+    CD3DX12_PIPELINE_STATE_STREAM_VS VS;
+    CD3DX12_PIPELINE_STATE_STREAM_GS GS;
+    CD3DX12_PIPELINE_STATE_STREAM_STREAM_OUTPUT StreamOutput;
+    CD3DX12_PIPELINE_STATE_STREAM_HS HS;
+    CD3DX12_PIPELINE_STATE_STREAM_DS DS;
+    CD3DX12_PIPELINE_STATE_STREAM_PS PS;
+    CD3DX12_PIPELINE_STATE_STREAM_AS AS;
+    CD3DX12_PIPELINE_STATE_STREAM_MS MS;
+    CD3DX12_PIPELINE_STATE_STREAM_CS CS;
+    CD3DX12_PIPELINE_STATE_STREAM_BLEND_DESC BlendState;
+    CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL2 DepthStencilState;
+    CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL_FORMAT DSVFormat;
+    CD3DX12_PIPELINE_STATE_STREAM_RASTERIZER2 RasterizerState;
+    CD3DX12_PIPELINE_STATE_STREAM_RENDER_TARGET_FORMATS RTVFormats;
+    CD3DX12_PIPELINE_STATE_STREAM_SAMPLE_DESC SampleDesc;
+    CD3DX12_PIPELINE_STATE_STREAM_SAMPLE_MASK SampleMask;
+    CD3DX12_PIPELINE_STATE_STREAM_CACHED_PSO CachedPSO;
+    CD3DX12_PIPELINE_STATE_STREAM_VIEW_INSTANCING ViewInstancingDesc;
+
+    D3D12_GRAPHICS_PIPELINE_STATE_DESC GraphicsDescV0() const noexcept
+    {
+        D3D12_GRAPHICS_PIPELINE_STATE_DESC D;
+        D.Flags                 = this->Flags;
+        D.NodeMask              = this->NodeMask;
+        D.pRootSignature        = this->pRootSignature;
+        D.InputLayout           = this->InputLayout;
+        D.IBStripCutValue       = this->IBStripCutValue;
+        D.PrimitiveTopologyType = this->PrimitiveTopologyType;
+        D.VS                    = this->VS;
+        D.GS                    = this->GS;
+        D.StreamOutput          = this->StreamOutput;
+        D.HS                    = this->HS;
+        D.DS                    = this->DS;
+        D.PS                    = this->PS;
+        D.BlendState            = this->BlendState;
+        D.DepthStencilState     = CD3DX12_DEPTH_STENCIL_DESC2(D3D12_DEPTH_STENCIL_DESC2(this->DepthStencilState));
+        D.DSVFormat             = this->DSVFormat;
+        D.RasterizerState       = CD3DX12_RASTERIZER_DESC2(D3D12_RASTERIZER_DESC2(this->RasterizerState));
+        D.NumRenderTargets      = D3D12_RT_FORMAT_ARRAY(this->RTVFormats).NumRenderTargets;
+        memcpy(D.RTVFormats, D3D12_RT_FORMAT_ARRAY(this->RTVFormats).RTFormats, sizeof(D.RTVFormats));
+        D.SampleDesc            = this->SampleDesc;
+        D.SampleMask            = this->SampleMask;
+        D.CachedPSO             = this->CachedPSO;
+        return D;
+    }
+    D3D12_COMPUTE_PIPELINE_STATE_DESC ComputeDescV0() const noexcept
+    {
+        D3D12_COMPUTE_PIPELINE_STATE_DESC D;
+        D.Flags                 = this->Flags;
+        D.NodeMask              = this->NodeMask;
+        D.pRootSignature        = this->pRootSignature;
+        D.CS                    = this->CS;
+        D.CachedPSO             = this->CachedPSO;
+        return D;
+    }
+};
+#endif // D3D12_SDK_VERSION >= 610
+
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 608)
+// Use CD3DX12_PIPELINE_STATE_STREAM4 for D3D12_RASTERIZER_DESC1 when CheckFeatureSupport returns true for Options16::DynamicDepthBiasSupported is true
+// Use CD3DX12_PIPELINE_STATE_STREAM3 for D3D12_DEPTH_STENCIL_DESC2 when CheckFeatureSupport returns true for Options14::IndependentFrontAndBackStencilSupported is true
+// Use CD3DX12_PIPELINE_STATE_STREAM2 for OS Build 19041+ (where there is a new mesh shader pipeline).
+// Use CD3DX12_PIPELINE_STATE_STREAM1 for OS Build 16299+ (where there is a new view instancing subobject).
+// Use CD3DX12_PIPELINE_STATE_STREAM for OS Build 15063+ support.
+struct CD3DX12_PIPELINE_STATE_STREAM4
+{
+    CD3DX12_PIPELINE_STATE_STREAM4() = default;
+    // Mesh and amplification shaders must be set manually, since they do not have representation in D3D12_GRAPHICS_PIPELINE_STATE_DESC
+    CD3DX12_PIPELINE_STATE_STREAM4(const D3D12_GRAPHICS_PIPELINE_STATE_DESC& Desc) noexcept
+        : Flags(Desc.Flags)
+        , NodeMask(Desc.NodeMask)
+        , pRootSignature(Desc.pRootSignature)
+        , InputLayout(Desc.InputLayout)
+        , IBStripCutValue(Desc.IBStripCutValue)
+        , PrimitiveTopologyType(Desc.PrimitiveTopologyType)
+        , VS(Desc.VS)
+        , GS(Desc.GS)
+        , StreamOutput(Desc.StreamOutput)
+        , HS(Desc.HS)
+        , DS(Desc.DS)
+        , PS(Desc.PS)
+        , BlendState(CD3DX12_BLEND_DESC(Desc.BlendState))
+        , DepthStencilState(CD3DX12_DEPTH_STENCIL_DESC2(Desc.DepthStencilState))
+        , DSVFormat(Desc.DSVFormat)
+        , RasterizerState(CD3DX12_RASTERIZER_DESC1(Desc.RasterizerState))
+        , RTVFormats(CD3DX12_RT_FORMAT_ARRAY(Desc.RTVFormats, Desc.NumRenderTargets))
+        , SampleDesc(Desc.SampleDesc)
+        , SampleMask(Desc.SampleMask)
+        , CachedPSO(Desc.CachedPSO)
+        , ViewInstancingDesc(CD3DX12_VIEW_INSTANCING_DESC(CD3DX12_DEFAULT()))
+    {}
+    CD3DX12_PIPELINE_STATE_STREAM4(const D3DX12_MESH_SHADER_PIPELINE_STATE_DESC& Desc) noexcept
+        : Flags(Desc.Flags)
+        , NodeMask(Desc.NodeMask)
+        , pRootSignature(Desc.pRootSignature)
+        , PrimitiveTopologyType(Desc.PrimitiveTopologyType)
+        , PS(Desc.PS)
+        , AS(Desc.AS)
+        , MS(Desc.MS)
+        , BlendState(CD3DX12_BLEND_DESC(Desc.BlendState))
+        , DepthStencilState(CD3DX12_DEPTH_STENCIL_DESC2(Desc.DepthStencilState))
+        , DSVFormat(Desc.DSVFormat)
+        , RasterizerState(CD3DX12_RASTERIZER_DESC1(Desc.RasterizerState))
+        , RTVFormats(CD3DX12_RT_FORMAT_ARRAY(Desc.RTVFormats, Desc.NumRenderTargets))
+        , SampleDesc(Desc.SampleDesc)
+        , SampleMask(Desc.SampleMask)
+        , CachedPSO(Desc.CachedPSO)
+        , ViewInstancingDesc(CD3DX12_VIEW_INSTANCING_DESC(CD3DX12_DEFAULT()))
+    {}
+    CD3DX12_PIPELINE_STATE_STREAM4(const D3D12_COMPUTE_PIPELINE_STATE_DESC& Desc) noexcept
+        : Flags(Desc.Flags)
+        , NodeMask(Desc.NodeMask)
+        , pRootSignature(Desc.pRootSignature)
+        , CS(CD3DX12_SHADER_BYTECODE(Desc.CS))
+        , CachedPSO(Desc.CachedPSO)
+    {
+        static_cast<D3D12_DEPTH_STENCIL_DESC2&>(DepthStencilState).DepthEnable = false;
+    }
+    CD3DX12_PIPELINE_STATE_STREAM_FLAGS Flags;
+    CD3DX12_PIPELINE_STATE_STREAM_NODE_MASK NodeMask;
+    CD3DX12_PIPELINE_STATE_STREAM_ROOT_SIGNATURE pRootSignature;
+    CD3DX12_PIPELINE_STATE_STREAM_INPUT_LAYOUT InputLayout;
+    CD3DX12_PIPELINE_STATE_STREAM_IB_STRIP_CUT_VALUE IBStripCutValue;
+    CD3DX12_PIPELINE_STATE_STREAM_PRIMITIVE_TOPOLOGY PrimitiveTopologyType;
+    CD3DX12_PIPELINE_STATE_STREAM_VS VS;
+    CD3DX12_PIPELINE_STATE_STREAM_GS GS;
+    CD3DX12_PIPELINE_STATE_STREAM_STREAM_OUTPUT StreamOutput;
+    CD3DX12_PIPELINE_STATE_STREAM_HS HS;
+    CD3DX12_PIPELINE_STATE_STREAM_DS DS;
+    CD3DX12_PIPELINE_STATE_STREAM_PS PS;
+    CD3DX12_PIPELINE_STATE_STREAM_AS AS;
+    CD3DX12_PIPELINE_STATE_STREAM_MS MS;
+    CD3DX12_PIPELINE_STATE_STREAM_CS CS;
+    CD3DX12_PIPELINE_STATE_STREAM_BLEND_DESC BlendState;
+    CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL2 DepthStencilState;
+    CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL_FORMAT DSVFormat;
+    CD3DX12_PIPELINE_STATE_STREAM_RASTERIZER1 RasterizerState;
+    CD3DX12_PIPELINE_STATE_STREAM_RENDER_TARGET_FORMATS RTVFormats;
+    CD3DX12_PIPELINE_STATE_STREAM_SAMPLE_DESC SampleDesc;
+    CD3DX12_PIPELINE_STATE_STREAM_SAMPLE_MASK SampleMask;
+    CD3DX12_PIPELINE_STATE_STREAM_CACHED_PSO CachedPSO;
+    CD3DX12_PIPELINE_STATE_STREAM_VIEW_INSTANCING ViewInstancingDesc;
+
+    D3D12_GRAPHICS_PIPELINE_STATE_DESC GraphicsDescV0() const noexcept
+    {
+        D3D12_GRAPHICS_PIPELINE_STATE_DESC D;
+        D.Flags                 = this->Flags;
+        D.NodeMask              = this->NodeMask;
+        D.pRootSignature        = this->pRootSignature;
+        D.InputLayout           = this->InputLayout;
+        D.IBStripCutValue       = this->IBStripCutValue;
+        D.PrimitiveTopologyType = this->PrimitiveTopologyType;
+        D.VS                    = this->VS;
+        D.GS                    = this->GS;
+        D.StreamOutput          = this->StreamOutput;
+        D.HS                    = this->HS;
+        D.DS                    = this->DS;
+        D.PS                    = this->PS;
+        D.BlendState            = this->BlendState;
+        D.DepthStencilState     = CD3DX12_DEPTH_STENCIL_DESC2(D3D12_DEPTH_STENCIL_DESC2(this->DepthStencilState));
+        D.DSVFormat             = this->DSVFormat;
+        D.RasterizerState       = CD3DX12_RASTERIZER_DESC1(D3D12_RASTERIZER_DESC1(this->RasterizerState));
+        D.NumRenderTargets      = D3D12_RT_FORMAT_ARRAY(this->RTVFormats).NumRenderTargets;
+        memcpy(D.RTVFormats, D3D12_RT_FORMAT_ARRAY(this->RTVFormats).RTFormats, sizeof(D.RTVFormats));
+        D.SampleDesc            = this->SampleDesc;
+        D.SampleMask            = this->SampleMask;
+        D.CachedPSO             = this->CachedPSO;
+        return D;
+    }
+    D3D12_COMPUTE_PIPELINE_STATE_DESC ComputeDescV0() const noexcept
+    {
+        D3D12_COMPUTE_PIPELINE_STATE_DESC D;
+        D.Flags                 = this->Flags;
+        D.NodeMask              = this->NodeMask;
+        D.pRootSignature        = this->pRootSignature;
+        D.CS                    = this->CS;
+        D.CachedPSO             = this->CachedPSO;
+        return D;
+    }
+};
+#endif // D3D12_SDK_VERSION >= 608
+
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 606)
+// Use CD3DX12_PIPELINE_STATE_STREAM3 for D3D12_DEPTH_STENCIL_DESC2 when CheckFeatureSupport returns true for Options14::IndependentFrontAndBackStencilSupported is true
+// Use CD3DX12_PIPELINE_STATE_STREAM2 for OS Build 19041+ (where there is a new mesh shader pipeline).
+// Use CD3DX12_PIPELINE_STATE_STREAM1 for OS Build 16299+ (where there is a new view instancing subobject).
+// Use CD3DX12_PIPELINE_STATE_STREAM for OS Build 15063+ support.
+struct CD3DX12_PIPELINE_STATE_STREAM3
+{
+    CD3DX12_PIPELINE_STATE_STREAM3() = default;
+    // Mesh and amplification shaders must be set manually, since they do not have representation in D3D12_GRAPHICS_PIPELINE_STATE_DESC
+    CD3DX12_PIPELINE_STATE_STREAM3(const D3D12_GRAPHICS_PIPELINE_STATE_DESC& Desc) noexcept
+        : Flags(Desc.Flags)
+        , NodeMask(Desc.NodeMask)
+        , pRootSignature(Desc.pRootSignature)
+        , InputLayout(Desc.InputLayout)
+        , IBStripCutValue(Desc.IBStripCutValue)
+        , PrimitiveTopologyType(Desc.PrimitiveTopologyType)
+        , VS(Desc.VS)
+        , GS(Desc.GS)
+        , StreamOutput(Desc.StreamOutput)
+        , HS(Desc.HS)
+        , DS(Desc.DS)
+        , PS(Desc.PS)
+        , BlendState(CD3DX12_BLEND_DESC(Desc.BlendState))
+        , DepthStencilState(CD3DX12_DEPTH_STENCIL_DESC2(Desc.DepthStencilState))
+        , DSVFormat(Desc.DSVFormat)
+        , RasterizerState(CD3DX12_RASTERIZER_DESC(Desc.RasterizerState))
+        , RTVFormats(CD3DX12_RT_FORMAT_ARRAY(Desc.RTVFormats, Desc.NumRenderTargets))
+        , SampleDesc(Desc.SampleDesc)
+        , SampleMask(Desc.SampleMask)
+        , CachedPSO(Desc.CachedPSO)
+        , ViewInstancingDesc(CD3DX12_VIEW_INSTANCING_DESC(CD3DX12_DEFAULT()))
+    {}
+    CD3DX12_PIPELINE_STATE_STREAM3(const D3DX12_MESH_SHADER_PIPELINE_STATE_DESC& Desc) noexcept
+        : Flags(Desc.Flags)
+        , NodeMask(Desc.NodeMask)
+        , pRootSignature(Desc.pRootSignature)
+        , PrimitiveTopologyType(Desc.PrimitiveTopologyType)
+        , PS(Desc.PS)
+        , AS(Desc.AS)
+        , MS(Desc.MS)
+        , BlendState(CD3DX12_BLEND_DESC(Desc.BlendState))
+        , DepthStencilState(CD3DX12_DEPTH_STENCIL_DESC2(Desc.DepthStencilState))
+        , DSVFormat(Desc.DSVFormat)
+        , RasterizerState(CD3DX12_RASTERIZER_DESC(Desc.RasterizerState))
+        , RTVFormats(CD3DX12_RT_FORMAT_ARRAY(Desc.RTVFormats, Desc.NumRenderTargets))
+        , SampleDesc(Desc.SampleDesc)
+        , SampleMask(Desc.SampleMask)
+        , CachedPSO(Desc.CachedPSO)
+        , ViewInstancingDesc(CD3DX12_VIEW_INSTANCING_DESC(CD3DX12_DEFAULT()))
+    {}
+    CD3DX12_PIPELINE_STATE_STREAM3(const D3D12_COMPUTE_PIPELINE_STATE_DESC& Desc) noexcept
+        : Flags(Desc.Flags)
+        , NodeMask(Desc.NodeMask)
+        , pRootSignature(Desc.pRootSignature)
+        , CS(CD3DX12_SHADER_BYTECODE(Desc.CS))
+        , CachedPSO(Desc.CachedPSO)
+    {
+        static_cast<D3D12_DEPTH_STENCIL_DESC2&>(DepthStencilState).DepthEnable = false;
+    }
+    CD3DX12_PIPELINE_STATE_STREAM_FLAGS Flags;
+    CD3DX12_PIPELINE_STATE_STREAM_NODE_MASK NodeMask;
+    CD3DX12_PIPELINE_STATE_STREAM_ROOT_SIGNATURE pRootSignature;
+    CD3DX12_PIPELINE_STATE_STREAM_INPUT_LAYOUT InputLayout;
+    CD3DX12_PIPELINE_STATE_STREAM_IB_STRIP_CUT_VALUE IBStripCutValue;
+    CD3DX12_PIPELINE_STATE_STREAM_PRIMITIVE_TOPOLOGY PrimitiveTopologyType;
+    CD3DX12_PIPELINE_STATE_STREAM_VS VS;
+    CD3DX12_PIPELINE_STATE_STREAM_GS GS;
+    CD3DX12_PIPELINE_STATE_STREAM_STREAM_OUTPUT StreamOutput;
+    CD3DX12_PIPELINE_STATE_STREAM_HS HS;
+    CD3DX12_PIPELINE_STATE_STREAM_DS DS;
+    CD3DX12_PIPELINE_STATE_STREAM_PS PS;
+    CD3DX12_PIPELINE_STATE_STREAM_AS AS;
+    CD3DX12_PIPELINE_STATE_STREAM_MS MS;
+    CD3DX12_PIPELINE_STATE_STREAM_CS CS;
+    CD3DX12_PIPELINE_STATE_STREAM_BLEND_DESC BlendState;
+    CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL2 DepthStencilState;
+    CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL_FORMAT DSVFormat;
+    CD3DX12_PIPELINE_STATE_STREAM_RASTERIZER RasterizerState;
+    CD3DX12_PIPELINE_STATE_STREAM_RENDER_TARGET_FORMATS RTVFormats;
+    CD3DX12_PIPELINE_STATE_STREAM_SAMPLE_DESC SampleDesc;
+    CD3DX12_PIPELINE_STATE_STREAM_SAMPLE_MASK SampleMask;
+    CD3DX12_PIPELINE_STATE_STREAM_CACHED_PSO CachedPSO;
+    CD3DX12_PIPELINE_STATE_STREAM_VIEW_INSTANCING ViewInstancingDesc;
+
+    D3D12_GRAPHICS_PIPELINE_STATE_DESC GraphicsDescV0() const noexcept
+    {
+        D3D12_GRAPHICS_PIPELINE_STATE_DESC D;
+        D.Flags                 = this->Flags;
+        D.NodeMask              = this->NodeMask;
+        D.pRootSignature        = this->pRootSignature;
+        D.InputLayout           = this->InputLayout;
+        D.IBStripCutValue       = this->IBStripCutValue;
+        D.PrimitiveTopologyType = this->PrimitiveTopologyType;
+        D.VS                    = this->VS;
+        D.GS                    = this->GS;
+        D.StreamOutput          = this->StreamOutput;
+        D.HS                    = this->HS;
+        D.DS                    = this->DS;
+        D.PS                    = this->PS;
+        D.BlendState            = this->BlendState;
+        D.DepthStencilState     = CD3DX12_DEPTH_STENCIL_DESC2(D3D12_DEPTH_STENCIL_DESC2(this->DepthStencilState));
+        D.DSVFormat             = this->DSVFormat;
+        D.RasterizerState       = this->RasterizerState;
+        D.NumRenderTargets      = D3D12_RT_FORMAT_ARRAY(this->RTVFormats).NumRenderTargets;
+        memcpy(D.RTVFormats, D3D12_RT_FORMAT_ARRAY(this->RTVFormats).RTFormats, sizeof(D.RTVFormats));
+        D.SampleDesc            = this->SampleDesc;
+        D.SampleMask            = this->SampleMask;
+        D.CachedPSO             = this->CachedPSO;
+        return D;
+    }
+    D3D12_COMPUTE_PIPELINE_STATE_DESC ComputeDescV0() const noexcept
+    {
+        D3D12_COMPUTE_PIPELINE_STATE_DESC D;
+        D.Flags                 = this->Flags;
+        D.NodeMask              = this->NodeMask;
+        D.pRootSignature        = this->pRootSignature;
+        D.CS                    = this->CS;
+        D.CachedPSO             = this->CachedPSO;
+        return D;
+    }
+};
+#endif // D3D12_SDK_VERSION >= 606
 
 // CD3DX12_PIPELINE_STATE_STREAM2 Works on OS Build 19041+ (where there is a new mesh shader pipeline).
 // Use CD3DX12_PIPELINE_STATE_STREAM1 for OS Build 16299+ (where there is a new view instancing subobject).
@@ -3005,6 +3930,209 @@ private:
     bool SeenDSS;
 };
 
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 606)
+struct CD3DX12_PIPELINE_STATE_STREAM3_PARSE_HELPER : public ID3DX12PipelineParserCallbacks
+{
+    CD3DX12_PIPELINE_STATE_STREAM3 PipelineStream;
+    CD3DX12_PIPELINE_STATE_STREAM3_PARSE_HELPER() noexcept
+        : SeenDSS(false)
+    {
+        // Adjust defaults to account for absent members.
+        PipelineStream.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+
+        // Depth disabled if no DSV format specified.
+        static_cast<D3D12_DEPTH_STENCIL_DESC2&>(PipelineStream.DepthStencilState).DepthEnable = false;
+    }
+
+    // ID3DX12PipelineParserCallbacks
+    void FlagsCb(D3D12_PIPELINE_STATE_FLAGS Flags) override { PipelineStream.Flags = Flags; }
+    void NodeMaskCb(UINT NodeMask) override { PipelineStream.NodeMask = NodeMask; }
+    void RootSignatureCb(ID3D12RootSignature* pRootSignature) override { PipelineStream.pRootSignature = pRootSignature; }
+    void InputLayoutCb(const D3D12_INPUT_LAYOUT_DESC& InputLayout) override { PipelineStream.InputLayout = InputLayout; }
+    void IBStripCutValueCb(D3D12_INDEX_BUFFER_STRIP_CUT_VALUE IBStripCutValue) override { PipelineStream.IBStripCutValue = IBStripCutValue; }
+    void PrimitiveTopologyTypeCb(D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveTopologyType) override { PipelineStream.PrimitiveTopologyType = PrimitiveTopologyType; }
+    void VSCb(const D3D12_SHADER_BYTECODE& VS) override { PipelineStream.VS = VS; }
+    void GSCb(const D3D12_SHADER_BYTECODE& GS) override { PipelineStream.GS = GS; }
+    void StreamOutputCb(const D3D12_STREAM_OUTPUT_DESC& StreamOutput) override { PipelineStream.StreamOutput = StreamOutput; }
+    void HSCb(const D3D12_SHADER_BYTECODE& HS) override { PipelineStream.HS = HS; }
+    void DSCb(const D3D12_SHADER_BYTECODE& DS) override { PipelineStream.DS = DS; }
+    void PSCb(const D3D12_SHADER_BYTECODE& PS) override { PipelineStream.PS = PS; }
+    void CSCb(const D3D12_SHADER_BYTECODE& CS) override { PipelineStream.CS = CS; }
+    void ASCb(const D3D12_SHADER_BYTECODE& AS) override { PipelineStream.AS = AS; }
+    void MSCb(const D3D12_SHADER_BYTECODE& MS) override { PipelineStream.MS = MS; }
+    void BlendStateCb(const D3D12_BLEND_DESC& BlendState) override { PipelineStream.BlendState = CD3DX12_BLEND_DESC(BlendState); }
+    void DepthStencilStateCb(const D3D12_DEPTH_STENCIL_DESC& DepthStencilState) override
+    {
+        PipelineStream.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC2(DepthStencilState);
+        SeenDSS = true;
+    }
+    void DepthStencilState1Cb(const D3D12_DEPTH_STENCIL_DESC1& DepthStencilState) override
+    {
+        PipelineStream.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC2(DepthStencilState);
+        SeenDSS = true;
+    }
+    void DepthStencilState2Cb(const D3D12_DEPTH_STENCIL_DESC2& DepthStencilState) override
+    {
+        PipelineStream.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC2(DepthStencilState);
+        SeenDSS = true;
+    }
+    void DSVFormatCb(DXGI_FORMAT DSVFormat) override
+    {
+        PipelineStream.DSVFormat = DSVFormat;
+        if (!SeenDSS && DSVFormat != DXGI_FORMAT_UNKNOWN)
+        {
+            // Re-enable depth for the default state.
+            static_cast<D3D12_DEPTH_STENCIL_DESC2&>(PipelineStream.DepthStencilState).DepthEnable = true;
+        }
+    }
+    void RasterizerStateCb(const D3D12_RASTERIZER_DESC& RasterizerState) override { PipelineStream.RasterizerState = CD3DX12_RASTERIZER_DESC(RasterizerState); }
+    void RTVFormatsCb(const D3D12_RT_FORMAT_ARRAY& RTVFormats) override { PipelineStream.RTVFormats = RTVFormats; }
+    void SampleDescCb(const DXGI_SAMPLE_DESC& SampleDesc) override { PipelineStream.SampleDesc = SampleDesc; }
+    void SampleMaskCb(UINT SampleMask) override { PipelineStream.SampleMask = SampleMask; }
+    void ViewInstancingCb(const D3D12_VIEW_INSTANCING_DESC& ViewInstancingDesc) override { PipelineStream.ViewInstancingDesc = CD3DX12_VIEW_INSTANCING_DESC(ViewInstancingDesc); }
+    void CachedPSOCb(const D3D12_CACHED_PIPELINE_STATE& CachedPSO) override { PipelineStream.CachedPSO = CachedPSO; }
+
+private:
+    bool SeenDSS;
+};
+#endif // D3D12_SDK_VERSION >= 606
+
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 608)
+struct CD3DX12_PIPELINE_STATE_STREAM4_PARSE_HELPER : public ID3DX12PipelineParserCallbacks
+{
+    CD3DX12_PIPELINE_STATE_STREAM4 PipelineStream;
+    CD3DX12_PIPELINE_STATE_STREAM4_PARSE_HELPER() noexcept
+        : SeenDSS(false)
+    {
+        // Adjust defaults to account for absent members.
+        PipelineStream.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+
+        // Depth disabled if no DSV format specified.
+        static_cast<D3D12_DEPTH_STENCIL_DESC2&>(PipelineStream.DepthStencilState).DepthEnable = false;
+    }
+
+    // ID3DX12PipelineParserCallbacks
+    void FlagsCb(D3D12_PIPELINE_STATE_FLAGS Flags) override { PipelineStream.Flags = Flags; }
+    void NodeMaskCb(UINT NodeMask) override { PipelineStream.NodeMask = NodeMask; }
+    void RootSignatureCb(ID3D12RootSignature* pRootSignature) override { PipelineStream.pRootSignature = pRootSignature; }
+    void InputLayoutCb(const D3D12_INPUT_LAYOUT_DESC& InputLayout) override { PipelineStream.InputLayout = InputLayout; }
+    void IBStripCutValueCb(D3D12_INDEX_BUFFER_STRIP_CUT_VALUE IBStripCutValue) override { PipelineStream.IBStripCutValue = IBStripCutValue; }
+    void PrimitiveTopologyTypeCb(D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveTopologyType) override { PipelineStream.PrimitiveTopologyType = PrimitiveTopologyType; }
+    void VSCb(const D3D12_SHADER_BYTECODE& VS) override { PipelineStream.VS = VS; }
+    void GSCb(const D3D12_SHADER_BYTECODE& GS) override { PipelineStream.GS = GS; }
+    void StreamOutputCb(const D3D12_STREAM_OUTPUT_DESC& StreamOutput) override { PipelineStream.StreamOutput = StreamOutput; }
+    void HSCb(const D3D12_SHADER_BYTECODE& HS) override { PipelineStream.HS = HS; }
+    void DSCb(const D3D12_SHADER_BYTECODE& DS) override { PipelineStream.DS = DS; }
+    void PSCb(const D3D12_SHADER_BYTECODE& PS) override { PipelineStream.PS = PS; }
+    void CSCb(const D3D12_SHADER_BYTECODE& CS) override { PipelineStream.CS = CS; }
+    void ASCb(const D3D12_SHADER_BYTECODE& AS) override { PipelineStream.AS = AS; }
+    void MSCb(const D3D12_SHADER_BYTECODE& MS) override { PipelineStream.MS = MS; }
+    void BlendStateCb(const D3D12_BLEND_DESC& BlendState) override { PipelineStream.BlendState = CD3DX12_BLEND_DESC(BlendState); }
+    void DepthStencilStateCb(const D3D12_DEPTH_STENCIL_DESC& DepthStencilState) override
+    {
+        PipelineStream.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC2(DepthStencilState);
+        SeenDSS = true;
+    }
+    void DepthStencilState1Cb(const D3D12_DEPTH_STENCIL_DESC1& DepthStencilState) override
+    {
+        PipelineStream.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC2(DepthStencilState);
+        SeenDSS = true;
+    }
+    void DepthStencilState2Cb(const D3D12_DEPTH_STENCIL_DESC2& DepthStencilState) override
+    {
+        PipelineStream.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC2(DepthStencilState);
+        SeenDSS = true;
+    }
+    void DSVFormatCb(DXGI_FORMAT DSVFormat) override
+    {
+        PipelineStream.DSVFormat = DSVFormat;
+        if (!SeenDSS && DSVFormat != DXGI_FORMAT_UNKNOWN)
+        {
+            // Re-enable depth for the default state.
+            static_cast<D3D12_DEPTH_STENCIL_DESC2&>(PipelineStream.DepthStencilState).DepthEnable = true;
+        }
+    }
+    void RasterizerStateCb(const D3D12_RASTERIZER_DESC& RasterizerState) override { PipelineStream.RasterizerState = CD3DX12_RASTERIZER_DESC1(RasterizerState); }
+    void RasterizerState1Cb(const D3D12_RASTERIZER_DESC1& RasterizerState) override { PipelineStream.RasterizerState = CD3DX12_RASTERIZER_DESC1(RasterizerState); }
+    void RTVFormatsCb(const D3D12_RT_FORMAT_ARRAY& RTVFormats) override { PipelineStream.RTVFormats = RTVFormats; }
+    void SampleDescCb(const DXGI_SAMPLE_DESC& SampleDesc) override { PipelineStream.SampleDesc = SampleDesc; }
+    void SampleMaskCb(UINT SampleMask) override { PipelineStream.SampleMask = SampleMask; }
+    void ViewInstancingCb(const D3D12_VIEW_INSTANCING_DESC& ViewInstancingDesc) override { PipelineStream.ViewInstancingDesc = CD3DX12_VIEW_INSTANCING_DESC(ViewInstancingDesc); }
+    void CachedPSOCb(const D3D12_CACHED_PIPELINE_STATE& CachedPSO) override { PipelineStream.CachedPSO = CachedPSO; }
+
+private:
+    bool SeenDSS;
+};
+#endif // D3D12_SDK_VERSION >= 608
+
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 610)
+struct CD3DX12_PIPELINE_STATE_STREAM5_PARSE_HELPER : public ID3DX12PipelineParserCallbacks
+{
+    CD3DX12_PIPELINE_STATE_STREAM5 PipelineStream;
+    CD3DX12_PIPELINE_STATE_STREAM5_PARSE_HELPER() noexcept
+        : SeenDSS(false)
+    {
+        // Adjust defaults to account for absent members.
+        PipelineStream.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+
+        // Depth disabled if no DSV format specified.
+        static_cast<D3D12_DEPTH_STENCIL_DESC2&>(PipelineStream.DepthStencilState).DepthEnable = false;
+    }
+
+    // ID3DX12PipelineParserCallbacks
+    void FlagsCb(D3D12_PIPELINE_STATE_FLAGS Flags) override { PipelineStream.Flags = Flags; }
+    void NodeMaskCb(UINT NodeMask) override { PipelineStream.NodeMask = NodeMask; }
+    void RootSignatureCb(ID3D12RootSignature* pRootSignature) override { PipelineStream.pRootSignature = pRootSignature; }
+    void InputLayoutCb(const D3D12_INPUT_LAYOUT_DESC& InputLayout) override { PipelineStream.InputLayout = InputLayout; }
+    void IBStripCutValueCb(D3D12_INDEX_BUFFER_STRIP_CUT_VALUE IBStripCutValue) override { PipelineStream.IBStripCutValue = IBStripCutValue; }
+    void PrimitiveTopologyTypeCb(D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveTopologyType) override { PipelineStream.PrimitiveTopologyType = PrimitiveTopologyType; }
+    void VSCb(const D3D12_SHADER_BYTECODE& VS) override { PipelineStream.VS = VS; }
+    void GSCb(const D3D12_SHADER_BYTECODE& GS) override { PipelineStream.GS = GS; }
+    void StreamOutputCb(const D3D12_STREAM_OUTPUT_DESC& StreamOutput) override { PipelineStream.StreamOutput = StreamOutput; }
+    void HSCb(const D3D12_SHADER_BYTECODE& HS) override { PipelineStream.HS = HS; }
+    void DSCb(const D3D12_SHADER_BYTECODE& DS) override { PipelineStream.DS = DS; }
+    void PSCb(const D3D12_SHADER_BYTECODE& PS) override { PipelineStream.PS = PS; }
+    void CSCb(const D3D12_SHADER_BYTECODE& CS) override { PipelineStream.CS = CS; }
+    void ASCb(const D3D12_SHADER_BYTECODE& AS) override { PipelineStream.AS = AS; }
+    void MSCb(const D3D12_SHADER_BYTECODE& MS) override { PipelineStream.MS = MS; }
+    void BlendStateCb(const D3D12_BLEND_DESC& BlendState) override { PipelineStream.BlendState = CD3DX12_BLEND_DESC(BlendState); }
+    void DepthStencilStateCb(const D3D12_DEPTH_STENCIL_DESC& DepthStencilState) override
+    {
+        PipelineStream.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC2(DepthStencilState);
+        SeenDSS = true;
+    }
+    void DepthStencilState1Cb(const D3D12_DEPTH_STENCIL_DESC1& DepthStencilState) override
+    {
+        PipelineStream.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC2(DepthStencilState);
+        SeenDSS = true;
+    }
+    void DepthStencilState2Cb(const D3D12_DEPTH_STENCIL_DESC2& DepthStencilState) override
+    {
+        PipelineStream.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC2(DepthStencilState);
+        SeenDSS = true;
+    }
+    void DSVFormatCb(DXGI_FORMAT DSVFormat) override
+    {
+        PipelineStream.DSVFormat = DSVFormat;
+        if (!SeenDSS && DSVFormat != DXGI_FORMAT_UNKNOWN)
+        {
+            // Re-enable depth for the default state.
+            static_cast<D3D12_DEPTH_STENCIL_DESC2&>(PipelineStream.DepthStencilState).DepthEnable = true;
+        }
+    }
+    void RasterizerStateCb(const D3D12_RASTERIZER_DESC& RasterizerState) override { PipelineStream.RasterizerState = CD3DX12_RASTERIZER_DESC2(RasterizerState); }
+    void RasterizerState1Cb(const D3D12_RASTERIZER_DESC1& RasterizerState) override { PipelineStream.RasterizerState = CD3DX12_RASTERIZER_DESC2(RasterizerState); }
+    void RasterizerState2Cb(const D3D12_RASTERIZER_DESC2& RasterizerState) override { PipelineStream.RasterizerState = CD3DX12_RASTERIZER_DESC2(RasterizerState); }
+    void RTVFormatsCb(const D3D12_RT_FORMAT_ARRAY& RTVFormats) override { PipelineStream.RTVFormats = RTVFormats; }
+    void SampleDescCb(const DXGI_SAMPLE_DESC& SampleDesc) override { PipelineStream.SampleDesc = SampleDesc; }
+    void SampleMaskCb(UINT SampleMask) override { PipelineStream.SampleMask = SampleMask; }
+    void ViewInstancingCb(const D3D12_VIEW_INSTANCING_DESC& ViewInstancingDesc) override { PipelineStream.ViewInstancingDesc = CD3DX12_VIEW_INSTANCING_DESC(ViewInstancingDesc); }
+    void CachedPSOCb(const D3D12_CACHED_PIPELINE_STATE& CachedPSO) override { PipelineStream.CachedPSO = CachedPSO; }
+
+private:
+    bool SeenDSS;
+};
+#endif // D3D12_SDK_VERSION >= 610
 
 struct CD3DX12_PIPELINE_STATE_STREAM_PARSE_HELPER : public ID3DX12PipelineParserCallbacks
 {
@@ -3070,6 +4198,14 @@ inline D3D12_PIPELINE_STATE_SUBOBJECT_TYPE D3DX12GetBaseSubobjectType(D3D12_PIPE
     {
     case D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_DEPTH_STENCIL1:
         return D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_DEPTH_STENCIL;
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 606)
+    case D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_DEPTH_STENCIL2:
+        return D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_DEPTH_STENCIL;
+#endif
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 608)
+    case D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_RASTERIZER1:
+        return D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_RASTERIZER;
+#endif
     default:
         return SubobjectType;
     }
@@ -3158,6 +4294,18 @@ inline HRESULT D3DX12ParsePipelineStream(const D3D12_PIPELINE_STATE_STREAM_DESC&
             pCallbacks->RasterizerStateCb(*reinterpret_cast<decltype(CD3DX12_PIPELINE_STATE_STREAM::RasterizerState)*>(pStream));
             SizeOfSubobject = sizeof(CD3DX12_PIPELINE_STATE_STREAM::RasterizerState);
             break;
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 608)
+        case D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_RASTERIZER1:
+            pCallbacks->RasterizerState1Cb(*reinterpret_cast<decltype(CD3DX12_PIPELINE_STATE_STREAM4::RasterizerState)*>(pStream));
+            SizeOfSubobject = sizeof(CD3DX12_PIPELINE_STATE_STREAM4::RasterizerState);
+            break;
+#endif
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 610)
+        case D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_RASTERIZER2:
+            pCallbacks->RasterizerState2Cb(*reinterpret_cast<decltype(CD3DX12_PIPELINE_STATE_STREAM5::RasterizerState)*>(pStream));
+            SizeOfSubobject = sizeof(CD3DX12_PIPELINE_STATE_STREAM5::RasterizerState);
+            break;
+#endif
         case D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_DEPTH_STENCIL:
             pCallbacks->DepthStencilStateCb(*reinterpret_cast<CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL*>(pStream));
             SizeOfSubobject = sizeof(CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL);
@@ -3166,6 +4314,12 @@ inline HRESULT D3DX12ParsePipelineStream(const D3D12_PIPELINE_STATE_STREAM_DESC&
             pCallbacks->DepthStencilState1Cb(*reinterpret_cast<decltype(CD3DX12_PIPELINE_STATE_STREAM::DepthStencilState)*>(pStream));
             SizeOfSubobject = sizeof(CD3DX12_PIPELINE_STATE_STREAM::DepthStencilState);
             break;
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 606)
+        case D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_DEPTH_STENCIL2:
+            pCallbacks->DepthStencilState2Cb(*reinterpret_cast<decltype(CD3DX12_PIPELINE_STATE_STREAM3::DepthStencilState)*>(pStream));
+            SizeOfSubobject = sizeof(CD3DX12_PIPELINE_STATE_STREAM3::DepthStencilState);
+            break;
+#endif
         case D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_INPUT_LAYOUT:
             pCallbacks->InputLayoutCb(*reinterpret_cast<decltype(CD3DX12_PIPELINE_STATE_STREAM::InputLayout)*>(pStream));
             SizeOfSubobject = sizeof(CD3DX12_PIPELINE_STATE_STREAM::InputLayout);
@@ -3216,27 +4370,28 @@ inline HRESULT D3DX12ParsePipelineStream(const D3D12_PIPELINE_STATE_STREAM_DESC&
 }
 
 //------------------------------------------------------------------------------------------------
-inline bool operator==( const D3D12_CLEAR_VALUE &a, const D3D12_CLEAR_VALUE &b) noexcept
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 609)
+inline bool operator==(const D3D12_RENDER_PASS_BEGINNING_ACCESS_PRESERVE_LOCAL_PARAMETERS& a, const D3D12_RENDER_PASS_ENDING_ACCESS_PRESERVE_LOCAL_PARAMETERS& b) noexcept
 {
-    if (a.Format != b.Format) return false;
-    if (a.Format == DXGI_FORMAT_D24_UNORM_S8_UINT
-     || a.Format == DXGI_FORMAT_D16_UNORM
-     || a.Format == DXGI_FORMAT_D32_FLOAT
-     || a.Format == DXGI_FORMAT_D32_FLOAT_S8X24_UINT)
-    {
-        return (a.DepthStencil.Depth == b.DepthStencil.Depth) &&
-          (a.DepthStencil.Stencil == b.DepthStencil.Stencil);
-    } else {
-        return (a.Color[0] == b.Color[0]) &&
-               (a.Color[1] == b.Color[1]) &&
-               (a.Color[2] == b.Color[2]) &&
-               (a.Color[3] == b.Color[3]);
-    }
+    return ((a.AdditionalWidth == b.AdditionalWidth) && (a.AdditionalHeight == b.AdditionalHeight));
 }
+
+inline bool operator==(const D3D12_RENDER_PASS_BEGINNING_ACCESS_PRESERVE_LOCAL_PARAMETERS& a, const D3D12_RENDER_PASS_BEGINNING_ACCESS_PRESERVE_LOCAL_PARAMETERS& b) noexcept
+{
+    return ((a.AdditionalWidth == b.AdditionalWidth) && (a.AdditionalHeight == b.AdditionalHeight));
+}
+
+inline bool operator==(const D3D12_RENDER_PASS_ENDING_ACCESS_PRESERVE_LOCAL_PARAMETERS& a, const D3D12_RENDER_PASS_ENDING_ACCESS_PRESERVE_LOCAL_PARAMETERS& b) noexcept
+{
+    return ((a.AdditionalWidth == b.AdditionalWidth) && (a.AdditionalHeight == b.AdditionalHeight));
+}
+#endif
+
 inline bool operator==( const D3D12_RENDER_PASS_BEGINNING_ACCESS_CLEAR_PARAMETERS &a, const D3D12_RENDER_PASS_BEGINNING_ACCESS_CLEAR_PARAMETERS &b) noexcept
 {
     return a.ClearValue == b.ClearValue;
 }
+
 inline bool operator==( const D3D12_RENDER_PASS_ENDING_ACCESS_RESOLVE_PARAMETERS &a, const D3D12_RENDER_PASS_ENDING_ACCESS_RESOLVE_PARAMETERS &b) noexcept
 {
     if (a.pSrcResource != b.pSrcResource) return false;
@@ -3247,18 +4402,64 @@ inline bool operator==( const D3D12_RENDER_PASS_ENDING_ACCESS_RESOLVE_PARAMETERS
     if (a.PreserveResolveSource != b.PreserveResolveSource) return false;
     return true;
 }
+
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4062)
+#endif
+
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wswitch"
+#endif
+
 inline bool operator==( const D3D12_RENDER_PASS_BEGINNING_ACCESS &a, const D3D12_RENDER_PASS_BEGINNING_ACCESS &b) noexcept
 {
     if (a.Type != b.Type) return false;
-    if (a.Type == D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR && !(a.Clear == b.Clear)) return false;
+    switch (a.Type)
+    {
+    case D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR:
+        if (!(a.Clear == b.Clear)) return false;
+        break;
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 609)
+    case D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_PRESERVE_LOCAL_RENDER:
+    case D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_PRESERVE_LOCAL_SRV:
+    case D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_PRESERVE_LOCAL_UAV:
+        if (!(a.PreserveLocal == b.PreserveLocal)) return false;
+        break;
+#endif
+    }
     return true;
 }
-inline bool operator==( const D3D12_RENDER_PASS_ENDING_ACCESS &a, const D3D12_RENDER_PASS_ENDING_ACCESS &b) noexcept
+
+inline bool operator==(const D3D12_RENDER_PASS_ENDING_ACCESS& a, const D3D12_RENDER_PASS_ENDING_ACCESS& b) noexcept
 {
     if (a.Type != b.Type) return false;
-    if (a.Type == D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_RESOLVE && !(a.Resolve == b.Resolve)) return false;
+    switch (a.Type)
+    {
+    case D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_RESOLVE:
+        if (!(a.Resolve == b.Resolve)) return false;
+        break;
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 609)
+    case D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE_LOCAL_RENDER:
+    case D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE_LOCAL_SRV:
+    case D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE_LOCAL_UAV:
+        if (!(a.PreserveLocal == b.PreserveLocal)) return false;
+        break;
+#endif
+    }
+
     return true;
 }
+
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+
 inline bool operator==( const D3D12_RENDER_PASS_RENDER_TARGET_DESC &a, const D3D12_RENDER_PASS_RENDER_TARGET_DESC &b) noexcept
 {
     if (a.cpuDescriptor.ptr != b.cpuDescriptor.ptr) return false;
@@ -4054,7 +5255,7 @@ private:
 #endif // !D3DX12_NO_STATE_OBJECT_HELPERS
 
 
-#if defined(NTDDI_WIN10_NI) || defined(USING_D3D12_AGILITY_SDK)
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 608)
 
 //================================================================================================
 // D3DX12 Enhanced Barrier Helpers
@@ -4071,20 +5272,20 @@ public:
         D3D12_BARRIER_SUBRESOURCE_RANGE{ Subresource, 0, 0, 0, 0, 0 }
     {}
     CD3DX12_BARRIER_SUBRESOURCE_RANGE(
-        UINT FirstMipLevel,
-        UINT NumMips,
-        UINT FirstArraySlice,
-        UINT NumArraySlices,
-        UINT FirstPlane = 0,
-        UINT NumPlanes = 1) noexcept :
+        UINT firstMipLevel,
+        UINT numMips,
+        UINT firstArraySlice,
+        UINT numArraySlices,
+        UINT firstPlane = 0,
+        UINT numPlanes = 1) noexcept :
         D3D12_BARRIER_SUBRESOURCE_RANGE
         {
-            FirstMipLevel,
-            NumMips,
-            FirstArraySlice,
-            NumArraySlices,
-            FirstPlane,
-            NumPlanes
+            firstMipLevel,
+            numMips,
+            firstArraySlice,
+            numArraySlices,
+            firstPlane,
+            numPlanes
         }
     {}
 };
@@ -4181,10 +5382,10 @@ public:
     }
 };
 
-#endif // NTDDI_WIN10_NI || USING_D3D12_AGILITY_SDK
+#endif // D3D12_SDK_VERSION >= 608
 
 
-#if (defined(NTDDI_WIN10_CO) || defined(USING_D3D12_AGILITY_SDK)) && !defined(D3DX12_NO_CHECK_FEATURE_SUPPORT_CLASS)
+#ifndef D3DX12_NO_CHECK_FEATURE_SUPPORT_CLASS
 
 //================================================================================================
 // D3DX12 Check Feature Support
@@ -4297,9 +5498,11 @@ public: // Function declaration
     D3D12_RENDER_PASS_TIER RenderPassesTier() const noexcept;
     D3D12_RAYTRACING_TIER RaytracingTier() const noexcept;
 
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 4)
     // DISPLAYABLE
     BOOL DisplayableTexture() const noexcept;
     // SharedResourceCompatibilityTier handled in D3D12Options4
+#endif
 
     // D3D12_OPTIONS6
     BOOL AdditionalShadingRatesSupported() const noexcept;
@@ -4321,6 +5524,7 @@ public: // Function declaration
     // PROTECTED_RESOURCE_SESSION_TYPES
     std::vector<GUID> ProtectedResourceSessionTypes(UINT NodeIndex = 0) const;
 
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 3)
     // D3D12_OPTIONS8
     BOOL UnalignedBlockTexturesSupported() const noexcept;
 
@@ -4331,21 +5535,25 @@ public: // Function declaration
     BOOL AtomicInt64OnGroupSharedSupported() const noexcept;
     BOOL DerivativesInMeshAndAmplificationShadersSupported() const noexcept;
     D3D12_WAVE_MMA_TIER WaveMMATier() const noexcept;
+#endif
 
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 4)
     // D3D12_OPTIONS10
     BOOL VariableRateShadingSumCombinerSupported() const noexcept;
     BOOL MeshShaderPerPrimitiveShadingRateSupported() const noexcept;
 
     // D3D12_OPTIONS11
     BOOL AtomicInt64OnDescriptorHeapResourceSupported() const noexcept;
+#endif
 
-
-#if defined(NTDDI_WIN10_NI) || defined(USING_D3D12_AGILITY_SDK)
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 600)
     // D3D12_OPTIONS12
     D3D12_TRI_STATE MSPrimitivesPipelineStatisticIncludesCulledPrimitives() const noexcept;
     BOOL EnhancedBarriersSupported() const noexcept;
     BOOL RelaxedFormatCastingSupported() const noexcept;
+#endif
 
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 602)
     // D3D12_OPTIONS13
     BOOL UnrestrictedBufferTextureCopyPitchSupported() const noexcept;
     BOOL UnrestrictedVertexElementAlignmentSupported() const noexcept;
@@ -4353,6 +5561,45 @@ public: // Function declaration
     BOOL InvertedViewportDepthFlipsZSupported() const noexcept;
     BOOL TextureCopyBetweenDimensionsSupported() const noexcept;
     BOOL AlphaBlendFactorSupported() const noexcept;
+#endif
+
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 606)
+    // D3D12_OPTIONS14
+    BOOL AdvancedTextureOpsSupported() const noexcept;
+    BOOL WriteableMSAATexturesSupported() const noexcept;
+    BOOL IndependentFrontAndBackStencilRefMaskSupported() const noexcept;
+
+    // D3D12_OPTIONS15
+    BOOL TriangleFanSupported() const noexcept;
+    BOOL DynamicIndexBufferStripCutSupported() const noexcept;
+#endif
+
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 608)
+    // D3D12_OPTIONS16
+    BOOL DynamicDepthBiasSupported() const noexcept;
+#endif
+
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 609)
+    BOOL GPUUploadHeapSupported() const noexcept;
+
+    // D3D12_OPTIONS17
+    BOOL NonNormalizedCoordinateSamplersSupported() const noexcept;
+    BOOL ManualWriteTrackingResourceSupported() const noexcept;
+
+    // D3D12_OPTIONS18
+    BOOL RenderPassesValid() const noexcept;
+#endif
+
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 610)
+    BOOL MismatchingOutputDimensionsSupported() const noexcept;
+    UINT SupportedSampleCountsWithNoOutputs() const noexcept;
+    BOOL PointSamplingAddressesNeverRoundUp() const noexcept;
+    BOOL RasterizerDesc2Supported() const noexcept;
+    BOOL NarrowQuadrilateralLinesSupported() const noexcept;
+    BOOL AnisoFilterWithPointMipSupported() const noexcept;
+    UINT MaxSamplerDescriptorHeapSize() const noexcept;
+    UINT MaxSamplerDescriptorHeapSizeWithStaticSamplers() const noexcept;
+    UINT MaxViewDescriptorHeapSize() const noexcept;
 #endif
 
 private: // Private structs and helpers declaration
@@ -4401,18 +5648,42 @@ private: // Member data
     std::vector<D3D12_FEATURE_DATA_SERIALIZATION> m_dSerialization; // Cat2 NodeIndex
     D3D12_FEATURE_DATA_CROSS_NODE m_dCrossNode;
     D3D12_FEATURE_DATA_D3D12_OPTIONS5 m_dOptions5;
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 4)
     D3D12_FEATURE_DATA_DISPLAYABLE m_dDisplayable;
+#endif
     D3D12_FEATURE_DATA_D3D12_OPTIONS6 m_dOptions6;
     D3D12_FEATURE_DATA_D3D12_OPTIONS7 m_dOptions7;
     std::vector<D3D12_FEATURE_DATA_PROTECTED_RESOURCE_SESSION_TYPE_COUNT> m_dProtectedResourceSessionTypeCount; // Cat2 NodeIndex
     std::vector<ProtectedResourceSessionTypesLocal> m_dProtectedResourceSessionTypes; // Cat3
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 3)
     D3D12_FEATURE_DATA_D3D12_OPTIONS8 m_dOptions8;
     D3D12_FEATURE_DATA_D3D12_OPTIONS9 m_dOptions9;
+#endif
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 4)
     D3D12_FEATURE_DATA_D3D12_OPTIONS10 m_dOptions10;
     D3D12_FEATURE_DATA_D3D12_OPTIONS11 m_dOptions11;
-#if defined(NTDDI_WIN10_NI) || defined(USING_D3D12_AGILITY_SDK)
+#endif
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 600)
     D3D12_FEATURE_DATA_D3D12_OPTIONS12 m_dOptions12;
+#endif
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 602)
     D3D12_FEATURE_DATA_D3D12_OPTIONS13 m_dOptions13;
+#endif
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 606)
+    D3D12_FEATURE_DATA_D3D12_OPTIONS14 m_dOptions14;
+    D3D12_FEATURE_DATA_D3D12_OPTIONS15 m_dOptions15;
+#endif
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 608)
+    D3D12_FEATURE_DATA_D3D12_OPTIONS16 m_dOptions16;
+#endif
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 609)
+    D3D12_FEATURE_DATA_D3D12_OPTIONS17 m_dOptions17;
+#endif
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 609)
+    D3D12_FEATURE_DATA_D3D12_OPTIONS18 m_dOptions18;
+#endif
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 610)
+    D3D12_FEATURE_DATA_D3D12_OPTIONS19 m_dOptions19;
 #endif
 };
 
@@ -4467,16 +5738,40 @@ inline CD3DX12FeatureSupport::CD3DX12FeatureSupport() noexcept
 , m_dOptions4{}
 , m_dCrossNode{}
 , m_dOptions5{}
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 4)
 , m_dDisplayable{}
+#endif
 , m_dOptions6{}
 , m_dOptions7{}
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 3)
 , m_dOptions8{}
 , m_dOptions9{}
+#endif
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 4)
 , m_dOptions10{}
 , m_dOptions11{}
-#if defined(NTDDI_WIN10_NI) || defined(USING_D3D12_AGILITY_SDK)
+#endif
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 600)
 , m_dOptions12{}
+#endif
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 602)
 , m_dOptions13{}
+#endif
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 606)
+, m_dOptions14{}
+, m_dOptions15{}
+#endif
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 608)
+, m_dOptions16{}
+#endif
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 609)
+, m_dOptions17{}
+#endif
+#if defined (D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 609)
+, m_dOptions18{}
+#endif
+#if defined (D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 610)
+, m_dOptions19{}
 #endif
 {}
 
@@ -4493,147 +5788,149 @@ inline HRESULT CD3DX12FeatureSupport::Init(ID3D12Device* pDevice)
     // Initialize static feature support data structures
     if (FAILED(m_pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS, &m_dOptions, sizeof(m_dOptions))))
     {
-        m_dOptions.DoublePrecisionFloatShaderOps = false;
-        m_dOptions.OutputMergerLogicOp = false;
-        m_dOptions.MinPrecisionSupport = D3D12_SHADER_MIN_PRECISION_SUPPORT_NONE;
-        m_dOptions.TiledResourcesTier = D3D12_TILED_RESOURCES_TIER_NOT_SUPPORTED;
-        m_dOptions.ResourceBindingTier = static_cast<D3D12_RESOURCE_BINDING_TIER>(0);
-        m_dOptions.PSSpecifiedStencilRefSupported = false;
-        m_dOptions.TypedUAVLoadAdditionalFormats = false;
-        m_dOptions.ROVsSupported = false;
-        m_dOptions.ConservativeRasterizationTier = D3D12_CONSERVATIVE_RASTERIZATION_TIER_NOT_SUPPORTED;
-        m_dOptions.MaxGPUVirtualAddressBitsPerResource = 0;
-        m_dOptions.StandardSwizzle64KBSupported = false;
-        m_dOptions.CrossNodeSharingTier = D3D12_CROSS_NODE_SHARING_TIER_NOT_SUPPORTED;
-        m_dOptions.CrossAdapterRowMajorTextureSupported = false;
-        m_dOptions.VPAndRTArrayIndexFromAnyShaderFeedingRasterizerSupportedWithoutGSEmulation = false;
-        m_dOptions.ResourceHeapTier = static_cast<D3D12_RESOURCE_HEAP_TIER>(0);
+        m_dOptions = {};
     }
 
     if (FAILED(m_pDevice->CheckFeatureSupport(D3D12_FEATURE_GPU_VIRTUAL_ADDRESS_SUPPORT, &m_dGPUVASupport, sizeof(m_dGPUVASupport))))
     {
-        m_dGPUVASupport.MaxGPUVirtualAddressBitsPerProcess = 0;
-        m_dGPUVASupport.MaxGPUVirtualAddressBitsPerResource = 0;
+        m_dGPUVASupport = {};
     }
 
     if (FAILED(m_pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS1, &m_dOptions1, sizeof(m_dOptions1))))
     {
-        m_dOptions1.WaveOps = false;
-        m_dOptions1.WaveLaneCountMax = 0;
-        m_dOptions1.WaveLaneCountMin = 0;
-        m_dOptions1.TotalLaneCount = 0;
-        m_dOptions1.ExpandedComputeResourceStates = 0;
-        m_dOptions1.Int64ShaderOps = 0;
+        m_dOptions1 = {};
     }
 
     if (FAILED(m_pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS2, &m_dOptions2, sizeof(m_dOptions2))))
     {
-        m_dOptions2.DepthBoundsTestSupported = false;
-        m_dOptions2.ProgrammableSamplePositionsTier = D3D12_PROGRAMMABLE_SAMPLE_POSITIONS_TIER_NOT_SUPPORTED;
+        m_dOptions2 = {};
     }
 
     if (FAILED(m_pDevice->CheckFeatureSupport(D3D12_FEATURE_SHADER_CACHE, &m_dShaderCache, sizeof(m_dShaderCache))))
     {
-        m_dShaderCache.SupportFlags = D3D12_SHADER_CACHE_SUPPORT_NONE;
+        m_dShaderCache = {};
     }
 
     if (FAILED(m_pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS3, &m_dOptions3, sizeof(m_dOptions3))))
     {
-        m_dOptions3.CopyQueueTimestampQueriesSupported = false;
-        m_dOptions3.CastingFullyTypedFormatSupported = false;
-        m_dOptions3.WriteBufferImmediateSupportFlags = D3D12_COMMAND_LIST_SUPPORT_FLAG_NONE;
-        m_dOptions3.ViewInstancingTier = D3D12_VIEW_INSTANCING_TIER_NOT_SUPPORTED;
-        m_dOptions3.BarycentricsSupported = false;
+        m_dOptions3 = {};
     }
 
     if (FAILED(m_pDevice->CheckFeatureSupport(D3D12_FEATURE_EXISTING_HEAPS, &m_dExistingHeaps, sizeof(m_dExistingHeaps))))
     {
-        m_dExistingHeaps.Supported = false;
+        m_dExistingHeaps = {};
     }
 
     if (FAILED(m_pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS4, &m_dOptions4, sizeof(m_dOptions4))))
     {
-        m_dOptions4.MSAA64KBAlignedTextureSupported = false;
-        m_dOptions4.Native16BitShaderOpsSupported = false;
-        m_dOptions4.SharedResourceCompatibilityTier = D3D12_SHARED_RESOURCE_COMPATIBILITY_TIER_0;
+        m_dOptions4 = {};
     }
 
     if (FAILED(m_pDevice->CheckFeatureSupport(D3D12_FEATURE_CROSS_NODE, &m_dCrossNode, sizeof(m_dCrossNode))))
     {
-        m_dCrossNode.SharingTier = D3D12_CROSS_NODE_SHARING_TIER_NOT_SUPPORTED;
-        m_dCrossNode.AtomicShaderInstructions = false;
+        m_dCrossNode = {};
     }
 
     if (FAILED(m_pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS5, &m_dOptions5, sizeof(m_dOptions5))))
     {
-        m_dOptions5.SRVOnlyTiledResourceTier3 = false;
-        m_dOptions5.RenderPassesTier = D3D12_RENDER_PASS_TIER_0;
-        m_dOptions5.RaytracingTier = D3D12_RAYTRACING_TIER_NOT_SUPPORTED;
+        m_dOptions5 = {};
     }
 
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 4)
     if (FAILED(m_pDevice->CheckFeatureSupport(D3D12_FEATURE_DISPLAYABLE, &m_dDisplayable, sizeof(m_dDisplayable))))
     {
-        m_dDisplayable.DisplayableTexture = false;
-        m_dDisplayable.SharedResourceCompatibilityTier = D3D12_SHARED_RESOURCE_COMPATIBILITY_TIER_0;
+        m_dDisplayable = {};
     }
+#endif
 
     if (FAILED(m_pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS6, &m_dOptions6, sizeof(m_dOptions6))))
     {
-        m_dOptions6.AdditionalShadingRatesSupported = false;
-        m_dOptions6.PerPrimitiveShadingRateSupportedWithViewportIndexing = false;
-        m_dOptions6.VariableShadingRateTier = D3D12_VARIABLE_SHADING_RATE_TIER_NOT_SUPPORTED;
-        m_dOptions6.ShadingRateImageTileSize = 0;
-        m_dOptions6.BackgroundProcessingSupported = false;
+        m_dOptions6 = {};
     }
 
     if (FAILED(m_pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS7, &m_dOptions7, sizeof(m_dOptions7))))
     {
-        m_dOptions7.MeshShaderTier = D3D12_MESH_SHADER_TIER_NOT_SUPPORTED;
-        m_dOptions7.SamplerFeedbackTier = D3D12_SAMPLER_FEEDBACK_TIER_NOT_SUPPORTED;
+        m_dOptions7 = {};
     }
 
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 3)
     if (FAILED(m_pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS8, &m_dOptions8, sizeof(m_dOptions8))))
     {
-        m_dOptions8.UnalignedBlockTexturesSupported = false;
+        m_dOptions8 = {};
     }
 
     if (FAILED(m_pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS9, &m_dOptions9, sizeof(m_dOptions9))))
     {
-        m_dOptions9.MeshShaderPipelineStatsSupported = false;
-        m_dOptions9.MeshShaderSupportsFullRangeRenderTargetArrayIndex = false;
-        m_dOptions9.AtomicInt64OnGroupSharedSupported = false;
-        m_dOptions9.AtomicInt64OnTypedResourceSupported = false;
-        m_dOptions9.DerivativesInMeshAndAmplificationShadersSupported = false;
-        m_dOptions9.WaveMMATier = D3D12_WAVE_MMA_TIER_NOT_SUPPORTED;
+        m_dOptions9 = {};
     }
+#endif
 
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 4)
     if (FAILED(m_pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS10, &m_dOptions10, sizeof(m_dOptions10))))
     {
-        m_dOptions10.MeshShaderPerPrimitiveShadingRateSupported = false;
-        m_dOptions10.VariableRateShadingSumCombinerSupported = false;
+        m_dOptions10 = {};
     }
 
     if (FAILED(m_pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS11, &m_dOptions11, sizeof(m_dOptions11))))
     {
-        m_dOptions11.AtomicInt64OnDescriptorHeapResourceSupported = false;
+        m_dOptions11 = {};
     }
+#endif
 
-#if defined(NTDDI_WIN10_NI) || defined(USING_D3D12_AGILITY_SDK)
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 600)
     if (FAILED(m_pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS12, &m_dOptions12, sizeof(m_dOptions12))))
     {
+        m_dOptions12 = {};
         m_dOptions12.MSPrimitivesPipelineStatisticIncludesCulledPrimitives = D3D12_TRI_STATE::D3D12_TRI_STATE_UNKNOWN;
-        m_dOptions12.EnhancedBarriersSupported = false;
-        m_dOptions12.RelaxedFormatCastingSupported = false;
     }
+#endif
 
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 602)
     if (FAILED(m_pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS13, &m_dOptions13, sizeof(m_dOptions13))))
     {
-        m_dOptions13.UnrestrictedBufferTextureCopyPitchSupported = false;
-        m_dOptions13.UnrestrictedVertexElementAlignmentSupported = false;
-        m_dOptions13.InvertedViewportHeightFlipsYSupported = false;
-        m_dOptions13.InvertedViewportDepthFlipsZSupported = false;
-        m_dOptions13.TextureCopyBetweenDimensionsSupported = false;
-        m_dOptions13.AlphaBlendFactorSupported = false;
+        m_dOptions13 = {};
+    }
+#endif
+
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 606)
+    if (FAILED(m_pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS14, &m_dOptions14, sizeof(m_dOptions14))))
+    {
+        m_dOptions14 = {};
+    }
+
+    if (FAILED(m_pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS15, &m_dOptions15, sizeof(m_dOptions15))))
+    {
+        m_dOptions15 = {};
+    }
+#endif
+
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 608)
+    if (FAILED(m_pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS16, &m_dOptions16, sizeof(m_dOptions16))))
+    {
+        m_dOptions16 = {};
+    }
+#endif
+
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 609)
+    if (FAILED(m_pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS17, &m_dOptions17, sizeof(m_dOptions17))))
+    {
+        m_dOptions17 = {};
+    }
+
+    if (FAILED(m_pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS18, &m_dOptions18, sizeof(m_dOptions18))))
+    {
+        m_dOptions18.RenderPassesValid = false;
+    }
+#endif
+
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 610)
+    if (FAILED(m_pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS19, &m_dOptions19, sizeof(m_dOptions19))))
+    {
+        m_dOptions19 = {};
+        m_dOptions19.SupportedSampleCountsWithNoOutputs = 1;
+        m_dOptions19.MaxSamplerDescriptorHeapSize = D3D12_MAX_SHADER_VISIBLE_SAMPLER_HEAP_SIZE;
+        m_dOptions19.MaxSamplerDescriptorHeapSizeWithStaticSamplers = D3D12_MAX_SHADER_VISIBLE_SAMPLER_HEAP_SIZE;
+        m_dOptions19.MaxViewDescriptorHeapSize = D3D12_MAX_SHADER_VISIBLE_DESCRIPTOR_HEAP_SIZE_TIER_1;
     }
 #endif
 
@@ -4897,9 +6194,11 @@ FEATURE_SUPPORT_GET(BOOL, m_dOptions5, SRVOnlyTiledResourceTier3);
 FEATURE_SUPPORT_GET(D3D12_RENDER_PASS_TIER, m_dOptions5, RenderPassesTier);
 FEATURE_SUPPORT_GET(D3D12_RAYTRACING_TIER, m_dOptions5, RaytracingTier);
 
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 4)
 // 28: Displayable
 FEATURE_SUPPORT_GET(BOOL, m_dDisplayable, DisplayableTexture);
 // SharedResourceCompatibilityTier handled in D3D12Options4
+#endif
 
 // 30: D3D12 Options6
 FEATURE_SUPPORT_GET(BOOL, m_dOptions6, AdditionalShadingRatesSupported);
@@ -4925,6 +6224,7 @@ FEATURE_SUPPORT_GET_NODE_INDEXED_NAME(UINT, m_dProtectedResourceSessionTypeCount
 // 34: Protected Resource Session Types
 FEATURE_SUPPORT_GET_NODE_INDEXED_NAME(std::vector<GUID>, m_dProtectedResourceSessionTypes, TypeVec, ProtectedResourceSessionTypes);
 
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 3)
 // 36: Options8
 FEATURE_SUPPORT_GET(BOOL, m_dOptions8, UnalignedBlockTexturesSupported);
 
@@ -4935,20 +6235,25 @@ FEATURE_SUPPORT_GET(BOOL, m_dOptions9, AtomicInt64OnTypedResourceSupported);
 FEATURE_SUPPORT_GET(BOOL, m_dOptions9, AtomicInt64OnGroupSharedSupported);
 FEATURE_SUPPORT_GET(BOOL, m_dOptions9, DerivativesInMeshAndAmplificationShadersSupported);
 FEATURE_SUPPORT_GET(D3D12_WAVE_MMA_TIER, m_dOptions9, WaveMMATier);
+#endif
 
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 4)
 // 39: Options10
 FEATURE_SUPPORT_GET(BOOL, m_dOptions10, VariableRateShadingSumCombinerSupported);
 FEATURE_SUPPORT_GET(BOOL, m_dOptions10, MeshShaderPerPrimitiveShadingRateSupported);
 
 // 40: Options11
 FEATURE_SUPPORT_GET(BOOL, m_dOptions11, AtomicInt64OnDescriptorHeapResourceSupported);
+#endif
 
-#if defined(NTDDI_WIN10_NI) || defined(USING_D3D12_AGILITY_SDK)
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 600)
 // 41: Options12
 FEATURE_SUPPORT_GET(D3D12_TRI_STATE, m_dOptions12, MSPrimitivesPipelineStatisticIncludesCulledPrimitives);
 FEATURE_SUPPORT_GET(BOOL, m_dOptions12, EnhancedBarriersSupported);
 FEATURE_SUPPORT_GET(BOOL, m_dOptions12, RelaxedFormatCastingSupported);
+#endif
 
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 602)
 // 42: Options13
 FEATURE_SUPPORT_GET(BOOL, m_dOptions13, UnrestrictedBufferTextureCopyPitchSupported);
 FEATURE_SUPPORT_GET(BOOL, m_dOptions13, UnrestrictedVertexElementAlignmentSupported);
@@ -4956,6 +6261,44 @@ FEATURE_SUPPORT_GET(BOOL, m_dOptions13, InvertedViewportHeightFlipsYSupported);
 FEATURE_SUPPORT_GET(BOOL, m_dOptions13, InvertedViewportDepthFlipsZSupported);
 FEATURE_SUPPORT_GET(BOOL, m_dOptions13, TextureCopyBetweenDimensionsSupported);
 FEATURE_SUPPORT_GET(BOOL, m_dOptions13, AlphaBlendFactorSupported);
+#endif
+
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 606)
+// 43: Options14
+FEATURE_SUPPORT_GET(BOOL, m_dOptions14, AdvancedTextureOpsSupported);
+FEATURE_SUPPORT_GET(BOOL, m_dOptions14, WriteableMSAATexturesSupported);
+FEATURE_SUPPORT_GET(BOOL, m_dOptions14, IndependentFrontAndBackStencilRefMaskSupported);
+
+// 44: Options15
+FEATURE_SUPPORT_GET(BOOL, m_dOptions15, TriangleFanSupported);
+FEATURE_SUPPORT_GET(BOOL, m_dOptions15, DynamicIndexBufferStripCutSupported);
+#endif
+
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 608)
+// 45: Options16
+FEATURE_SUPPORT_GET(BOOL, m_dOptions16, DynamicDepthBiasSupported);
+#endif
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 609)
+FEATURE_SUPPORT_GET(BOOL, m_dOptions16, GPUUploadHeapSupported);
+
+// 46: Options17
+FEATURE_SUPPORT_GET(BOOL, m_dOptions17, NonNormalizedCoordinateSamplersSupported);
+FEATURE_SUPPORT_GET(BOOL, m_dOptions17, ManualWriteTrackingResourceSupported);
+
+// 47: Option18
+FEATURE_SUPPORT_GET(BOOL, m_dOptions18, RenderPassesValid);
+#endif
+
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 610)
+FEATURE_SUPPORT_GET(BOOL, m_dOptions19, MismatchingOutputDimensionsSupported);
+FEATURE_SUPPORT_GET(UINT, m_dOptions19, SupportedSampleCountsWithNoOutputs);
+FEATURE_SUPPORT_GET(BOOL, m_dOptions19, PointSamplingAddressesNeverRoundUp);
+FEATURE_SUPPORT_GET(BOOL, m_dOptions19, RasterizerDesc2Supported);
+FEATURE_SUPPORT_GET(BOOL, m_dOptions19, NarrowQuadrilateralLinesSupported);
+FEATURE_SUPPORT_GET(BOOL, m_dOptions19, AnisoFilterWithPointMipSupported);
+FEATURE_SUPPORT_GET(UINT, m_dOptions19, MaxSamplerDescriptorHeapSize);
+FEATURE_SUPPORT_GET(UINT, m_dOptions19, MaxSamplerDescriptorHeapSizeWithStaticSamplers);
+FEATURE_SUPPORT_GET(UINT, m_dOptions19, MaxViewDescriptorHeapSize);
 #endif
 
 // Helper function to decide the highest shader model supported by the system
@@ -4968,7 +6311,12 @@ inline HRESULT CD3DX12FeatureSupport::QueryHighestShaderModel()
 
     const D3D_SHADER_MODEL allModelVersions[] =
     {
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 606)
+        D3D_SHADER_MODEL_6_8,
+#endif
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 3)
         D3D_SHADER_MODEL_6_7,
+#endif
         D3D_SHADER_MODEL_6_6,
         D3D_SHADER_MODEL_6_5,
         D3D_SHADER_MODEL_6_4,
@@ -5009,6 +6357,9 @@ inline HRESULT CD3DX12FeatureSupport::QueryHighestRootSignatureVersion()
 
     const D3D_ROOT_SIGNATURE_VERSION allRootSignatureVersions[] =
     {
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 609)
+        D3D_ROOT_SIGNATURE_VERSION_1_2,
+#endif
         D3D_ROOT_SIGNATURE_VERSION_1_1,
         D3D_ROOT_SIGNATURE_VERSION_1_0,
         D3D_ROOT_SIGNATURE_VERSION_1,
@@ -5044,7 +6395,9 @@ inline HRESULT CD3DX12FeatureSupport::QueryHighestFeatureLevel()
     // Needs to be updated for future feature levels
     const D3D_FEATURE_LEVEL allLevels[] =
     {
+#if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 3)
         D3D_FEATURE_LEVEL_12_2,
+#endif
         D3D_FEATURE_LEVEL_12_1,
         D3D_FEATURE_LEVEL_12_0,
         D3D_FEATURE_LEVEL_11_1,
@@ -5110,6 +6463,10 @@ inline HRESULT CD3DX12FeatureSupport::QueryProtectedResourceSessionTypes(UINT No
 #undef D3DX12_COM_PTR
 #undef D3DX12_COM_PTR_GET
 #undef D3DX12_COM_PTR_ADDRESSOF
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
 #endif // defined( __cplusplus )
 

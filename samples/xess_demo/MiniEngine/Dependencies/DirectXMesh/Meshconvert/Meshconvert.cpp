@@ -20,6 +20,10 @@
 #define NOHELP
 #pragma warning(pop)
 
+#if __cplusplus < 201703L
+#error Requires C++17 (and /Zc:__cplusplus with MSVC)
+#endif
+
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
@@ -28,6 +32,7 @@
 #include <cstring>
 #include <cwchar>
 #include <cwctype>
+#include <filesystem>
 #include <fstream>
 #include <iterator>
 #include <list>
@@ -83,7 +88,7 @@ namespace
 
     struct SConversion
     {
-        wchar_t szSrc[MAX_PATH];
+        std::wstring szSrc;
     };
 
     struct SValue
@@ -196,11 +201,11 @@ namespace
         return 0;
     }
 
-    void SearchForFiles(const wchar_t* path, std::list<SConversion>& files, bool recursive)
+    void SearchForFiles(const std::filesystem::path& path, std::list<SConversion>& files, bool recursive)
     {
         // Process files
         WIN32_FIND_DATAW findData = {};
-        ScopedFindHandle hFile(safe_handle(FindFirstFileExW(path,
+        ScopedFindHandle hFile(safe_handle(FindFirstFileExW(path.c_str(),
             FindExInfoBasic, &findData,
             FindExSearchNameMatch, nullptr,
             FIND_FIRST_EX_LARGE_FETCH)));
@@ -210,12 +215,8 @@ namespace
             {
                 if (!(findData.dwFileAttributes & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM | FILE_ATTRIBUTE_DIRECTORY)))
                 {
-                    wchar_t drive[_MAX_DRIVE] = {};
-                    wchar_t dir[_MAX_DIR] = {};
-                    _wsplitpath_s(path, drive, _MAX_DRIVE, dir, _MAX_DIR, nullptr, 0, nullptr, 0);
-
                     SConversion conv = {};
-                    _wmakepath_s(conv.szSrc, drive, dir, findData.cFileName, nullptr);
+                    conv.szSrc = path.parent_path().append(findData.cFileName).native();
                     files.push_back(conv);
                 }
 
@@ -227,15 +228,9 @@ namespace
         // Process directories
         if (recursive)
         {
-            wchar_t searchDir[MAX_PATH] = {};
-            {
-                wchar_t drive[_MAX_DRIVE] = {};
-                wchar_t dir[_MAX_DIR] = {};
-                _wsplitpath_s(path, drive, _MAX_DRIVE, dir, _MAX_DIR, nullptr, 0, nullptr, 0);
-                _wmakepath_s(searchDir, drive, dir, L"*", nullptr);
-            }
+            auto searchDir = path.parent_path().append(L"*");
 
-            hFile.reset(safe_handle(FindFirstFileExW(searchDir,
+            hFile.reset(safe_handle(FindFirstFileExW(searchDir.c_str(),
                 FindExInfoBasic, &findData,
                 FindExSearchLimitToDirectories, nullptr,
                 FIND_FIRST_EX_LARGE_FETCH)));
@@ -248,17 +243,7 @@ namespace
                 {
                     if (findData.cFileName[0] != L'.')
                     {
-                        wchar_t subdir[MAX_PATH] = {};
-
-                        {
-                            wchar_t drive[_MAX_DRIVE] = {};
-                            wchar_t dir[_MAX_DIR] = {};
-                            wchar_t fname[_MAX_FNAME] = {};
-                            wchar_t ext[_MAX_FNAME] = {};
-                            _wsplitpath_s(path, drive, dir, fname, ext);
-                            wcscat_s(dir, findData.cFileName);
-                            _wmakepath_s(subdir, drive, dir, fname, ext);
-                        }
+                        auto subdir = path.parent_path().append(findData.cFileName).append(path.filename().c_str());
 
                         SearchForFiles(subdir, files, recursive);
                     }
@@ -274,52 +259,58 @@ namespace
     {
         std::list<SConversion> flist;
         std::set<std::wstring> excludes;
-        wchar_t fname[1024] = {};
+
+        auto fname = std::make_unique<wchar_t[]>(32768);
         for (;;)
         {
-            inFile >> fname;
+            inFile >> fname.get();
             if (!inFile)
                 break;
 
-            if (*fname == L'#')
+            if (fname[0] == L'#')
             {
                 // Comment
             }
-            else if (*fname == L'-')
+            else if (fname[0] == L'-')
             {
                 if (flist.empty())
                 {
-                    wprintf(L"WARNING: Ignoring the line '%ls' in -flist\n", fname);
+                    wprintf(L"WARNING: Ignoring the line '%ls' in -flist\n", fname.get());
                 }
                 else
                 {
-                    if (wcspbrk(fname, L"?*") != nullptr)
+                    std::filesystem::path path(fname.get() + 1);
+                    auto& npath = path.make_preferred();
+                    if (wcspbrk(fname.get(), L"?*") != nullptr)
                     {
                         std::list<SConversion> removeFiles;
-                        SearchForFiles(&fname[1], removeFiles, false);
+                        SearchForFiles(npath, removeFiles, false);
 
-                        for (auto it : removeFiles)
+                        for (auto& it : removeFiles)
                         {
-                            _wcslwr_s(it.szSrc);
-                            excludes.insert(it.szSrc);
+                            std::wstring name = it.szSrc;
+                            std::transform(name.begin(), name.end(), name.begin(), towlower);
+                            excludes.insert(name);
                         }
                     }
                     else
                     {
-                        std::wstring name = (fname + 1);
+                        std::wstring name = npath.c_str();
                         std::transform(name.begin(), name.end(), name.begin(), towlower);
                         excludes.insert(name);
                     }
                 }
             }
-            else if (wcspbrk(fname, L"?*") != nullptr)
+            else if (wcspbrk(fname.get(), L"?*") != nullptr)
             {
-                SearchForFiles(fname, flist, false);
+                std::filesystem::path path(fname.get());
+                SearchForFiles(path.make_preferred(), flist, false);
             }
             else
             {
                 SConversion conv = {};
-                wcscpy_s(conv.szSrc, MAX_PATH, fname);
+                std::filesystem::path path(fname.get());
+                conv.szSrc = path.make_preferred().native();
                 flist.push_back(conv);
             }
 
@@ -374,12 +365,12 @@ namespace
         wprintf(L"\n");
     }
 
-    void PrintLogo()
+    void PrintLogo(bool versionOnly)
     {
         wchar_t version[32] = {};
 
         wchar_t appName[_MAX_PATH] = {};
-        if (GetModuleFileNameW(nullptr, appName, static_cast<DWORD>(std::size(appName))))
+        if (GetModuleFileNameW(nullptr, appName, _MAX_PATH))
         {
             const DWORD size = GetFileVersionInfoSizeW(appName, nullptr);
             if (size > 0)
@@ -402,50 +393,65 @@ namespace
             swprintf_s(version, L"%03d (library)", DIRECTX_MESH_VERSION);
         }
 
-        wprintf(L"Microsoft (R) MeshConvert Command-line Tool Version %ls\n", version);
-        wprintf(L"Copyright (C) Microsoft Corp.\n");
-#ifdef _DEBUG
-        wprintf(L"*** Debug build ***\n");
-#endif
-        wprintf(L"\n");
+        if (versionOnly)
+        {
+            wprintf(L"meshconvert version %ls\n", version);
+        }
+        else
+        {
+            wprintf(L"Microsoft (R) MeshConvert Command-line Tool Version %ls\n", version);
+            wprintf(L"Copyright (C) Microsoft Corp.\n");
+        #ifdef _DEBUG
+            wprintf(L"*** Debug build ***\n");
+        #endif
+            wprintf(L"\n");
+        }
     }
 
     void PrintUsage()
     {
-        PrintLogo();
+        PrintLogo(false);
 
-        wprintf(L"Usage: meshconvert <options> <files>\n");
-        wprintf(L"\n");
-        wprintf(L"   Input file type must be Wavefront Object (.obj)\n\n");
-        wprintf(L"   Output file type:\n");
-        wprintf(L"       -sdkmesh        DirectX SDK .sdkmesh format (default)\n");
-        wprintf(L"       -sdkmesh2       .sdkmesh format version 2 (PBR materials)\n");
-        wprintf(L"       -cmo            Visual Studio Content Pipeline .cmo format\n");
-        wprintf(L"       -vbo            Vertex Buffer Object (.vbo) format\n");
-        wprintf(L"       -wf             WaveFront Object (.obj) format\n\n");
-        wprintf(L"   -r                  wildcard filename search is recursive\n");
-        wprintf(L"   -n | -na | -ne      generate normals weighted by angle/area/equal\n");
-        wprintf(L"   -t                  generate tangents\n");
-        wprintf(L"   -tb                 generate tangents & bi-tangents\n");
-        wprintf(L"   -cw                 faces are clockwise (defaults to counter-clockwise)\n");
-        wprintf(L"   -op | -oplru        vertex cache optimize the mesh (implies -c)\n");
-        wprintf(L"   -c                  mesh cleaning including vertex dups for atttribute sets\n");
-        wprintf(L"   -ta | -ga           generate topological vs. geometric adjancecy (def: ta)\n");
-        wprintf(L"   -nodds              prevents extension renaming in exported materials\n");
-        wprintf(L"   -flip               reverse winding of faces\n");
-        wprintf(L"   -flipu              inverts the u texcoords\n");
-        wprintf(L"   -flipv              inverts the v texcoords\n");
-        wprintf(L"   -flipz              flips the handedness of the positions/normals\n");
-        wprintf(L"   -o <filename>       output filename\n");
-        wprintf(L"   -l                  force output filename to lower case\n");
-        wprintf(L"   -y                  overwrite existing output file (if any)\n");
-        wprintf(L"   -nologo             suppress copyright message\n");
-        wprintf(L"   -flist <filename>   use text file with a list of input files (one per line)\n");
-        wprintf(L"\n       (sdkmesh/sdkmesh2 only)\n");
-        wprintf(L"   -ib32               use 32-bit index buffer\n");
-        wprintf(L"   -fn <normal-format> format to use for writing normals/tangents/normals\n");
-        wprintf(L"   -fuv <uv-format>    format to use for texture coordinates\n");
-        wprintf(L"   -fc <color-format>  format to use for writing colors\n");
+        static const wchar_t* const s_usage =
+            L"Usage: meshconvert <options> [--] <files>\n"
+            L"\n"
+            L"   Input file type must be Wavefront Object (.obj)\n"
+            L"\n"
+            L"   Output file type:\n"
+            L"       -sdkmesh        DirectX SDK .sdkmesh format (default)\n"
+            L"       -sdkmesh2       .sdkmesh format version 2 (PBR materials)\n"
+            L"       -cmo            Visual Studio Content Pipeline .cmo format\n"
+            L"       -vbo            Vertex Buffer Object (.vbo) format\n"
+            L"       -wf             WaveFront Object (.obj) format\n"
+            L"\n"
+            L"   -r                  wildcard filename search is recursive\n"
+            L"   -n | -na | -ne      generate normals weighted by angle/area/equal\n"
+            L"   -t                  generate tangents\n"
+            L"   -tb                 generate tangents & bi-tangents\n"
+            L"   -cw                 faces are clockwise (defaults to counter-clockwise)\n"
+            L"   -op | -oplru        vertex cache optimize the mesh (implies -c)\n"
+            L"   -c                  mesh cleaning including vertex dups for atttribute sets\n"
+            L"   -ta | -ga           generate topological vs. geometric adjancecy (def: ta)\n"
+            L"   -nodds              prevents extension renaming in exported materials\n"
+            L"   -flip               reverse winding of faces\n"
+            L"   -flipu              inverts the u texcoords\n"
+            L"   -flipv              inverts the v texcoords\n"
+            L"   -flipz              flips the handedness of the positions/normals\n"
+            L"   -o <filename>       output filename\n"
+            L"   -l                  force output filename to lower case\n"
+            L"   -y                  overwrite existing output file (if any)\n"
+            L"   -nologo             suppress copyright message\n"
+            L"   -flist <filename>   use text file with a list of input files (one per line)\n"
+            L"\n"
+            L"       (sdkmesh/sdkmesh2 only)\n"
+            L"   -ib32               use 32-bit index buffer\n"
+            L"   -fn <normal-format> format to use for writing normals/tangents/normals\n"
+            L"   -fuv <uv-format>    format to use for texture coordinates\n"
+            L"   -fc <color-format>  format to use for writing colors\n"
+            L"\n"
+            L"   '-- ' is needed if any input filepath starts with the '-' or '/' character\n";
+
+        wprintf(L"%ls", s_usage);
 
         wprintf(L"\n   <normal-format>: ");
         PrintList(13, g_vertexNormalFormats);
@@ -481,6 +487,14 @@ namespace
 
             if (errorText)
                 LocalFree(errorText);
+
+            for (wchar_t* ptr = desc; *ptr != 0; ++ptr)
+            {
+                if (*ptr == L'\r' || *ptr == L'\n')
+                {
+                    *ptr = L' ';
+                }
+            }
         }
 
         return desc;
@@ -501,7 +515,7 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
     DXGI_FORMAT uvFormat = DXGI_FORMAT_R32G32_FLOAT;
     DXGI_FORMAT colorFormat = DXGI_FORMAT_B8G8R8A8_UNORM;
 
-    wchar_t szOutputFile[MAX_PATH] = {};
+    std::wstring outputFile;
 
     // Set locale for output since GetErrorDesc can get localized strings.
     std::locale::global(std::locale(""));
@@ -509,12 +523,38 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
     // Process command line
     uint32_t dwOptions = 0;
     std::list<SConversion> conversion;
+    bool allowOpts = true;
 
     for (int iArg = 1; iArg < argc; iArg++)
     {
         PWSTR pArg = argv[iArg];
 
-        if (('-' == pArg[0]) || ('/' == pArg[0]))
+        if (allowOpts
+            && ('-' == pArg[0]) && ('-' == pArg[1]))
+        {
+            if (pArg[2] == 0)
+            {
+                // "-- " is the POSIX standard for "end of options" marking to escape the '-' and '/' characters at the start of filepaths.
+                allowOpts = false;
+            }
+            else if (!_wcsicmp(pArg, L"--version"))
+            {
+                PrintLogo(true);
+                return 0;
+            }
+            else if (!_wcsicmp(pArg, L"--help"))
+            {
+                PrintUsage();
+                return 0;
+            }
+            else
+            {
+                wprintf(L"Unknown option: %ls\n", pArg);
+                return 1;
+            }
+        }
+        else if (allowOpts
+            && (('-' == pArg[0]) || ('/' == pArg[0])))
         {
             pArg++;
             PWSTR pValue;
@@ -583,7 +623,10 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
                 break;
 
             case OPT_OUTPUTFILE:
-                wcscpy_s(szOutputFile, MAX_PATH, pValue);
+                {
+                    std::filesystem::path path(pValue);
+                    outputFile = path.make_preferred().native();
+                }
                 break;
 
             case OPT_TOPOLOGICAL_ADJ:
@@ -674,7 +717,8 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
 
             case OPT_FILELIST:
                 {
-                    std::wifstream inFile(pValue);
+                    std::filesystem::path path(pValue);
+                    std::wifstream inFile(path.make_preferred().c_str());
                     if (!inFile)
                     {
                         wprintf(L"Error opening -flist file %ls\n", pValue);
@@ -691,7 +735,8 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
         else if (wcspbrk(pArg, L"?*") != nullptr)
         {
             const size_t count = conversion.size();
-            SearchForFiles(pArg, conversion, (dwOptions & (1 << OPT_RECURSIVE)) != 0);
+            std::filesystem::path path(pArg);
+            SearchForFiles(path.make_preferred(), conversion, (dwOptions & (1 << OPT_RECURSIVE)) != 0);
             if (conversion.size() <= count)
             {
                 wprintf(L"No matching files found for %ls\n", pArg);
@@ -701,8 +746,8 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
         else
         {
             SConversion conv = {};
-            wcscpy_s(conv.szSrc, MAX_PATH, pArg);
-
+            std::filesystem::path path(pArg);
+            conv.szSrc = path.make_preferred().native();
             conversion.push_back(conv);
         }
     }
@@ -713,58 +758,57 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
         return 0;
     }
 
-    if (*szOutputFile && conversion.size() > 1)
+    if (!outputFile.empty() && conversion.size() > 1)
     {
         wprintf(L"Cannot use -o with multiple input files\n");
         return 1;
     }
 
     if (~dwOptions & (1 << OPT_NOLOGO))
-        PrintLogo();
+        PrintLogo(false);
 
     // Process files
     for (auto pConv = conversion.begin(); pConv != conversion.end(); ++pConv)
     {
-        wchar_t ext[_MAX_EXT] = {};
-        wchar_t fname[_MAX_FNAME] = {};
-        _wsplitpath_s(pConv->szSrc, nullptr, 0, nullptr, 0, fname, _MAX_FNAME, ext, _MAX_EXT);
+        std::filesystem::path curpath(pConv->szSrc);
+        auto const ext = curpath.extension();
 
         if (pConv != conversion.begin())
             wprintf(L"\n");
 
-        wprintf(L"reading %ls", pConv->szSrc);
+        wprintf(L"reading %ls", curpath.c_str());
         fflush(stdout);
 
         std::unique_ptr<Mesh> inMesh;
         std::vector<Mesh::Material> inMaterial;
         HRESULT hr = E_NOTIMPL;
-        if (_wcsicmp(ext, L".vbo") == 0)
+        if (_wcsicmp(ext.c_str(), L".vbo") == 0)
         {
-            hr = Mesh::CreateFromVBO(pConv->szSrc, inMesh);
+            hr = Mesh::CreateFromVBO(curpath.c_str(), inMesh);
         }
-        else if (_wcsicmp(ext, L".sdkmesh") == 0)
+        else if (_wcsicmp(ext.c_str(), L".sdkmesh") == 0)
         {
             wprintf(L"\nERROR: Importing SDKMESH files not supported\n");
             return 1;
         }
-        else if (_wcsicmp(ext, L".cmo") == 0)
+        else if (_wcsicmp(ext.c_str(), L".cmo") == 0)
         {
             wprintf(L"\nERROR: Importing Visual Studio CMO files not supported\n");
             return 1;
         }
-        else if (_wcsicmp(ext, L".x") == 0)
+        else if (_wcsicmp(ext.c_str(), L".x") == 0)
         {
             wprintf(L"\nERROR: Legacy Microsoft X files not supported\n");
             return 1;
         }
-        else if (_wcsicmp(ext, L".fbx") == 0)
+        else if (_wcsicmp(ext.c_str(), L".fbx") == 0)
         {
             wprintf(L"\nERROR: Autodesk FBX files not supported\n");
             return 1;
         }
         else
         {
-            hr = LoadFromOBJ(pConv->szSrc, inMesh, inMaterial,
+            hr = LoadFromOBJ(curpath.c_str(), inMesh, inMaterial,
                 (dwOptions & (1 << OPT_CLOCKWISE)) ? false : true,
                 (dwOptions & (1 << OPT_NODDS)) ? false : true);
         }
@@ -960,15 +1004,12 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
 
             wprintf(L" [ACMR %f, ATVR %f] ", acmr, atvr);
         }
-
-        wchar_t outputPath[MAX_PATH] = {};
         wchar_t outputExt[_MAX_EXT] = {};
 
-        if (*szOutputFile)
+        if (!outputFile.empty())
         {
-            wcscpy_s(outputPath, szOutputFile);
-
-            _wsplitpath_s(szOutputFile, nullptr, 0, nullptr, 0, nullptr, 0, outputExt, _MAX_EXT);
+            std::filesystem::path npath(outputFile);
+            wcscpy_s(outputExt, npath.extension().c_str());
         }
         else
         {
@@ -989,22 +1030,20 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
                 wcscpy_s(outputExt, L".sdkmesh");
             }
 
-            wchar_t outFilename[_MAX_FNAME] = {};
-            wcscpy_s(outFilename, fname);
-
-            _wmakepath_s(outputPath, nullptr, nullptr, outFilename, outputExt);
+            outputFile.assign(curpath.stem());
+            outputFile.append(outputExt);
         }
 
         if (dwOptions & (1 << OPT_TOLOWER))
         {
-            std::ignore = _wcslwr_s(outputPath);
+            std::transform(outputFile.begin(), outputFile.end(), outputFile.begin(), towlower);
         }
 
         if (~dwOptions & (1 << OPT_OVERWRITE))
         {
-            if (GetFileAttributesW(outputPath) != INVALID_FILE_ATTRIBUTES)
+            if (GetFileAttributesW(outputFile.c_str()) != INVALID_FILE_ATTRIBUTES)
             {
-                wprintf(L"\nERROR: Output file already exists, use -y to overwrite:\n'%ls'\n", outputPath);
+                wprintf(L"\nERROR: Output file already exists, use -y to overwrite:\n'%ls'\n", outputFile.c_str());
                 return 1;
             }
         }
@@ -1023,12 +1062,12 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
                 return 1;
             }
 
-            hr = inMesh->ExportToVBO(outputPath);
+            hr = inMesh->ExportToVBO(outputFile.c_str());
         }
         else if (!_wcsicmp(outputExt, L".sdkmesh"))
         {
             hr = inMesh->ExportToSDKMESH(
-                outputPath,
+                outputFile.c_str(),
                 inMaterial.size(), inMaterial.empty() ? nullptr : inMaterial.data(),
                 (dwOptions & (1 << OPT_FORCE_32BIT_IB)) ? true : false,
                 (dwOptions & (1 << OPT_SDKMESH_V2)) ? true : false,
@@ -1050,11 +1089,11 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
                 return 1;
             }
 
-            hr = inMesh->ExportToCMO(outputPath, inMaterial.size(), inMaterial.empty() ? nullptr : inMaterial.data());
+            hr = inMesh->ExportToCMO(outputFile.c_str(), inMaterial.size(), inMaterial.empty() ? nullptr : inMaterial.data());
         }
         else if (!_wcsicmp(outputExt, L".obj") || !_wcsicmp(outputExt, L"._obj"))
         {
-            hr = inMesh->ExportToOBJ(outputPath, inMaterial.size(), inMaterial.empty() ? nullptr : inMaterial.data());
+            hr = inMesh->ExportToOBJ(outputFile.c_str(), inMaterial.size(), inMaterial.empty() ? nullptr : inMaterial.data());
         }
         else if (!_wcsicmp(outputExt, L".x"))
         {
@@ -1070,11 +1109,11 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
         if (FAILED(hr))
         {
             wprintf(L"\nERROR: Failed write (%08X%ls):-> '%ls'\n",
-                static_cast<unsigned int>(hr), GetErrorDesc(hr), outputPath);
+                static_cast<unsigned int>(hr), GetErrorDesc(hr), outputFile.c_str());
             return 1;
         }
 
-        wprintf(L" %zu vertices, %zu faces written:\n'%ls'\n", nVerts, nFaces, outputPath);
+        wprintf(L" %zu vertices, %zu faces written:\n'%ls'\n", nVerts, nFaces, outputFile.c_str());
     }
 
     return 0;

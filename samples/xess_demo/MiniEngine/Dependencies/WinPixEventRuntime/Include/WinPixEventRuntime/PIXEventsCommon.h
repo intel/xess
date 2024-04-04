@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+
 /*==========================================================================;
 *
 *  Copyright (C) Microsoft Corporation.  All Rights Reserved.
@@ -37,21 +39,29 @@
 // the optimization if necessary.
 //
 
+// Check for Address Sanitizer on either Clang or MSVC
+
+#if defined(__has_feature)
+#if __has_feature(address_sanitizer)
+#define PIX_ASAN_ENABLED
+#endif
+#elif defined(__SANITIZE_ADDRESS__)
+#define PIX_ASAN_ENABLED
+#endif
+
 #if defined(PIX_ENABLE_BLOCK_ARGUMENT_COPY)
 // Previously set values override everything
 # define PIX_ENABLE_BLOCK_ARGUMENT_COPY_SET 0
-#elif defined(__has_feature)
-# if __has_feature(address_sanitizer)
+#elif defined(PIX_ASAN_ENABLED)
 // Disable block argument copy when address sanitizer is enabled
-#  define PIX_ENABLE_BLOCK_ARGUMENT_COPY 0
-#  define PIX_ENABLE_BLOCK_ARGUMENT_COPY_SET 1
-# endif
+#define PIX_ENABLE_BLOCK_ARGUMENT_COPY 0
+#define PIX_ENABLE_BLOCK_ARGUMENT_COPY_SET 1
 #endif
 
 #if !defined(PIX_ENABLE_BLOCK_ARGUMENT_COPY)
 // Default to enabled.
-# define PIX_ENABLE_BLOCK_ARGUMENT_COPY 1
-# define PIX_ENABLE_BLOCK_ARGUMENT_COPY_SET 1
+#define PIX_ENABLE_BLOCK_ARGUMENT_COPY 1
+#define PIX_ENABLE_BLOCK_ARGUMENT_COPY_SET 1
 #endif
 
 struct PIXEventsBlockInfo;

@@ -24,6 +24,7 @@ DEFINE_ENUM_FLAG_OPERATORS(TEX_PMALPHA_FLAGS);
 DEFINE_ENUM_FLAG_OPERATORS(TEX_COMPRESS_FLAGS);
 DEFINE_ENUM_FLAG_OPERATORS(CNMAP_FLAGS);
 DEFINE_ENUM_FLAG_OPERATORS(CMSE_FLAGS);
+DEFINE_ENUM_FLAG_OPERATORS(CREATETEX_FLAGS);
 
 // WIC_FILTER modes match TEX_FILTER modes
 constexpr WIC_FLAGS operator|(WIC_FLAGS a, TEX_FILTER_FLAGS b) { return static_cast<WIC_FLAGS>(static_cast<unsigned long>(a) | static_cast<unsigned long>(b & TEX_FILTER_MODE_MASK)); }
@@ -45,7 +46,7 @@ constexpr TEX_COMPRESS_FLAGS operator|(TEX_FILTER_FLAGS a, TEX_COMPRESS_FLAGS b)
 _Use_decl_annotations_
 constexpr bool __cdecl IsValid(DXGI_FORMAT fmt) noexcept
 {
-    return (static_cast<size_t>(fmt) >= 1 && static_cast<size_t>(fmt) <= 190);
+    return (static_cast<size_t>(fmt) >= 1 && static_cast<size_t>(fmt) <= 191);
 }
 
 _Use_decl_annotations_
@@ -109,27 +110,6 @@ inline bool __cdecl IsSRGB(DXGI_FORMAT fmt) noexcept
     case DXGI_FORMAT_B8G8R8A8_UNORM_SRGB:
     case DXGI_FORMAT_B8G8R8X8_UNORM_SRGB:
     case DXGI_FORMAT_BC7_UNORM_SRGB:
-        return true;
-
-    default:
-        return false;
-    }
-}
-
-_Use_decl_annotations_
-inline bool __cdecl IsBGR(DXGI_FORMAT fmt) noexcept
-{
-    switch (fmt)
-    {
-    case DXGI_FORMAT_B5G6R5_UNORM:
-    case DXGI_FORMAT_B5G5R5A1_UNORM:
-    case DXGI_FORMAT_B8G8R8A8_UNORM:
-    case DXGI_FORMAT_B8G8R8X8_UNORM:
-    case DXGI_FORMAT_B8G8R8A8_TYPELESS:
-    case DXGI_FORMAT_B8G8R8A8_UNORM_SRGB:
-    case DXGI_FORMAT_B8G8R8X8_TYPELESS:
-    case DXGI_FORMAT_B8G8R8X8_UNORM_SRGB:
-    case DXGI_FORMAT_B4G4R4A4_UNORM:
         return true;
 
     default:

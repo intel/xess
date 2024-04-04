@@ -132,10 +132,17 @@ namespace XeSS
     /// Set GPU profiling enabled.
     void SetProfilingEnabled(bool Enabled);
 
+    bool IsLegacyScaleFactorsForced();
+    void ForceLegacyScaleFactors(bool force);
+
     /// Return if dynamic resolution is enabled.
     bool IsDynResEnabled();
     /// Set if dynamic resolution is enabled.
     void SetDynResEnabled(bool Enabled);
+    /// Return true if dynamic resolution animation is enabled
+    bool IsDynResAnimationEnabled();
+    /// Set if dynamic resolution animation is enabled
+    void SetDynResAnimationEnabled(bool Enabled);
 
     float GetUpscaleFactor();
     void SetUpscaleFactor(float Upscale);

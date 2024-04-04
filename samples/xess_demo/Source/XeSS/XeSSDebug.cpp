@@ -366,6 +366,8 @@ bool XeSSDebug::SelectNetworkModel(int32_t model)
 
     s_NetworkModel = model;
 
+    xessSelectNetworkModel(g_XeSSRuntime.GetContext(), (xess_network_model_t)s_NetworkModel);
+
     // Update the runtime after new network model set.
     XeSS::UpdateRuntime();
 

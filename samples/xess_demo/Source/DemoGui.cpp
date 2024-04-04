@@ -161,7 +161,7 @@ void DemoGui::Shutdown()
 void DemoGui::OnGUI(DemoApp& App)
 {
     // F1 key to toggle GUI.
-    if (ImGui::IsKeyPressed(VK_F1))
+    if (ImGui::IsKeyPressed(ImGuiKey_F1))
     {
         m_ShowUI = !m_ShowUI;
     }
@@ -288,7 +288,7 @@ void DemoGui::OnGUI_XeSS()
         XeSS::Sharpness = sharpness;
     }
 
-    static const char* QUALITY_NAMES[] = { "Performance", "Balanced", "Quality", "Ultra Quality" };
+    static const char* QUALITY_NAMES[] = { "Ultra Performance", "Performance", "Balanced", "Quality", "Ultra Quality", "Ultra Quality Plus", "Native Anti-Aliasing" };
     int32_t quality = XeSS::GetQuality();
     if (ImGui::Combo("Quality", &quality, QUALITY_NAMES, IM_ARRAYSIZE(QUALITY_NAMES)))
     {
@@ -303,9 +303,26 @@ void DemoGui::OnGUI_XeSS()
 
     if (dynRes)
     {
-        float upscale = XeSS::GetUpscaleFactor();
-        if (ImGui::DragFloat("Upscale Factor", &upscale, 0.01f, 1.0f, 2.0f, "%.2f"));
+        bool animate = XeSS::IsDynResAnimationEnabled();
+        if (ImGui::Checkbox("Animate Dynamic Resolution", &animate))
         {
+            XeSS::SetDynResAnimationEnabled(animate);
+        }
+
+        if (animate)
+        {
+            double t = ImGui::GetTime();
+            t = sin(t); // [-1, 1]
+            float upscale = (1.0f + static_cast<float>(t)) * 0.5f + 1.0f; // [1, 2]
+
+            XeSS::SetUpscaleFactor(upscale);
+
+            ImGui::SliderFloat("Upscale Factor", &upscale, 1.0f, 2.0f, "%.4f", ImGuiSliderFlags_AlwaysClamp);
+        }
+        else
+        {
+            float upscale = XeSS::GetUpscaleFactor();
+            if (ImGui::DragFloat("Upscale Factor", &upscale, 0.01f, 1.0f, 2.0f, "%.2f"));
             XeSS::SetUpscaleFactor(upscale);
         }
     }
@@ -558,7 +575,7 @@ void DemoGui::OnGUI_Profiling()
             auto& graphData = XeSS::g_XeSSRuntime.GetPerfGraphData();
 
             float max_height = *std::max_element(graphData.begin(), graphData.end()) * 1.2f;
-            const float width = ImGui::GetContentRegionAvailWidth();
+            const float width = ImGui::GetContentRegionAvail().x;
 
             ImGui::PushStyleColor(ImGuiCol_PlotLines, DEF_GRAPH_GREEN);
 
@@ -580,6 +597,13 @@ void DemoGui::OnGUI_Profiling()
 
 void DemoGui::OnGUI_Debug()
 {
+    bool forceLegacyScaleFactors = XeSS::IsLegacyScaleFactorsForced();
+    if (ImGui::Checkbox("Force legacy scale factors", &forceLegacyScaleFactors))
+    {
+        XeSS::ForceLegacyScaleFactors(forceLegacyScaleFactors);
+    }
+
+
     bool gpuProfiling = XeSS::IsProfilingEnabled();
     if (ImGui::Checkbox("GPU Profiling", &gpuProfiling))
     {
@@ -638,6 +662,17 @@ void DemoGui::OnGUI_Debug()
     if (velocityScaleDirty)
     {
         XeSS::g_XeSSRuntime.SetVelocityScale(VelocityScaleX, VelocityScaleY);
+    }
+
+    static float ExposureScale = 1.0f;
+
+    bool exposureScaleDirty = false;
+    if (ImGui::DragFloat("Exposure Scale", &ExposureScale, 0.1f, 0.0f, 1000.0f, "%.1f"))
+        exposureScaleDirty = true;
+
+    if (exposureScaleDirty)
+    {
+        XeSS::g_XeSSRuntime.SetExposureScale(ExposureScale);
     }
 
     ImGui::PopItemWidth();

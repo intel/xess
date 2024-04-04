@@ -335,14 +335,64 @@ bool DirectX::IsSupportedTexture(
     if (!IsValid(fmt))
         return false;
 
+    const size_t iWidth = metadata.width;
+    const size_t iHeight = metadata.height;
+
+    switch (fmt)
+    {
+    case DXGI_FORMAT_NV12:
+    case DXGI_FORMAT_P010:
+    case DXGI_FORMAT_P016:
+    case DXGI_FORMAT_420_OPAQUE:
+        if ((metadata.dimension != TEX_DIMENSION_TEXTURE2D)
+            || (iWidth % 2) != 0 || (iHeight % 2) != 0)
+        {
+            return false;
+        }
+        break;
+
+    case DXGI_FORMAT_YUY2:
+    case DXGI_FORMAT_Y210:
+    case DXGI_FORMAT_Y216:
+    case WIN10_DXGI_FORMAT_P208:
+        if ((iWidth % 2) != 0)
+        {
+            return false;
+        }
+        break;
+
+    case DXGI_FORMAT_NV11:
+        if ((iWidth % 4) != 0)
+        {
+            return false;
+        }
+        break;
+
+    case DXGI_FORMAT_AI44:
+    case DXGI_FORMAT_IA44:
+    case DXGI_FORMAT_P8:
+    case DXGI_FORMAT_A8P8:
+        // Legacy video stream formats are not supported by Direct3D.
+        return false;
+
+    case WIN10_DXGI_FORMAT_V208:
+        if ((metadata.dimension != TEX_DIMENSION_TEXTURE2D)
+            || (iHeight % 2) != 0)
+        {
+            return false;
+        }
+        break;
+
+    default:
+        break;
+    }
+
     // Validate miplevel count
     if (metadata.mipLevels > D3D12_REQ_MIP_LEVELS)
         return false;
 
     // Validate array size, dimension, and width/height
     const size_t arraySize = metadata.arraySize;
-    const size_t iWidth = metadata.width;
-    const size_t iHeight = metadata.height;
     const size_t iDepth = metadata.depth;
 
     // Most cases are known apriori based on feature level, but we use this for robustness to handle the few optional cases
@@ -440,7 +490,7 @@ HRESULT DirectX::CreateTexture(
 {
     return CreateTextureEx(
         pDevice, metadata,
-        D3D12_RESOURCE_FLAG_NONE, false,
+        D3D12_RESOURCE_FLAG_NONE, CREATETEX_DEFAULT,
         ppResource);
 }
 
@@ -449,7 +499,7 @@ HRESULT DirectX::CreateTextureEx(
     ID3D12Device* pDevice,
     const TexMetadata& metadata,
     D3D12_RESOURCE_FLAGS resFlags,
-    bool forceSRGB,
+    CREATETEX_FLAGS flags,
     ID3D12Resource** ppResource) noexcept
 {
     if (!pDevice || !ppResource)
@@ -465,9 +515,13 @@ HRESULT DirectX::CreateTextureEx(
         return E_INVALIDARG;
 
     DXGI_FORMAT format = metadata.format;
-    if (forceSRGB)
+    if (flags & CREATETEX_FORCE_SRGB)
     {
         format = MakeSRGB(format);
+    }
+    else if (flags & CREATETEX_IGNORE_SRGB)
+    {
+        format = MakeLinear(format);
     }
 
     D3D12_RESOURCE_DESC desc = {};
@@ -488,7 +542,11 @@ HRESULT DirectX::CreateTextureEx(
         &defaultHeapProperties,
         D3D12_HEAP_FLAG_NONE,
         &desc,
+    #if (defined(_XBOX_ONE) && defined(_TITLE)) || defined(_GAMING_XBOX)
         D3D12_RESOURCE_STATE_COPY_DEST,
+    #else
+        D3D12_RESOURCE_STATE_COMMON,
+    #endif
         nullptr,
         IID_GRAPHICS_PPV_ARGS(ppResource));
 
@@ -662,7 +720,12 @@ HRESULT DirectX::CaptureTexture(
     ComPtr<ID3D12Device> device;
     pCommandQueue->GetDevice(IID_GRAPHICS_PPV_ARGS(device.GetAddressOf()));
 
+#if defined(_MSC_VER) || !defined(_WIN32)
     auto const desc = pSource->GetDesc();
+#else
+    D3D12_RESOURCE_DESC tmpDesc;
+    auto const& desc = *pSource->GetDesc(&tmpDesc);
+#endif
 
     ComPtr<ID3D12Resource> pStaging;
     std::unique_ptr<uint8_t[]> layoutBuff;

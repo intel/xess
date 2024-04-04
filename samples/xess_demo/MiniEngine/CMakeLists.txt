@@ -138,14 +138,14 @@ set_property(SOURCE ${SHADER_INCLUDE_FILES} PROPERTY HEADER_FILE_ONLY true)
 
 # DirectXMesh dependency
 option(BUILD_TOOLS "" OFF)
-add_subdirectory(Dependencies/DirectXMesh)
+add_subdirectory(Dependencies/DirectXMesh EXCLUDE_FROM_ALL)
 
 # DirectTex dependency
 option(BUILD_SAMPLE "" OFF)
 option(BUILD_TOOLS "" OFF)
 option(BUILD_DX11 "" OFF)
-add_subdirectory(Dependencies/DirectXTex)
+add_subdirectory(Dependencies/DirectXTex EXCLUDE_FROM_ALL)
 
 # zlib dependency
-add_subdirectory(Dependencies/zlib)
+add_subdirectory(Dependencies/zlib EXCLUDE_FROM_ALL)
 target_compile_options(zlibstatic PRIVATE /wd4244)

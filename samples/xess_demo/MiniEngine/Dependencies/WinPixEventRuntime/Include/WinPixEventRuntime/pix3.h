@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+
 /*==========================================================================;
  *
  *  Copyright (C) Microsoft Corporation.  All Rights Reserved.
@@ -33,11 +35,6 @@
 #pragma message("Warning: Pix markers are only supported on AMD64 and ARM64")
 #endif
 
-#if defined(XBOX) || defined(_XBOX_ONE) || defined(_DURANGO) || defined(_GAMING_XBOX) || defined(_GAMING_XBOX_SCARLETT)
-#include "pix3_xbox.h"
-#else
-#include "pix3_win.h"
-#endif
 
 // These flags are used by both PIXBeginCapture and PIXGetCaptureState
 #define PIX_CAPTURE_TIMING                  (1 << 0)
@@ -60,12 +57,12 @@ union PIXCaptureParameters
 
     struct GpuCaptureParameters
     {
-        PVOID reserved;
+        PCWSTR FileName;
     } GpuCaptureParameters;
 
     struct TimingCaptureParameters
     {
-        PWSTR FileName;
+        PCWSTR FileName;
         UINT32 MaximumToolingMemorySizeMb;
         PIXCaptureStorage CaptureStorage;
 
@@ -86,6 +83,12 @@ union PIXCaptureParameters
 
 typedef PIXCaptureParameters* PPIXCaptureParameters;
 
+#if defined(XBOX) || defined(_XBOX_ONE) || defined(_DURANGO) || defined(_GAMING_XBOX) || defined(_GAMING_XBOX_SCARLETT)
+#include "pix3_xbox.h"
+#else
+#include "pix3_win.h"
+#endif
+
 #if defined(USE_PIX_SUPPORTED_ARCHITECTURE) && (defined(USE_PIX) || defined(USE_PIX_RETAIL))
 
 #define PIX_EVENTS_ARE_TURNED_ON
@@ -102,6 +105,7 @@ inline HRESULT PIXBeginCapture(DWORD captureFlags, _In_opt_ const PPIXCapturePar
 // Stops a programmatically controlled capture
 //  If discard == TRUE, the captured data is discarded
 //  If discard == FALSE, the captured data is saved
+//  discard parameter is not supported on Windows
 extern "C" HRESULT WINAPI PIXEndCapture(BOOL discard);
 
 extern "C" DWORD WINAPI PIXGetCaptureState();
@@ -118,6 +122,14 @@ extern "C" void WINAPI PIXReportCounter(_In_ PCWSTR name, float value);
 inline HRESULT PIXBeginCapture2(DWORD, _In_opt_ const PIXCaptureParameters*) { return S_OK; }
 inline HRESULT PIXBeginCapture(DWORD, _In_opt_ const PIXCaptureParameters*) { return S_OK; }
 inline HRESULT PIXEndCapture(BOOL) { return S_OK; }
+inline HRESULT PIXGpuCaptureNextFrames(PCWSTR, UINT32) { return S_OK; }
+inline HRESULT PIXSetTargetWindow(HWND) { return S_OK; }
+inline HRESULT PIXForceD3D11On12() { return S_OK; }
+inline HRESULT WINAPI PIXSetHUDOptions(PIXHUDOptions) { return S_OK; }
+inline bool WINAPI PIXIsAttachedForGpuCapture() { return false; }
+inline HINSTANCE WINAPI PIXOpenCaptureInUI(PCWSTR) { return 0; }
+inline HMODULE PIXLoadLatestWinPixGpuCapturerLibrary() { return nullptr; }
+inline HMODULE PIXLoadLatestWinPixTimingCapturerLibrary() { return nullptr; }
 inline DWORD PIXGetCaptureState() { return 0; }
 inline void PIXReportCounter(_In_ PCWSTR, float) {}
 inline void PIXNotifyWakeFromFenceSignal(_In_ HANDLE) {}

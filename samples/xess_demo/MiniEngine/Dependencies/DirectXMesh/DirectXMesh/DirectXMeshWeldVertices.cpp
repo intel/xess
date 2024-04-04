@@ -85,7 +85,7 @@ namespace
                         _Analysis_assume_(curInner < nVerts);
                         do
                         {
-                            // don't check for equalivalence if indices the same (had better be equal then)
+                            // don't check for equivalence if indices are the same (they had better be equal then)
                             // and/or if the one being checked is already being remapped
                             if ((curInner != curOuter) && (vertexRemapInverse[curInner] == curInner))
                             {

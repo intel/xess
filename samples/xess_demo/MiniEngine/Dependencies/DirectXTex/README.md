@@ -6,11 +6,11 @@ http://go.microsoft.com/fwlink/?LinkId=248926
 
 Copyright (c) Microsoft Corporation.
 
-**May 9, 2022**
+**June 13, 2023**
 
 This package contains DirectXTex, a shared source library for reading and writing ``.DDS`` files, and performing various texture content processing operations including resizing, format conversion, mip-map generation, block compression for Direct3D runtime texture resources, and height-map to normal-map conversion. This library makes use of the Windows Image Component (WIC) APIs. It also includes ``.TGA`` and ``.HDR`` readers and writers since these image file formats are commonly used for texture content processing pipelines, but are not currently supported by a built-in WIC codec.
 
-This code is designed to build with Visual Studio 2019 (16.7 or later), Visual Studio 2022, or clang for Windows v11 or later. Use of the Windows 10 May 2020 Update SDK ([19041](https://walbourn.github.io/windows-10-may-2020-update-sdk/)) or later is required.
+This code is designed to build with Visual Studio 2019 (16.11), Visual Studio 2022, clang for Windows v12 or later, or MinGW 12.2. Use of the Windows 10 May 2020 Update SDK ([19041](https://walbourn.github.io/windows-10-may-2020-update-sdk/)) or later is required for Visual Studio. It can also be built for Windows Subsystem for Linux using GCC 11 or later.
 
 These components are designed to work without requiring any content from the legacy DirectX SDK. For details, see [Where is the DirectX SDK?](https://aka.ms/dxsdk).
 
@@ -22,6 +22,10 @@ These components are designed to work without requiring any content from the leg
 
 > The majority of the header files here are intended for internal implementation
     of the library only (``BC.h``, ``BCDirectCompute.h``, ``DDS.h``, ``DirectXTexP.h``, etc.). Only ``DirectXTex.h`` and ``DirectXTex.inl`` are meant as the 'public' header for the library.
+
+* ``Auxiliary\``
+
+  + Contains optional source files for the DirectXTex library, such as adapter loading functions using the OpenEXR library.
 
 * ``Texconv\``
 
@@ -57,7 +61,11 @@ These components are designed to work without requiring any content from the leg
 
 > DDSTextureLoader12, ScreenGrab12, and WICTextureLoader12 are 'stand-alone' versions of the same modules provided in the [DirectX Tool Kit for DX12](https://github.com/Microsoft/DirectXTK12).
 
-# Documentation
+* ``build\``
+
+  + Contains YAML files for the build pipelines along with some miscellaneous build files and scripts.
+
+## Documentation
 
 Documentation is available on the [GitHub wiki](https://github.com/Microsoft/DirectXTex/wiki).
 
@@ -68,6 +76,8 @@ All content and source code for this package are subject to the terms of the [MI
 For the latest version of DirectXTex, bug reports, etc. please visit the project site on [GitHub](https://github.com/microsoft/DirectXTex).
 
 ## Release Notes
+
+* Starting with the July 2022 release, the ``bool forceSRGB`` parameter for the CreateTextureEx and CreateShaderResourceViewEx functions is now a ``CREATETEX_FLAGS`` typed enum bitmask flag parameter. This may have a *breaking change* impact to client code. Replace ``true`` with ``CREATETEX_FORCE_SRGB`` and ``false`` with ``CREATETEX_DEFAULT``.
 
 * Starting with the June 2020 release, this library makes use of typed enum bitmask flags per the recommendation of the _C++ Standard_ section *17.5.2.1.3 Bitmask types*. This is consistent with Direct3D 12's use of the ``DEFINE_ENUM_FLAG_OPERATORS`` macro. This may have *breaking change* impacts to client code:
 
@@ -87,7 +97,7 @@ For the latest version of DirectXTex, bug reports, etc. please visit the project
 
 * The UWP projects and the Win10 classic desktop project include configurations for the ARM64 platform. Building these requires installing the ARM64 toolset.
 
-* When using clang/LLVM for the ARM64 platform, the Windows 11 SDK ([22000](https://walbourn.github.io/windows-sdk-for-windows-11/)) is required.
+* When using clang/LLVM for the ARM64 platform, the Windows 11 SDK ([22000](https://walbourn.github.io/windows-sdk-for-windows-11/)) or later is required.
 
 * The ``CompileShaders.cmd`` script must have Windows-style (CRLF) line-endings. If it is changed to Linux-style (LF) line-endings, it can fail to build all the required shaders.
 
@@ -103,6 +113,8 @@ This project welcomes contributions and suggestions. Most contributions require 
 
 When you submit a pull request, a CLA bot will automatically determine whether you need to provide a CLA and decorate the PR appropriately (e.g., status check, comment). Simply follow the instructions provided by the bot. You will only need to do this once across all repos using our CLA.
 
+## Code of Conduct
+
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
 
 ## Trademarks
@@ -114,3 +126,5 @@ This project may contain trademarks or logos for projects, products, or services
 The DirectXTex library is the work of Chuck Walbourn, with contributions from Matt Lee, Xin Huang, Craig Peeper, and the numerous other Microsoft engineers who developed the D3DX utility library over the years.
 
 Thanks to Paul Penson for his help with the implementation of ``MemoryStreamOnBlob``.
+
+Thanks to Andrew Farrier and Scott Matloff for their on-going help with code reviews.

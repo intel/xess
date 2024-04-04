@@ -12,7 +12,7 @@
 #pragma once
 
 // Off by default warnings
-#pragma warning(disable : 4619 4616 4061 4365 4514 4571 4623 4625 4626 4628 4668 4710 4711 4746 4774 4820 4987 5026 5027 5031 5032 5039 5045 5219 5246 26812)
+#pragma warning(disable : 4619 4616 4061 4365 4514 4571 4623 4625 4626 4628 4668 4710 4711 4746 4774 4820 4987 5026 5027 5031 5032 5039 5045 5219 5246 5264 26812)
 // C4619/4616 #pragma warning warnings
 // C4061 enumerator 'X' in switch of enum 'X' is not explicitly handled by a case label
 // C4365 signed/unsigned mismatch
@@ -36,6 +36,7 @@
 // C5045 Spectre mitigation warning
 // C5219 implicit conversion from 'int' to 'float', possible loss of data
 // C5246 the initialization of a subobject should be wrapped in braces
+// C5264 'const' variable is not used
 // 26812: The enum type 'x' is unscoped. Prefer 'enum class' over 'enum' (Enum.3).
 
 // Windows 8.1 SDK related Off by default warnings
@@ -56,6 +57,7 @@
 #pragma clang diagnostic ignored "-Wcovered-switch-default"
 #pragma clang diagnostic ignored "-Wfloat-equal"
 #pragma clang diagnostic ignored "-Wreserved-id-macro"
+#pragma clang diagnostic ignored "-Wundef"
 #endif
 
 #ifdef _WIN32
@@ -95,8 +97,7 @@
 #include <d3d12_x.h>
 #pragma warning(pop)
 #elif defined(_XBOX_ONE) && defined(_TITLE)
-#include <d3d12_x.h>
-#include <d3d11_x.h>
+#error This library no longer supports legacy Xbox One XDK
 #elif (_WIN32_WINNT >= _WIN32_WINNT_WIN10)
 #ifdef USING_DIRECTX_HEADERS
 #include <directx/dxgiformat.h>

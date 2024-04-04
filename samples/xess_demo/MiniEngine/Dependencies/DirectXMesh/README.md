@@ -6,11 +6,11 @@ http://go.microsoft.com/fwlink/?LinkID=324981
 
 Copyright (c) Microsoft Corporation.
 
-**May 9, 2022**
+**June 13, 2023**
 
 This package contains DirectXMesh, a shared source library for performing various geometry content processing operations including generating normals and tangent frames, triangle adjacency computations, vertex cache optimization, and meshlet generation.
 
-This code is designed to build with Visual Studio 2019 (16.7 or later), Visual Studio 2022, or clang for Windows v11 or later. Use of the Windows 10 May 2020 Update SDK ([19041](https://walbourn.github.io/windows-10-may-2020-update-sdk/)) or later is required.
+This code is designed to build with Visual Studio 2019 (16.11), Visual Studio 2022, clang for Windows v12 or later, or MinGW 12.2. Use of the Windows 10 May 2020 Update SDK ([19041](https://walbourn.github.io/windows-10-may-2020-update-sdk/)) or later is required for Visual Studio. It can also be built for Windows Subsystem for Linux using GCC 11 or later.
 
 These components are designed to work without requiring any content from the legacy DirectX SDK. For details, see [Where is the DirectX SDK?](https://aka.ms/dxsdk).
 
@@ -33,6 +33,10 @@ These components are designed to work without requiring any content from the leg
 
 > This tool does not support legacy ``.X`` files, but can export ``CMO``, ``SDKMESH``, and ``VBO`` files.
 
+* ``build\``
+
+  + Contains YAML files for the build pipelines along with some miscellaneous build files and scripts.
+
 ## Documentation
 
 Documentation is available on the [GitHub wiki](https://github.com/Microsoft/DirectXMesh/wiki).
@@ -53,7 +57,7 @@ For the latest version of DirectXMesh, bug reports, etc. please visit the projec
 
 * The UWP projects and the Win10 classic desktop project include configurations for the ARM64 platform. Building these requires installing the ARM64 toolset.
 
-* When using clang/LLVM for the ARM64 platform, the Windows 11 SDK ([22000](https://walbourn.github.io/windows-sdk-for-windows-11/)) is required.
+* When using clang/LLVM for the ARM64 platform, the Windows 11 SDK ([22000](https://walbourn.github.io/windows-sdk-for-windows-11/)) or later is required.
 
 ## Support
 
@@ -66,6 +70,8 @@ For bug reports and feature requests, please use GitHub [issues](https://github.
 This project welcomes contributions and suggestions. Most contributions require you to agree to a Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us the rights to use your contribution. For details, visit https://cla.opensource.microsoft.com.
 
 When you submit a pull request, a CLA bot will automatically determine whether you need to provide a CLA and decorate the PR appropriately (e.g., status check, comment). Simply follow the instructions provided by the bot. You will only need to do this once across all repos using our CLA.
+
+## Code of Conduct
 
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
 
@@ -80,3 +86,5 @@ The DirectXMesh library is the work of Chuck Walbourn, with contributions from D
 Thanks to Matt Hurliman for his contribution of the meshlet generation functions.
 
 Thanks to Adrian Stone (Game Angst) for the public domain implementation of Tom Forsyth's linear-speed vertex cache optimization, and thanks to Tom Forsyth for his contribution.
+
+Thanks to Andrew Farrier and Scott Matloff for their on-going help with code reviews.

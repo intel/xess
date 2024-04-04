@@ -63,9 +63,9 @@ void DemoCameraController::Update(float DeltaTime)
     // Update key interaction
     if (!io.WantCaptureKeyboard && !XeSSDebug::IsFrameDumpOn())
     {
-        forward = m_MoveSpeed * speedScale * ((ImGui::IsKeyDown('W') ? DeltaTime : 0.0f) + (ImGui::IsKeyDown('S') ? -DeltaTime : 0.0f));
-        strafe = m_StrafeSpeed * speedScale * ((ImGui::IsKeyDown('D') ? DeltaTime : 0.0f) + (ImGui::IsKeyDown('A') ? -DeltaTime : 0.0f));
-        ascent = m_StrafeSpeed * speedScale * ((ImGui::IsKeyDown('E') ? DeltaTime : 0.0f) + (ImGui::IsKeyDown('Q') ? -DeltaTime : 0.0f));
+        forward = m_MoveSpeed * speedScale * ((ImGui::IsKeyDown(ImGuiKey_W) ? DeltaTime : 0.0f) + (ImGui::IsKeyDown(ImGuiKey_S) ? -DeltaTime : 0.0f));
+        strafe = m_StrafeSpeed * speedScale * ((ImGui::IsKeyDown(ImGuiKey_D) ? DeltaTime : 0.0f) + (ImGui::IsKeyDown(ImGuiKey_A) ? -DeltaTime : 0.0f));
+        ascent = m_StrafeSpeed * speedScale * ((ImGui::IsKeyDown(ImGuiKey_E) ? DeltaTime : 0.0f) + (ImGui::IsKeyDown(ImGuiKey_Q) ? -DeltaTime : 0.0f));
 
         // Mouse wheel interaction
         if (!io.WantCaptureMouse)

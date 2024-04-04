@@ -456,6 +456,30 @@ bool DirectX::IsDepthStencil(DXGI_FORMAT fmt) noexcept
 
 //-------------------------------------------------------------------------------------
 _Use_decl_annotations_
+bool DirectX::IsBGR(DXGI_FORMAT fmt) noexcept
+{
+    switch (static_cast<int>(fmt))
+    {
+    case DXGI_FORMAT_B5G6R5_UNORM:
+    case DXGI_FORMAT_B5G5R5A1_UNORM:
+    case DXGI_FORMAT_B8G8R8A8_UNORM:
+    case DXGI_FORMAT_B8G8R8X8_UNORM:
+    case DXGI_FORMAT_B8G8R8A8_TYPELESS:
+    case DXGI_FORMAT_B8G8R8A8_UNORM_SRGB:
+    case DXGI_FORMAT_B8G8R8X8_TYPELESS:
+    case DXGI_FORMAT_B8G8R8X8_UNORM_SRGB:
+    case DXGI_FORMAT_B4G4R4A4_UNORM:
+    case WIN11_DXGI_FORMAT_A4B4G4R4_UNORM:
+        return true;
+
+    default:
+        return false;
+    }
+}
+
+
+//-------------------------------------------------------------------------------------
+_Use_decl_annotations_
 bool DirectX::IsTypeless(DXGI_FORMAT fmt, bool partialTypeless) noexcept
 {
     switch (static_cast<int>(fmt))
@@ -551,6 +575,7 @@ bool DirectX::HasAlpha(DXGI_FORMAT fmt) noexcept
     case XBOX_DXGI_FORMAT_R10G10B10_7E3_A2_FLOAT:
     case XBOX_DXGI_FORMAT_R10G10B10_6E4_A2_FLOAT:
     case XBOX_DXGI_FORMAT_R10G10B10_SNORM_A2_UNORM:
+    case WIN11_DXGI_FORMAT_A4B4G4R4_UNORM:
         return true;
 
     default:
@@ -667,6 +692,7 @@ size_t DirectX::BitsPerPixel(DXGI_FORMAT fmt) noexcept
     case DXGI_FORMAT_B4G4R4A4_UNORM:
     case WIN10_DXGI_FORMAT_P208:
     case WIN10_DXGI_FORMAT_V208:
+    case WIN11_DXGI_FORMAT_A4B4G4R4_UNORM:
         return 16;
 
     case DXGI_FORMAT_NV12:
@@ -867,6 +893,7 @@ size_t DirectX::BitsPerColor(DXGI_FORMAT fmt) noexcept
 
     case DXGI_FORMAT_B4G4R4A4_UNORM:
     case XBOX_DXGI_FORMAT_R4G4_UNORM:
+    case WIN11_DXGI_FORMAT_A4B4G4R4_UNORM:
         return 4;
 
     case DXGI_FORMAT_R1_UNORM:
@@ -973,6 +1000,11 @@ HRESULT DirectX::ComputePitch(DXGI_FORMAT fmt, size_t width, size_t height,
 
     case DXGI_FORMAT_NV12:
     case DXGI_FORMAT_420_OPAQUE:
+        if ((height % 2) != 0)
+        {
+            // Requires a height alignment of 2.
+            return E_INVALIDARG;
+        }
         assert(IsPlanar(fmt));
         pitch = ((uint64_t(width) + 1u) >> 1) * 2u;
         slice = pitch * (uint64_t(height) + ((uint64_t(height) + 1u) >> 1));
@@ -980,6 +1012,20 @@ HRESULT DirectX::ComputePitch(DXGI_FORMAT fmt, size_t width, size_t height,
 
     case DXGI_FORMAT_P010:
     case DXGI_FORMAT_P016:
+        if ((height % 2) != 0)
+        {
+            // Requires a height alignment of 2.
+            return E_INVALIDARG;
+        }
+
+        #if (__cplusplus >= 201703L)
+            [[fallthrough]];
+        #elif defined(__clang__)
+            [[clang::fallthrough]];
+        #elif defined(_MSC_VER)
+            __fallthrough;
+        #endif
+
     case XBOX_DXGI_FORMAT_D16_UNORM_S8_UINT:
     case XBOX_DXGI_FORMAT_R16_UNORM_X8_TYPELESS:
     case XBOX_DXGI_FORMAT_X16_TYPELESS_G8_UINT:
@@ -1001,6 +1047,11 @@ HRESULT DirectX::ComputePitch(DXGI_FORMAT fmt, size_t width, size_t height,
         break;
 
     case WIN10_DXGI_FORMAT_V208:
+        if ((height % 2) != 0)
+        {
+            // Requires a height alignment of 2.
+            return E_INVALIDARG;
+        }
         assert(IsPlanar(fmt));
         pitch = uint64_t(width);
         slice = pitch * (uint64_t(height) + (((uint64_t(height) + 1u) >> 1) * 2u));
@@ -1176,6 +1227,41 @@ DXGI_FORMAT DirectX::MakeSRGB(DXGI_FORMAT fmt) noexcept
 
     case DXGI_FORMAT_BC7_UNORM:
         return DXGI_FORMAT_BC7_UNORM_SRGB;
+
+    default:
+        return fmt;
+    }
+}
+
+
+//-------------------------------------------------------------------------------------
+// Converts to an non-SRGB equivalent type
+//-------------------------------------------------------------------------------------
+_Use_decl_annotations_
+DXGI_FORMAT DirectX::MakeLinear(DXGI_FORMAT fmt) noexcept
+{
+    switch (fmt)
+    {
+    case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:
+        return DXGI_FORMAT_R8G8B8A8_UNORM;
+
+    case DXGI_FORMAT_BC1_UNORM_SRGB:
+        return DXGI_FORMAT_BC1_UNORM;
+
+    case DXGI_FORMAT_BC2_UNORM_SRGB:
+        return DXGI_FORMAT_BC2_UNORM;
+
+    case DXGI_FORMAT_BC3_UNORM_SRGB:
+        return DXGI_FORMAT_BC3_UNORM;
+
+    case DXGI_FORMAT_B8G8R8A8_UNORM_SRGB:
+        return DXGI_FORMAT_B8G8R8A8_UNORM;
+
+    case DXGI_FORMAT_B8G8R8X8_UNORM_SRGB:
+        return DXGI_FORMAT_B8G8R8X8_UNORM;
+
+    case DXGI_FORMAT_BC7_UNORM_SRGB:
+        return DXGI_FORMAT_BC7_UNORM;
 
     default:
         return fmt;

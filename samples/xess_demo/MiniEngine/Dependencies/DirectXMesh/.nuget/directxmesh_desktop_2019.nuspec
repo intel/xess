@@ -7,10 +7,10 @@
         <authors>Microsoft</authors>
         <owners>microsoft,directxtk</owners>
         <summary>DirectXMesh geometry processing library</summary>
-        <description>This version is for Windows desktop applications using Visual Studio 2019 or Visual Studio 2022 and supports Windows 7 / DirectX 11.
+        <description>This version is for Windows desktop applications using Visual Studio 2019 (16.11) or Visual Studio 2022 and supports Windows 7 / DirectX 11.
 
 DirectXMesh, a shared source library for performing various geometry content processing operations including generating normals and tangent frames, triangle adjacency computations, vertex cache optimization, and meshlet generation.</description>
-        <releaseNotes>Matches the May 9, 2022 release on GitHub.</releaseNotes>
+        <releaseNotes>Matches the June 13, 2023 release on GitHub.</releaseNotes>
         <projectUrl>http://go.microsoft.com/fwlink/?LinkID=324981</projectUrl>
         <repository type="git" url="https://github.com/microsoft/DirectXMesh.git" />
         <icon>images\icon.jpg</icon>
@@ -30,17 +30,29 @@ DirectXMesh, a shared source library for performing various geometry content pro
 
         <file target="include" src="Utilities\*.h" />
 
-        <file target="native\lib\Win32\Debug" src="DirectXMesh\Bin\Desktop_2019\Win32\Debug\*.lib" />
-        <file target="native\lib\Win32\Debug" src="DirectXMesh\Bin\Desktop_2019\Win32\Debug\*.pdb" />
+        <file target="native\lib\x86\Debug" src="DirectXMesh\Bin\Desktop_2019\Win32\Debug\*.lib" />
+        <file target="native\lib\x86\Debug" src="DirectXMesh\Bin\Desktop_2019\Win32\Debug\*.pdb" />
 
-        <file target="native\lib\Win32\Release" src="DirectXMesh\Bin\Desktop_2019\Win32\Release\*.lib" />
-        <file target="native\lib\Win32\Release" src="DirectXMesh\Bin\Desktop_2019\Win32\Release\*.pdb" />
+        <file target="native\lib\x86\Debug" src="DirectXMesh\Bin\Desktop_2019\Win32\DebugSpectre\*.lib" />
+        <file target="native\lib\x86\Debug" src="DirectXMesh\Bin\Desktop_2019\Win32\DebugSpectre\*.pdb" />
+
+        <file target="native\lib\x86\Release" src="DirectXMesh\Bin\Desktop_2019\Win32\Release\*.lib" />
+        <file target="native\lib\x86\Release" src="DirectXMesh\Bin\Desktop_2019\Win32\Release\*.pdb" />
+
+        <file target="native\lib\x86\Release" src="DirectXMesh\Bin\Desktop_2019\Win32\ReleaseSpectre\*.lib" />
+        <file target="native\lib\x86\Release" src="DirectXMesh\Bin\Desktop_2019\Win32\ReleaseSpectre\*.pdb" />
 
         <file target="native\lib\x64\Debug" src="DirectXMesh\Bin\Desktop_2019\x64\Debug\*.lib" />
         <file target="native\lib\x64\Debug" src="DirectXMesh\Bin\Desktop_2019\x64\Debug\*.pdb" />
 
+        <file target="native\lib\x64\Debug" src="DirectXMesh\Bin\Desktop_2019\x64\DebugSpectre\*.lib" />
+        <file target="native\lib\x64\Debug" src="DirectXMesh\Bin\Desktop_2019\x64\DebugSpectre\*.pdb" />
+
         <file target="native\lib\x64\Release" src="DirectXMesh\Bin\Desktop_2019\x64\Release\*.lib" />
         <file target="native\lib\x64\Release" src="DirectXMesh\Bin\Desktop_2019\x64\Release\*.pdb" />
+
+        <file target="native\lib\x64\Release" src="DirectXMesh\Bin\Desktop_2019\x64\ReleaseSpectre\*.lib" />
+        <file target="native\lib\x64\Release" src="DirectXMesh\Bin\Desktop_2019\x64\ReleaseSpectre\*.pdb" />
 
         <file src=".nuget/directxmesh_desktop_2019.targets" target="build\native" />
 
