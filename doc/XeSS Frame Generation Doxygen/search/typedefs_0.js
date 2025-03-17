@@ -1,0 +1,19 @@
+var searchData=
+[
+  ['xefg_5fswapchain_5f2d_5ft_0',['xefg_swapchain_2d_t',['../xefg__swapchain_8h.html#abbe39d66ca5692b5ffa14e298e9865de',1,'xefg_swapchain.h']]],
+  ['xefg_5fswapchain_5fapp_5flog_5fcallback_5ft_1',['xefg_swapchain_app_log_callback_t',['../xefg__swapchain_8h.html#adf938016e6f8462e7f9c6e24dd9e2c98',1,'xefg_swapchain.h']]],
+  ['xefg_5fswapchain_5fd3d12_5finit_5fparams_5ft_2',['xefg_swapchain_d3d12_init_params_t',['../xefg__swapchain__d3d12_8h.html#a13b6293847a4ac0f8d07474231cd4599',1,'xefg_swapchain_d3d12.h']]],
+  ['xefg_5fswapchain_5fd3d12_5fresource_5fdata_5ft_3',['xefg_swapchain_d3d12_resource_data_t',['../xefg__swapchain__d3d12_8h.html#af4bf1bb6fd4396dd3fa97858809facef',1,'xefg_swapchain_d3d12.h']]],
+  ['xefg_5fswapchain_5fdebug_5ffeature_5ft_4',['xefg_swapchain_debug_feature_t',['../xefg__swapchain__debug_8h.html#a84ece8e153d1c4f6151054d908817073',1,'xefg_swapchain_debug.h']]],
+  ['xefg_5fswapchain_5fframe_5fconstant_5fdata_5ft_5',['xefg_swapchain_frame_constant_data_t',['../xefg__swapchain_8h.html#a6e94794e75974c90fae86b5899f2947d',1,'xefg_swapchain.h']]],
+  ['xefg_5fswapchain_5fhandle_5ft_6',['xefg_swapchain_handle_t',['../xefg__swapchain_8h.html#a0ca3628292f5aff0adbd288d7c8ac68d',1,'xefg_swapchain.h']]],
+  ['xefg_5fswapchain_5finit_5fflags_5ft_7',['xefg_swapchain_init_flags_t',['../xefg__swapchain_8h.html#a86d8559dc7b938924fa6dd243614412e',1,'xefg_swapchain.h']]],
+  ['xefg_5fswapchain_5flogging_5flevel_5ft_8',['xefg_swapchain_logging_level_t',['../xefg__swapchain_8h.html#a9f34f346ea9514335510d1bf899f21f0',1,'xefg_swapchain.h']]],
+  ['xefg_5fswapchain_5fpresent_5fstatus_5ft_9',['xefg_swapchain_present_status_t',['../xefg__swapchain_8h.html#ab8188f9079cc91c127f2493a0feb9ed0',1,'xefg_swapchain.h']]],
+  ['xefg_5fswapchain_5fproperties_5ft_10',['xefg_swapchain_properties_t',['../xefg__swapchain_8h.html#a68fddf627f830f3b238b2e12acbab5fc',1,'xefg_swapchain.h']]],
+  ['xefg_5fswapchain_5fresource_5ftype_5ft_11',['xefg_swapchain_resource_type_t',['../xefg__swapchain_8h.html#a8640dea061216ae21cf0a2c073abfcfa',1,'xefg_swapchain.h']]],
+  ['xefg_5fswapchain_5fresource_5fvalidity_5ft_12',['xefg_swapchain_resource_validity_t',['../xefg__swapchain_8h.html#add263bfe56a80bd4b18ce2c7d071ec05',1,'xefg_swapchain.h']]],
+  ['xefg_5fswapchain_5fresult_5ft_13',['xefg_swapchain_result_t',['../xefg__swapchain_8h.html#a57a622fd8e88ae2ed2aff761a70021d5',1,'xefg_swapchain.h']]],
+  ['xefg_5fswapchain_5fui_5fmode_5ft_14',['xefg_swapchain_ui_mode_t',['../xefg__swapchain_8h.html#a04441532f3c62c75c028786cec47b3ab',1,'xefg_swapchain.h']]],
+  ['xefg_5fswapchain_5fversion_5ft_15',['xefg_swapchain_version_t',['../xefg__swapchain_8h.html#a95ac528c9ff36ff94014cf817cabddc0',1,'xefg_swapchain.h']]]
+];

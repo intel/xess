@@ -1,0 +1,23 @@
+var searchData=
+[
+  ['xefg_5fswapchain_5fstatic_5fassert_0',['XEFG_SWAPCHAIN_STATIC_ASSERT',['../xefg__swapchain_8h.html#a7e1d80a630d4fb608d7e2c2cf3dee9de',1,'XEFG_SWAPCHAIN_STATIC_ASSERT(sizeof(xefg_swapchain_resource_validity_t)==4):&#160;xefg_swapchain.h'],['../xefg__swapchain_8h.html#ac2f4d6bfd7124cbf6bf7ed0bcda7092b',1,'XEFG_SWAPCHAIN_STATIC_ASSERT(sizeof(xefg_swapchain_result_t)==4):&#160;xefg_swapchain.h'],['../xefg__swapchain_8h.html#ae35fe5a98f362a6e84eecdb06e3df141',1,'XEFG_SWAPCHAIN_STATIC_ASSERT(sizeof(xefg_swapchain_init_flags_t)==4):&#160;xefg_swapchain.h'],['../xefg__swapchain_8h.html#ab24bc4e643928f57a3f25a0779ff6501',1,'XEFG_SWAPCHAIN_STATIC_ASSERT(sizeof(xefg_swapchain_logging_level_t)==4):&#160;xefg_swapchain.h'],['../xefg__swapchain_8h.html#a2a07ee5181ec3f3f8108b6902811d522',1,'XEFG_SWAPCHAIN_STATIC_ASSERT(sizeof(xefg_swapchain_resource_type_t)==4):&#160;xefg_swapchain.h'],['../xefg__swapchain_8h.html#a9d812eb83d665b8ec761b6471d6ec6fb',1,'XEFG_SWAPCHAIN_STATIC_ASSERT(sizeof(xefg_swapchain_ui_mode_t)==4):&#160;xefg_swapchain.h'],['../xefg__swapchain__debug_8h.html#ad35c8ca2f1fa12346f226f02649ab0f1',1,'XEFG_SWAPCHAIN_STATIC_ASSERT(sizeof(xefg_swapchain_debug_feature_t)==4):&#160;xefg_swapchain_debug.h']]],
+  ['xefgswapchaind3d12buildpipelines_1',['xefgSwapChainD3D12BuildPipelines',['../group__xefgswapchain-d3d12.html#ga65ae23e57239395a0004c76bbe856bc1',1,'xefg_swapchain_d3d12.h']]],
+  ['xefgswapchaind3d12createcontext_2',['xefgSwapChainD3D12CreateContext',['../group__xefgswapchain-d3d12.html#gad79053e072e6d5d9c209f30b913c3f3e',1,'xefg_swapchain_d3d12.h']]],
+  ['xefgswapchaind3d12getswapchainptr_3',['xefgSwapChainD3D12GetSwapChainPtr',['../group__xefgswapchain-d3d12.html#gac34454b51b4f41d8b12630e7b229d71c',1,'xefg_swapchain_d3d12.h']]],
+  ['xefgswapchaind3d12initfromswapchain_4',['xefgSwapChainD3D12InitFromSwapChain',['../group__xefgswapchain-d3d12.html#gaba813bce521f4c803e3d04cd0be9810d',1,'xefg_swapchain_d3d12.h']]],
+  ['xefgswapchaind3d12initfromswapchaindesc_5',['xefgSwapChainD3D12InitFromSwapChainDesc',['../group__xefgswapchain-d3d12.html#gaf7ea0fd5979500a8c96972cb5b7638b4',1,'xefg_swapchain_d3d12.h']]],
+  ['xefgswapchaind3d12setdescriptorheap_6',['xefgSwapChainD3D12SetDescriptorHeap',['../group__xefgswapchain-d3d12.html#ga5158492f6a64dcc51a2b7728bb9d562a',1,'xefg_swapchain_d3d12.h']]],
+  ['xefgswapchaind3d12tagframeresource_7',['xefgSwapChainD3D12TagFrameResource',['../group__xefgswapchain-d3d12.html#gaded3dad4aaa43cec681b3bce376d3d29',1,'xefg_swapchain_d3d12.h']]],
+  ['xefgswapchaindestroy_8',['xefgSwapChainDestroy',['../group__xefgswapchain.html#ga1dc325c074ef6ca284dad9e6d864687b',1,'xefg_swapchain.h']]],
+  ['xefgswapchainenabledebugfeature_9',['xefgSwapChainEnableDebugFeature',['../group__xefgswapchain__debug.html#gaf2d5b3aa72a5615fd5ac700b5574c231',1,'xefg_swapchain_debug.h']]],
+  ['xefgswapchaingetlastpresentstatus_10',['xefgSwapChainGetLastPresentStatus',['../group__xefgswapchain.html#ga0ecf1f246a2817d95a56fbdaed03a1bf',1,'xefg_swapchain.h']]],
+  ['xefgswapchaingetpipelinebuildstatus_11',['xefgSwapChainGetPipelineBuildStatus',['../group__xefgswapchain.html#ga3f119c078bd1df0033df4f53bfd8f88c',1,'xefg_swapchain.h']]],
+  ['xefgswapchaingetproperties_12',['xefgSwapChainGetProperties',['../group__xefgswapchain.html#gadc3d638ba3f1cdfab037017e171ac533',1,'xefg_swapchain.h']]],
+  ['xefgswapchaingetversion_13',['xefgSwapChainGetVersion',['../group__xefgswapchain.html#gae5814f06f251c21cf8e6d27ee073e44d',1,'xefg_swapchain.h']]],
+  ['xefgswapchainsetenabled_14',['xefgSwapChainSetEnabled',['../group__xefgswapchain.html#ga0736dcd0aa28b66ae84f47d1eeee8cf8',1,'xefg_swapchain.h']]],
+  ['xefgswapchainsetlatencyreduction_15',['xefgSwapChainSetLatencyReduction',['../group__xefgswapchain.html#ga78d583d6998d2ce952edff7d0ec2f283',1,'xefg_swapchain.h']]],
+  ['xefgswapchainsetloggingcallback_16',['xefgSwapChainSetLoggingCallback',['../group__xefgswapchain.html#ga7c95b36660495ccfdb84dd95bd2f40ac',1,'xefg_swapchain.h']]],
+  ['xefgswapchainsetpresentid_17',['xefgSwapChainSetPresentId',['../group__xefgswapchain.html#ga99d3ede193b7f015c37e58475121585e',1,'xefg_swapchain.h']]],
+  ['xefgswapchainsetscenechangethreshold_18',['xefgSwapChainSetSceneChangeThreshold',['../group__xefgswapchain.html#ga7ac3e8f95efa59a95607c0c6d248e824',1,'xefg_swapchain.h']]],
+  ['xefgswapchaintagframeconstants_19',['xefgSwapChainTagFrameConstants',['../group__xefgswapchain.html#gac881c68bad8488c3e4e916cdd011b336',1,'xefg_swapchain.h']]]
+];

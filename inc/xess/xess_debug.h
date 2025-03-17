@@ -22,8 +22,12 @@
 extern "C" {
 #endif
 
+#ifndef XESS_DEBUG_ENABLE_PROFILING
+#define XESS_DEBUG_ENABLE_PROFILING (1U << 30)
+#endif
+
 /**
- * @brief X<sup>e</sup>SS network type.
+ * @brief XeSS network type.
  */
 typedef enum _xess_network_model_t
 {
@@ -80,15 +84,45 @@ typedef struct _xess_dump_parameters_t
 } xess_dump_parameters_t;
 XESS_PACK_E()
 
+XESS_PACK_B()
+typedef struct _xess_profiled_frame_data_t
+{
+    /** Execution index in context's instance. */
+    uint64_t frame_index;
+    /** Total labeled gpu duration records stored in gpu_duration* arrays.*/
+    uint64_t gpu_duration_record_count;
+    /** Pointer to an internal array of duration names.*/
+    const char* const* gpu_duration_names;
+    /** Pointer to an internal array of duration values. [seconds]*/
+    const double* gpu_duration_values;
+} xess_profiled_frame_data_t;
+XESS_PACK_E()
+
+XESS_PACK_B()
+typedef struct _xess_profiling_data_t
+{
+    /** Total profiled frame records storage in frames/executions array.*/
+    uint64_t frame_count;
+    /** Pointers to an internal storage with per frame/execution data.*/
+    xess_profiled_frame_data_t* frames;
+    /** Flag indicating if more profiling data will be available when GPU finishes
+     * executing submitted frames.
+     * Useful to collect profiling data without forcing full CPU-GPU sync.
+     * Zero value indicates no pending profiling data.
+     */
+    uint32_t any_profiling_data_in_flight;
+} xess_profiling_data_t;
+XESS_PACK_E()
+
 /** @addtogroup xess-debug XeSS API debug exports
  * @{
  */
 
 /**
- * @brief Select network to be used by X<sup>e</sup>SS
+ * @brief Select network to be used by XeSS
  *
- * Selects network model to use by X<sup>e</sup>SS.
- * After call to this function - X<sup>e</sup>SS init function *must* be called
+ * Selects network model to use by XeSS.
+ * After call to this function - XeSS init function *must* be called
  */
 XESS_API xess_result_t xessSelectNetworkModel(xess_context_handle_t hContext, xess_network_model_t network);
 
@@ -96,7 +130,7 @@ XESS_API xess_result_t xessSelectNetworkModel(xess_context_handle_t hContext, xe
  * @brief Dumps sequence of frames to the provided folder
  *
  * Call to this function initiates a dump for selected elements.
- * X<sup>e</sup>SS SDK uses RAM cache to reduce dump overhead. Application should provide reasonable
+ * XeSS SDK uses RAM cache to reduce dump overhead. Application should provide reasonable
  * value for @ref xess_dump_parameters_t::frame_count frames (about 50 megs needed per cached frame).
  * To enable several dumps per run application should provide correct
  * @ref xess_dump_parameters_t::frame_idx value. This value used as a start index for frame
@@ -108,11 +142,29 @@ XESS_API xess_result_t xessSelectNetworkModel(xess_context_handle_t hContext, xe
  * Repetitive calls to this function can result in XESS_RESULT_ERROR_OPERATION_IN_PROGRESS which means that
  * frame dump is in progress.
  *
- * @param hContext X<sup>e</sup>SS context
+ * @param hContext XeSS context
  * @param dump_parameters dump configuration
  * @return operation status
  */
 XESS_API xess_result_t xessStartDump(xess_context_handle_t hContext, const xess_dump_parameters_t *dump_parameters);
+
+
+/**
+ * @brief Query XeSS model performance data for past executions. To enable performance collection,
+ * context must be initialized with XESS_DEBUG_ENABLE_PROFILING flag added to xess_d3d12_init_params_t::initFlags
+ * or xess_vk_init_params_t::initFlags.
+ * If profiling is enabled, user must poll for profiling data after executing one or more command lists, otherwise
+ * implementation will keep growing internal CPU buffers to accommodate all profiling data available.
+ * Due to async nature of execution on GPU, data may not be available after submitting command lists to device queue.
+ * It is advised to check `any_profiling_data_in_flight` flag in case all workloads has been submitted, but profiling
+ * data for some frames is still not available.
+ * Data pointed to by pProfilingData item(s) belongs to context instance and
+ * is valid until next call to xessD3D12GetProfilingData or xessGetProfilingData for owning context.
+ * @param hContext: The XeSS context handle.
+ * @param pProfilingData: pointer to profiling data structure to be filled by implementation.
+ * @return XeSS return status code.
+*/
+XESS_API xess_result_t xessGetProfilingData(xess_context_handle_t hContext, xess_profiling_data_t** pProfilingData);
 
 /** @}*/
 

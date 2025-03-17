@@ -48,9 +48,9 @@ typedef struct _xess_context_handle_t* xess_context_handle_t;
 
 XESS_PACK_B()
 /**
- * @brief X<sup>e</sup>SS version.
+ * @brief XeSS version.
  * 
- * X<sup>e</sup>SS uses major.minor.patch version format and Numeric 90+ scheme for development stage builds.
+ * XeSS uses major.minor.patch version format and Numeric 90+ scheme for development stage builds.
  */
 typedef struct _xess_version_t
 {
@@ -87,7 +87,7 @@ XESS_PACK_E()
 typedef xess_2d_t xess_coord_t;
 
 /**
- * @brief X<sup>e</sup>SS quality settings.
+ * @brief XeSS quality settings.
  */
 typedef enum _xess_quality_settings_t
 {
@@ -101,7 +101,7 @@ typedef enum _xess_quality_settings_t
 } xess_quality_settings_t;
 
 /**
- * @brief X<sup>e</sup>SS initialization flags.
+ * @brief XeSS initialization flags.
  */
 typedef enum _xess_init_flags_t
 {
@@ -128,21 +128,21 @@ typedef enum _xess_init_flags_t
 
 XESS_PACK_B()
 /**
- * @brief Properties for internal X<sup>e</sup>SS resources.
+ * @brief Properties for internal XeSS resources.
  */
 typedef struct _xess_properties_t
 {
-    /** Required amount of descriptors for X<sup>e</sup>SS */
+    /** Required amount of descriptors for XeSS */
     uint32_t requiredDescriptorCount;
-    /** The heap size required by X<sup>e</sup>SS for temporary buffer storage. */
+    /** The heap size required by XeSS for temporary buffer storage. */
     uint64_t tempBufferHeapSize;
-    /** The heap size required by X<sup>e</sup>SS for temporary texture storage. */
+    /** The heap size required by XeSS for temporary texture storage. */
     uint64_t tempTextureHeapSize;
 } xess_properties_t;
 XESS_PACK_E()
 
 /**
- * @brief  X<sup>e</sup>SS return codes.
+ * @brief  XeSS return codes.
  */
 typedef enum _xess_result_t
 {
@@ -150,9 +150,9 @@ typedef enum _xess_result_t
     XESS_RESULT_WARNING_NONEXISTING_FOLDER = 1,
     /** An old or outdated driver. */
     XESS_RESULT_WARNING_OLD_DRIVER = 2,
-    /** X<sup>e</sup>SS operation was successful. */
+    /** XeSS operation was successful. */
     XESS_RESULT_SUCCESS = 0,
-    /** X<sup>e</sup>SS not supported on the GPU. An SM 6.4 capable GPU is required. */
+    /** XeSS not supported on the GPU. An SM 6.4 capable GPU is required. */
     XESS_RESULT_ERROR_UNSUPPORTED_DEVICE = -1,
     /** An unsupported driver. */
     XESS_RESULT_ERROR_UNSUPPORTED_DRIVER = -2,
@@ -174,13 +174,15 @@ typedef enum _xess_result_t
     XESS_RESULT_ERROR_UNSUPPORTED = -10,
     /** The library cannot be loaded. */
     XESS_RESULT_ERROR_CANT_LOAD_LIBRARY = -11,
+    /** Call to function done in invalid order. */
+    XESS_RESULT_ERROR_WRONG_CALL_ORDER = -12,
 
     /** Unknown internal failure */
     XESS_RESULT_ERROR_UNKNOWN = -1000,
 } xess_result_t;
 
 /**
- * @brief X<sup>e</sup>SS logging level
+ * @brief XeSS logging level
  */
 typedef enum _xess_logging_level_t
 {
@@ -204,9 +206,9 @@ typedef enum _xess_logging_level_t
  */
   
 /**
- * @brief Gets the X<sup>e</sup>SS version. This is baked into the X<sup>e</sup>SS SDK release.
- * @param[out] pVersion Returned X<sup>e</sup>SS version.
- * @return X<sup>e</sup>SS return status code.
+ * @brief Gets the XeSS version. This is baked into the X<sup>e</sup>SS SDK release.
+ * @param[out] pVersion Returned XeSS version.
+ * @return XeSS return status code.
  */
 XESS_API xess_result_t xessGetVersion(xess_version_t* pVersion);
 
@@ -214,34 +216,34 @@ XESS_API xess_result_t xessGetVersion(xess_version_t* pVersion);
  * @brief Gets the version of the loaded Intel XeFX library. When running on Intel platforms 
  * this function will return the version of the loaded Intel XeFX library, for other 
  * platforms 0.0.0 will be returned.
- * @param hContext The X<sup>e</sup>SS context handle.
+ * @param hContext The XeSS context handle.
  * @param[out] pVersion Returned Intel XeFX library version.
- * @return X<sup>e</sup>SS return status code.
+ * @return XeSS return status code.
  */
 XESS_API xess_result_t xessGetIntelXeFXVersion(xess_context_handle_t hContext, 
     xess_version_t* pVersion);
 
 /**
- * @brief Gets X<sup>e</sup>SS internal resources properties.
- * @param hContext The X<sup>e</sup>SS context handle.
+ * @brief Gets XeSS internal resources properties.
+ * @param hContext The XeSS context handle.
  * @param pOutputResolution Output resolution to calculate properties for.
  * @param[out] pBindingProperties Returned properties.
- * @return X<sup>e</sup>SS return status code.
+ * @return XeSS return status code.
  */
 XESS_API xess_result_t xessGetProperties(xess_context_handle_t hContext,
     const xess_2d_t* pOutputResolution, xess_properties_t* pBindingProperties);
 
 /**
  * @brief Get the input resolution for a specified output resolution for a given quality setting.
- * X<sup>e</sup>SS expects all the input buffers except motion vectors to be in the returned resolution.
+ * XeSS expects all the input buffers except motion vectors to be in the returned resolution.
  * Motion vectors can be either in output resolution (XESS_INIT_FLAG_HIGH_RES_MV) or
  * returned resolution (default).
  *
- * @param hContext The X<sup>e</sup>SS context handle.
+ * @param hContext The XeSS context handle.
  * @param pOutputResolution Output resolution to calculate input resolution for.
  * @param qualitySettings Desired quality setting.
  * @param[out] pInputResolution Required input resolution.
- * @return X<sup>e</sup>SS return status code.
+ * @return XeSS return status code.
  */
 XESS_API xess_result_t xessGetInputResolution(xess_context_handle_t hContext,
     const xess_2d_t* pOutputResolution, xess_quality_settings_t qualitySettings,
@@ -249,20 +251,20 @@ XESS_API xess_result_t xessGetInputResolution(xess_context_handle_t hContext,
 
 /**
  * @brief Get the optimal input resolution and possible range for a specified output resolution for a given quality setting.
- * X<sup>e</sup>SS expects all the input buffers except motion vectors to be in the returned resolution range 
+ * XeSS expects all the input buffers except motion vectors to be in the returned resolution range 
  * and all input buffers to be in the same resolution.
  * Motion vectors can be either in output resolution (XESS_INIT_FLAG_HIGH_RES_MV) or
  * in the same resolution as other input buffers (by default).
  *
  * @note Aspect ratio of the input resolution must be the same as for the output resolution.
  *
- * @param hContext The X<sup>e</sup>SS context handle.
+ * @param hContext The XeSS context handle.
  * @param pOutputResolution Output resolution to calculate input resolution for.
  * @param qualitySettings Desired quality setting.
  * @param[out] pInputResolutionOptimal Optimal input resolution.
  * @param[out] pInputResolutionMin Required minimal input resolution.
  * @param[out] pInputResolutionMax Required maximal input resolution.
- * @return X<sup>e</sup>SS return status code.
+ * @return XeSS return status code.
  */
 XESS_API xess_result_t xessGetOptimalInputResolution(xess_context_handle_t hContext,
     const xess_2d_t* pOutputResolution, xess_quality_settings_t qualitySettings,
@@ -270,47 +272,47 @@ XESS_API xess_result_t xessGetOptimalInputResolution(xess_context_handle_t hCont
 
 /**
  * @brief Gets jitter scale value.
- * @param hContext The X<sup>e</sup>SS context handle.
+ * @param hContext The XeSS context handle.
  * @param[out] pX Jitter scale pointer for the X axis.
  * @param[out] pY Jitter scale pointer for the Y axis.
- * @return X<sup>e</sup>SS return status code.
+ * @return XeSS return status code.
  */
 XESS_API xess_result_t xessGetJitterScale(xess_context_handle_t hContext, float* pX, float* pY);
 
 /**
  * @brief Gets velocity scale value.
- * @param hContext The X<sup>e</sup>SS context handle.
+ * @param hContext The XeSS context handle.
  * @param[out] pX Velocity scale pointer for the X axis.
  * @param[out] pY Velocity scale pointer for the Y axis.
- * @return X<sup>e</sup>SS return status code.
+ * @return XeSS return status code.
  */
 XESS_API xess_result_t xessGetVelocityScale(xess_context_handle_t hContext, float* pX, float* pY);
 
 /**
- * @brief Destroys the X<sup>e</sup>SS context.
+ * @brief Destroys the XeSS context.
  * The user must ensure that any pending command lists are completed before destroying the context.
- * @param hContext: The X<sup>e</sup>SS context handle.
- * @return X<sup>e</sup>SS return status code.
+ * @param hContext: The XeSS context handle.
+ * @return XeSS return status code.
  */
 XESS_API xess_result_t xessDestroyContext(xess_context_handle_t hContext);
 
 /**
  * @brief Sets jitter scale value
  *
- * @param hContext The X<sup>e</sup>SS context handle.
+ * @param hContext The XeSS context handle.
  * @param x scale for the X axis
  * @param y scale for the Y axis
- * @return X<sup>e</sup>SS return status code.
+ * @return XeSS return status code.
  */
 XESS_API xess_result_t xessSetJitterScale(xess_context_handle_t hContext, float x, float y);
 
 /**
  * @brief Sets velocity scale value
  *
- * @param hContext The X<sup>e</sup>SS context handle.
+ * @param hContext The XeSS context handle.
  * @param x scale for the X axis
  * @param y scale for the Y axis
- * @return X<sup>e</sup>SS return status code.
+ * @return XeSS return status code.
  */
 XESS_API xess_result_t xessSetVelocityScale(xess_context_handle_t hContext, float x, float y);
 
@@ -319,40 +321,61 @@ XESS_API xess_result_t xessSetVelocityScale(xess_context_handle_t hContext, floa
  *
  * This value will be applied on top of any passed exposure value or automatically calculated exposure.
  *
- * @param hContext The X<sup>e</sup>SS context handle.
+ * @param hContext The XeSS context handle.
  * @param scale scale value.
- * @return X<sup>e</sup>SS return status code.
+ * @return XeSS return status code.
  */
 XESS_API xess_result_t xessSetExposureMultiplier(xess_context_handle_t hContext, float scale);
 
 /**
  * @brief Gets exposure scale value
  *
- * @param hContext The X<sup>e</sup>SS context handle.
+ * @param hContext The XeSS context handle.
  * @param[out] pScale Exposure scale pointer.
- * @return X<sup>e</sup>SS return status code.
+ * @return XeSS return status code.
  */
 XESS_API xess_result_t xessGetExposureMultiplier(xess_context_handle_t hContext, float *pScale);
 
 /**
+ * @brief Sets maximum value for responsive mask
+ *
+ * This value used to clip responsive mask values. Final responsive mask value calculated as
+ * clip(responsive_mask, 0.0, max_value). Value must be within range [0.0; 1.0]
+ *
+ * @param hContext The XeSS context handle.
+ * @param value maximum clip value.
+ * @return XeSS return status code.
+ */
+XESS_API xess_result_t xessSetMaxResponsiveMaskValue(xess_context_handle_t hContext, float value);
+
+/**
+ * @brief Gets maximum value for responsive mask
+ *
+ * @param hContext The XeSS context handle.
+ * @param[out] pValue maximum clip value pointer.
+ * @return XeSS return status code.
+ */
+XESS_API xess_result_t xessGetMaxResponsiveMaskValue(xess_context_handle_t hContext, float *pValue);
+
+/**
  * @brief Sets logging callback
  *
- * @param hContext The X<sup>e</sup>SS context handle.
+ * @param hContext The XeSS context handle.
  * @param loggingLevel Minimum logging level for logging callback.
  * @param loggingCallback Logging callback
- * @return X<sup>e</sup>SS return status code.
+ * @return XeSS return status code.
  */
 XESS_API xess_result_t xessSetLoggingCallback(xess_context_handle_t hContext,
     xess_logging_level_t loggingLevel, xess_app_log_callback_t loggingCallback);
 
 /**
- * @brief Indicates if the installed driver supports best X<sup>e</sup>SS experience.
+ * @brief Indicates if the installed driver supports best XeSS experience.
  *
- * @param hContext The X<sup>e</sup>SS context handle.
+ * @param hContext The XeSS context handle.
  * @return xessIsOptimalDriver returns XESS_RESULT_SUCCESS, or XESS_RESULT_WARNING_OLD_DRIVER
  * if installed driver may result in degraded performance or visual quality.  
  * xessD3D12CreateContext(..) will return XESS_RESULT_ERROR_UNSUPPORTED_DRIVER if driver does
- * not support X<sup>e</sup>SS  at all.
+ * not support XeSS  at all.
  */
 XESS_API xess_result_t xessIsOptimalDriver(xess_context_handle_t hContext);
 
@@ -369,13 +392,29 @@ XESS_API xess_result_t xessIsOptimalDriver(xess_context_handle_t hContext);
  * In order to apply new scale factors application should call xessGetOptimalInputResolution and
  * initialization function (xess*Init)
  *
- * @param hContext The X<sup>e</sup>SS context handle.
+ * @param hContext The XeSS context handle.
  * @param force if set to true legacy scale factors will be forced, if set to false - scale factors
- * will be selected by X<sup>e</sup>SS
+ * will be selected by XeSS
  *
- * @return X<sup>e</sup>SS return status code.
+ * @return XeSS return status code.
  */
 XESS_API xess_result_t xessForceLegacyScaleFactors(xess_context_handle_t hContext, bool force);
+
+/**
+ * @brief Returns current state of pipeline build
+ * This function can only be called after xess*BuildPipelines and
+ * before corresponding xess*Init.
+ * This call returns XESS_RESULT_SUCCESS if pipelines already built, and
+ * XESS_RESULT_ERROR_OPERATION_IN_PROGRESS if pipline build is in progress.
+ * If function called before @ref xess*BuildPipelines or after @ref xess*Init -
+ * XESS_RESULT_ERROR_WRONG_CALL_ORDER will be returned.
+ *
+ * @param hContext The XeSS context handle.
+ * @return XESS_RESULT_SUCCESS if pipelines already built.
+ *         XESS_RESULT_ERROR_OPERATION_IN_PROGRESS if pipeline build are in progress.
+ *         XESS_RESULT_ERROR_WRONG_CALL_ORDER if the function is called out of order.
+ */
+XESS_API xess_result_t xessGetPipelineBuildStatus(xess_context_handle_t hContext);
 
 /** @}*/
   

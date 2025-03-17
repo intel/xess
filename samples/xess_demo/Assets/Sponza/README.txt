@@ -1,1 +1,0 @@
-The original PBR version of Sponza within MiniEngine is modifed to reduce the overal size.

@@ -26,7 +26,7 @@ extern "C" {
 
 XESS_PACK_B()
 /**
- * @brief Execution parameters for X<sup>e</sup>SS D3D12.
+ * @brief Execution parameters for XeSS D3D12.
  */
 typedef struct _xess_d3d12_execute_params_t
 {
@@ -79,7 +79,7 @@ XESS_PACK_E()
 
 XESS_PACK_B()
 /**
- * @brief Initialization parameters for X<sup>e</sup>SS D3D12.
+ * @brief Initialization parameters for XeSS D3D12.
  */
 typedef struct _xess_d3d12_init_params_t
 {
@@ -95,13 +95,13 @@ typedef struct _xess_d3d12_init_params_t
     /** Specifies the node visibility mask for internally created resources
      * on multi-adapter systems. */
     uint32_t visibleNodeMask;
-    /** Optional externally allocated buffer storage for X<sup>e</sup>SS. If NULL the
+    /** Optional externally allocated buffer storage for XeSS. If NULL the
      * storage is allocated internally. If allocated, the heap type must be
      * D3D12_HEAP_TYPE_DEFAULT. This heap is not accessed by the CPU. */
     ID3D12Heap* pTempBufferHeap;
     /** Offset in the externally allocated heap for temporary buffer storage. */
     uint64_t bufferHeapOffset;
-    /** Optional externally allocated texture storage for X<sup>e</sup>SS. If NULL the
+    /** Optional externally allocated texture storage for XeSS. If NULL the
      * storage is allocated internally. If allocated, the heap type must be
      * D3D12_HEAP_TYPE_DEFAULT. This heap is not accessed by the CPU. */
     ID3D12Heap* pTempTextureHeap;
@@ -116,10 +116,10 @@ XESS_PACK_E()
  * @{
  */
 /**
- * @brief Create an X<sup>e</sup>SS D3D12 context.
+ * @brief Create an XeSS D3D12 context.
  * @param pDevice: A D3D12 device created by the user.
  * @param[out] phContext: Returned xess context handle.
- * @return X<sup>e</sup>SS return status code.
+ * @return XeSS return status code.
  */
 XESS_API xess_result_t xessD3D12CreateContext(
     ID3D12Device* pDevice, xess_context_handle_t* phContext);
@@ -135,7 +135,7 @@ XESS_API xess_result_t xessD3D12CreateContext(
  * If @p pPipelineLibrary passed to this call - same pipeline library must be passed
  * to @ref xessD3D12Init
  *
- * @param hContext The X<sup>e</sup>SS context handle.
+ * @param hContext The XeSS context handle.
  * @param pPipelineLibrary Optional pointer to pipeline library for pipeline caching.
  * @param blocking Wait for kernel compilation and pipeline creation to finish or not
  * @param initFlags Initialization flags. *Must* be identical to flags passed to @ref xessD3D12Init
@@ -144,41 +144,41 @@ XESS_API xess_result_t xessD3D12BuildPipelines(xess_context_handle_t hContext,
     ID3D12PipelineLibrary *pPipelineLibrary, bool blocking, uint32_t initFlags);
 
 /**
- * @brief Initialize X<sup>e</sup>SS D3D12.
- * This is a blocking call that initializes X<sup>e</sup>SS and triggers internal
- * resources allocation and JIT for the X<sup>e</sup>SS kernels. The user must ensure that
+ * @brief Initialize XeSS D3D12.
+ * This is a blocking call that initializes XeSS and triggers internal
+ * resources allocation and JIT for the XeSS kernels. The user must ensure that
  * any pending command lists are completed before re-initialization. When
- * During initialization, X<sup>e</sup>SS can create staging buffers and copy queues to
+ * During initialization, XeSS can create staging buffers and copy queues to
  * upload internal data. These will be destroyed at the end of initialization.
  *
- * @note X<sup>e</sup>SS supports devices starting from D3D12_RESOURCE_HEAP_TIER_1, which means
+ * @note XeSS supports devices starting from D3D12_RESOURCE_HEAP_TIER_1, which means
  * that buffers and textures can not live in the same resource heap.
  *
- * @param hContext: The X<sup>e</sup>SS context handle.
+ * @param hContext: The XeSS context handle.
  * @param pInitParams: Initialization parameters.
- * @return X<sup>e</sup>SS return status code.
+ * @return XeSS return status code.
  */
 XESS_API xess_result_t xessD3D12Init(
     xess_context_handle_t hContext, const xess_d3d12_init_params_t* pInitParams);
 
 /**
- * @brief Get X<sup>e</sup>SS D3D12 initialization parameters.
+ * @brief Get XeSS D3D12 initialization parameters.
  * 
  * @note This function will return @ref XESS_RESULT_ERROR_UNINITIALIZED if @ref xessD3D12Init has not been called.
  *
- * @param hContext: The X<sup>e</sup>SS context handle.
+ * @param hContext: The XeSS context handle.
  * @param[out] pInitParams: Returned initialization parameters.
- * @return X<sup>e</sup>SS return status code.
+ * @return XeSS return status code.
  */
 XESS_API xess_result_t xessD3D12GetInitParams(
     xess_context_handle_t hContext, xess_d3d12_init_params_t* pInitParams);
 
 /**
- * @brief Record X<sup>e</sup>SS upscaling commands into the command list.
- * @param hContext: The X<sup>e</sup>SS context handle.
- * @param pCommandList: The command list for X<sup>e</sup>SS commands.
+ * @brief Record XeSS upscaling commands into the command list.
+ * @param hContext: The XeSS context handle.
+ * @param pCommandList: The command list for XeSS commands.
  * @param pExecParams: Execution parameters.
- * @return X<sup>e</sup>SS return status code.
+ * @return XeSS return status code.
  */
 
 XESS_API xess_result_t xessD3D12Execute(xess_context_handle_t hContext,
