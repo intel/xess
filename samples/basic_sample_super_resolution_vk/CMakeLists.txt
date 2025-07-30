@@ -125,3 +125,7 @@ else ()
 	)
 	install(DIRECTORY ${DESTDIR}/basic_sample_shaders DESTINATION bin PATTERN *.d EXCLUDE)
 endif()
+
+if (NOT XESS_BUILD_INTERNAL_SAMPLE)
+    add_dependencies(BasicSampleVK CopyRequiredDLLs)
+endif()

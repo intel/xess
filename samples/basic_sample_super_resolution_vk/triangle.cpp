@@ -32,7 +32,12 @@
 #include "xess/xess_vk.h"
 
 // Set to "true" to enable Vulkan's validation layers (see vulkandebug.cpp for details)
+#if defined(_DEBUG)
+#define ENABLE_VALIDATION true
+#else
 #define ENABLE_VALIDATION false
+#endif
+
 // We want to keep GPU and CPU busy. To do that we may start building a new command buffer while the previous one is still being executed
 // This number defines how many frames may be worked on simultaneously at once
 #define MAX_CONCURRENT_FRAMES 2
@@ -42,7 +47,7 @@ class VulkanExample : public VulkanExampleBase
 public:
 
 	VkPhysicalDeviceMutableDescriptorTypeFeaturesEXT mutableDescriptorFeatures{};
-	VkPhysicalDeviceShaderFloat16Int8Features shaderFloat16IntFeataures{};
+	VkPhysicalDeviceShaderFloat16Int8Features shaderFloat16IntFeatures{};
 	VkPhysicalDeviceShaderIntegerDotProductFeatures shaderIntegerDotProductFeatures{};
 
 	// Vertex layout used in this example
@@ -186,7 +191,7 @@ public:
 	
 	VulkanExample() : VulkanExampleBase(ENABLE_VALIDATION)
 	{
-		title = "XeSS SR VK basic sample";
+		title = "XeSS-SR VK basic sample";
 		// To keep things simple, we don't use the UI overlay from the framework
 		settings.overlay = false;
 		// Setup a default look-at camera
@@ -247,6 +252,16 @@ public:
 			vkDestroySemaphore(device, renderCompleteSemaphores[i], nullptr);
 			vkDestroyBuffer(device, uniformBuffers[i].buffer, nullptr);
 			vkFreeMemory(device, uniformBuffers[i].memory, nullptr);
+		}
+	}
+
+	void keyReleased(uint32_t key) // override
+	{
+		switch (key)
+		{
+			case VK_SPACE:
+				m_pause = !m_pause;
+				break;
 		}
 	}
 
@@ -357,13 +372,13 @@ public:
 			/* Specfies the node visibility mask for internally created resources
 			 * on multi-adapter systems. */
 			0,
-			/* Optional externally allocated buffers storage for X<sup>e</sup>SS. If NULL the
+			/* Optional externally allocated buffers storage for XeSS-SR. If NULL the
 			 * storage is allocated internally. If allocated, the heap type must be
 			 * D3D12_HEAP_TYPE_DEFAULT. This heap is not accessed by the CPU. */
 			nullptr,
 			/* Offset in the externally allocated heap for temporary buffers storage. */
 			0,
-			/* Optional externally allocated textures storage for X<sup>e</sup>SS. If NULL the
+			/* Optional externally allocated textures storage for XeSS-SR. If NULL the
 			 * storage is allocated internally. If allocated, the heap type must be
 			 * D3D12_HEAP_TYPE_DEFAULT. This heap is not accessed by the CPU. */
 			nullptr,
@@ -1654,7 +1669,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int)
 	}
 	catch (const std::exception& err)
 	{
-		MessageBoxA(NULL, (std::string("XeSS SR sample error: ") + err.what()).c_str(), "Error", MB_OK | MB_TOPMOST | MB_ICONINFORMATION);
+		MessageBoxA(NULL, (std::string("XeSS-SR sample error: ") + err.what()).c_str(), "Error", MB_OK | MB_TOPMOST | MB_ICONINFORMATION);
 		return -1;
 	}
 }

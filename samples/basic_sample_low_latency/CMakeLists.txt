@@ -78,3 +78,7 @@ else()
     )
     install(FILES shader_xell.hlsl DESTINATION bin/basic_sample_shaders/hlsl)
 endif()
+
+if (NOT XELL_BUILD_INTERNAL_SAMPLE)
+    add_dependencies(basic_xell_sample copy_basic_xell_sample_files CopyRequiredDLLs)
+endif()

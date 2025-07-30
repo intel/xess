@@ -1364,6 +1364,7 @@ void VulkanExampleBase::handleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 				break;
 			}
 		}
+		keyReleased(static_cast<uint32_t>(wParam));
 		break;
 	case WM_LBUTTONDOWN:
 		mousePos = glm::vec2((float)LOWORD(lParam), (float)HIWORD(lParam));
@@ -3009,6 +3010,8 @@ void VulkanExampleBase::setupWindow()
 void VulkanExampleBase::viewChanged() {}
 
 void VulkanExampleBase::keyPressed(uint32_t) {}
+
+void VulkanExampleBase::keyReleased(uint32_t) {}
 
 void VulkanExampleBase::mouseMoved(double , double , bool & ) {}
 

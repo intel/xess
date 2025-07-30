@@ -63,7 +63,7 @@ typedef enum _xefg_swapchain_resource_validity_t
 } xefg_swapchain_resource_validity_t;
 
 /**
- * @brief XeSS FG Swap Chain initialization flags.
+ * @brief XeSS-FG Swap Chain initialization flags.
  */
 typedef enum _xefg_swapchain_init_flags_t
 {
@@ -84,7 +84,7 @@ typedef enum _xefg_swapchain_init_flags_t
 } xefg_swapchain_init_flags_t;
 
 /**
- * @brief XeSS FG Swap Chain resources type.
+ * @brief XeSS-FG Swap Chain resources type.
  */
 typedef enum _xefg_swapchain_resource_type_t
 {
@@ -98,9 +98,9 @@ typedef enum _xefg_swapchain_resource_type_t
 
 XEFG_SWAPCHAIN_PACK_B()
 /**
-* @brief XeSS FG Swap Chain version.
+* @brief XeSS-FG Swap Chain version.
 *
-* XeSS FG Swap Chain uses major.minor.patch version format and Numeric 90+ scheme for development stage builds.
+* XeSS-FG Swap Chain uses major.minor.patch version format and Numeric 90+ scheme for development stage builds.
 */
 typedef struct _xefg_swapchain_version_t
 {
@@ -158,17 +158,17 @@ XEFG_SWAPCHAIN_PACK_E()
 
 XEFG_SWAPCHAIN_PACK_B()
 /**
-* @brief Properties for internal XeSS FG Swap Chain resources.
+* @brief Properties for internal XeSS-FG Swap Chain resources.
 */
 typedef struct _xefg_swapchain_properties_t
 {
-    /** Required amount of descriptors for XeSS FG Swap Chain. */
+    /** Required amount of descriptors for XeSS-FG Swap Chain. */
     uint32_t requiredDescriptorCount;
-    /** The heap size required by XeSS FG Swap Chain for temporary buffer storage. */
+    /** The heap size required by XeSS-FG Swap Chain for temporary buffer storage. */
     uint64_t tempBufferHeapSize;
-    /** The heap size required by XeSS FG Swap Chain for temporary texture storage. */
+    /** The heap size required by XeSS-FG Swap Chain for temporary texture storage. */
     uint64_t tempTextureHeapSize;
-    /** The size required by XeSS FG Swap Chain in a constant buffer for temporary storage. */
+    /** The size required by XeSS-FG Swap Chain in a constant buffer for temporary storage. */
     uint64_t constantBufferSize;
     /** Maximum number of supported interpolations. */
     uint32_t maxSupportedInterpolations;
@@ -176,7 +176,7 @@ typedef struct _xefg_swapchain_properties_t
 XEFG_SWAPCHAIN_PACK_E()
 
 /**
- * @brief XeSS FG Swap Chain return codes.
+ * @brief XeSS-FG Swap Chain return codes.
  */
 typedef enum _xefg_swapchain_result_t
 {
@@ -241,7 +241,7 @@ typedef enum _xefg_swapchain_result_t
 } xefg_swapchain_result_t;
 
 /**
- * @brief XeSS FG Swap Chain logging level.
+ * @brief XeSS-FG Swap Chain logging level.
  */
 typedef enum _xefg_swapchain_logging_level_t
 {
@@ -252,7 +252,7 @@ typedef enum _xefg_swapchain_logging_level_t
 } xefg_swapchain_logging_level_t;
 
 /**
- * @brief XeSS FG Swap Chain UI handling mode.
+ * @brief XeSS-FG Swap Chain UI handling mode.
  */
 typedef enum _xefg_swapchain_ui_mode_t
 {
@@ -294,110 +294,110 @@ XEFG_SWAPCHAIN_PACK_E()
 typedef void (*xefg_swapchain_app_log_callback_t)(const char* message, xefg_swapchain_logging_level_t loggingLevel, void* userData);
 
 /**
- * @addtogroup xefgswapchain XeSS FG Swap Chain API exports
- * The XeSS FG Swap Chain API is used by applications to generate frames
- * when the application does not choose to be responsible for the in-order presentation 
+ * @addtogroup xefgswapchain XeSS-FG Swap Chain API exports
+ * The XeSS-FG Swap Chain API is used by applications to generate frames
+ * when the application does not choose to be responsible for the in-order presentation
  * of the generated frames. This utils API wraps the IDXGISwapChain and makes
- * calls on behalf of the application to the underlying XeSS FG API.
- * 
+ * calls on behalf of the application to the underlying XeSS-FG API.
+ *
  * @{
  */
 
  /**
-  * @brief Gets the XeSS FG Swap Chain version. This is baked into the XeSS FG Swap Chain SDK release.
-  * @param[out] pVersion Returned XeSS FG Swap Chain version.
-  * @return XeSS FG Swap Chain return status code.
+  * @brief Gets the XeSS-FG Swap Chain version. This is baked into the XeSS-FG Swap Chain SDK release.
+  * @param[out] pVersion Returned XeSS-FG Swap Chain version.
+  * @return XeSS-FG Swap Chain return status code.
   */
 XEFG_SWAPCHAIN_API xefg_swapchain_result_t xefgSwapChainGetVersion(xefg_swapchain_version_t* pVersion);
 
  /**
- * @brief Gets XeSS FG Swap Chain internal resources properties.
+ * @brief Gets XeSS-FG Swap Chain internal resources properties.
  *
- * @param hSwapChain The XeSS FG Swap Chain context handle.
+ * @param hSwapChain The XeSS-FG Swap Chain context handle.
  *
  * @param[out] pProperties A pointer to the @ref xefg_swapchain_properties_t structure where the values should be returned.
  *
- * @return XeSS FG Swap Chain return status code.
+ * @return XeSS-FG Swap Chain return status code.
  */
 XEFG_SWAPCHAIN_API xefg_swapchain_result_t xefgSwapChainGetProperties(xefg_swapchain_handle_t hSwapChain, xefg_swapchain_properties_t* pProperties);
 
-/** 
- * @brief Informs the XeSS FG swap chain library of the frame constants used to generate a frame
+/**
+ * @brief Informs the XeSS-FG swap chain library of the frame constants used to generate a frame
  * that will be presented.
  *
- * @param hSwapChain The XeSS FG Swap Chain context handle.
+ * @param hSwapChain The XeSS-FG Swap Chain context handle.
  *
  * @param presentId The unique frame identifier.
  *
  * @param pConstants A pointer to the memory location where the values for the constants are located.
  *
- * @return XeSS FG Swap Chain return status code.
+ * @return XeSS-FG Swap Chain return status code.
  */
 XEFG_SWAPCHAIN_API xefg_swapchain_result_t xefgSwapChainTagFrameConstants(xefg_swapchain_handle_t hSwapChain,
     uint32_t presentId, const xefg_swapchain_frame_constant_data_t* pConstants);
 
-/** 
- * @brief Enables or disables the generation and presentation of interpolated frames by the XeSS FG swap chain library.
+/**
+ * @brief Enables or disables the generation and presentation of interpolated frames by the XeSS-FG swap chain library.
  *
- * @param hSwapChain The XeSS FG Swap Chain context handle.
+ * @param hSwapChain The XeSS-FG Swap Chain context handle.
  *
  * @param enable Non-zero to enable interpolation, zero to disable it.
  *
- * @return XeSS FG Swap Chain return status code.
+ * @return XeSS-FG Swap Chain return status code.
  */
 XEFG_SWAPCHAIN_API xefg_swapchain_result_t xefgSwapChainSetEnabled(xefg_swapchain_handle_t hSwapChain, uint32_t enable);
 
-/** 
- * @brief Informs the XeSS FG swap chain library of the unique identifier of the next frame
+/**
+ * @brief Informs the XeSS-FG swap chain library of the unique identifier of the next frame
  * to be presented. This allows the application to provide to the swap chain library frames data
  * out-of-order with regard to the presentation.
  *
- * @param hSwapChain The XeSS FG Swap Chain context handle.
+ * @param hSwapChain The XeSS-FG Swap Chain context handle.
  *
  * @param presentId The unique identifier of the frame to be presented by the next IDXGISwapChain::Present call.
  *
- * @return XeSS FG Swap Chain return status code.
+ * @return XeSS-FG Swap Chain return status code.
  */
 XEFG_SWAPCHAIN_API xefg_swapchain_result_t xefgSwapChainSetPresentId(xefg_swapchain_handle_t hSwapChain, uint32_t presentId);
 
 /**
  * @brief This function allows you to retrieve status information from the last present.
  *
- * @param hSwapChain The XeSS FG Swap Chain context handle.
+ * @param hSwapChain The XeSS-FG Swap Chain context handle.
  *
  * @param[out] pPresentStatus A pointer to the @ref xefg_swapchain_present_status_t structure where the values should be returned.
  *
- * @return X<sup>e</sup>FG Swap Chain return status code.
+ * @return XeSS-FG Swap Chain return status code.
  */
 XEFG_SWAPCHAIN_API xefg_swapchain_result_t xefgSwapChainGetLastPresentStatus(xefg_swapchain_handle_t hSwapChain, xefg_swapchain_present_status_t* pPresentStatus);
 
 /**
  * @brief Sets logging callback.
  *
- * @param hSwapChain The XeSS FG Swap Chain context handle.
+ * @param hSwapChain The XeSS-FG Swap Chain context handle.
  * @param loggingLevel Minimum logging level for logging callback.
  * @param loggingCallback Logging callback.
  * @param userData User data that will be passed unchanged to the callback when invoked. Can be set to NULL.
- * @return XeSS FG Swap Chain return status code.
+ * @return XeSS-FG Swap Chain return status code.
  */
 XEFG_SWAPCHAIN_API xefg_swapchain_result_t xefgSwapChainSetLoggingCallback(xefg_swapchain_handle_t hSwapChain,
     xefg_swapchain_logging_level_t loggingLevel, xefg_swapchain_app_log_callback_t loggingCallback, void* userData);
 
 /**
-* @brief Destroys a XeSS FG Swap Chain context data. DXGI swap chain object will be released as soon as reference count reaches 0,
+* @brief Destroys a XeSS-FG Swap Chain context data. DXGI swap chain object will be released as soon as reference count reaches 0,
 * so it's recommended to release all outstanding references before calling this function.
-* @param hSwapChain: The XeSS FG Swap Chain context handle.
-* @return XeSS FG Swap Chain return status code.
+* @param hSwapChain: The XeSS-FG Swap Chain context handle.
+* @return XeSS-FG Swap Chain return status code.
 */
 XEFG_SWAPCHAIN_API xefg_swapchain_result_t xefgSwapChainDestroy(xefg_swapchain_handle_t hSwapChain);
 
 /**
  * @brief Sets XeLL context for latency reduction.
  *
- * @param hSwapChain: The XeSS FG Swap Chain context handle.
+ * @param hSwapChain: The XeSS-FG Swap Chain context handle.
  * @param hXeLLContext: The Xe Low Latency context.
  *
- * @return XeSS FG Swap Chain return status code.
+ * @return XeSS-FG Swap Chain return status code.
  */
 XEFG_SWAPCHAIN_API xefg_swapchain_result_t xefgSwapChainSetLatencyReduction(xefg_swapchain_handle_t hSwapChain, void* hXeLLContext);
 
@@ -409,24 +409,22 @@ XEFG_SWAPCHAIN_API xefg_swapchain_result_t xefgSwapChainSetLatencyReduction(xefg
  * less likely to respond to minor changes. The threshold value range is from 0 to 1, where 0 represents the least
  * sensitivity to scene changes, and 1 represents the highest sensitivity.
  *
- * @param hSwapChain: The XeSS FG Swap Chain context handle.
+ * @param hSwapChain: The XeSS-FG Swap Chain context handle.
  * @param threshold: Scene change detection threshold value. Default value is 0.7.
  *
- * @return XeSS FG Swap Chain return status code.
+ * @return XeSS-FG Swap Chain return status code.
  */
 XEFG_SWAPCHAIN_API xefg_swapchain_result_t xefgSwapChainSetSceneChangeThreshold(xefg_swapchain_handle_t hSwapChain, float threshold);
 
 /**
- * @brief Returns current state of pipeline build
- * This function can only be called after xefgSwapChain*BuildPipelines and
- * before corresponding initialization function.
- * This call returns XEFG_SWAPCHAIN_RESULT_SUCCESS if pipelines already built, and
- * XEFG_SWAPCHAIN_RESULT_ERROR_OPERATION_IN_PROGRESS if pipline build is in progress.
- * If function called before @ref xefgSwapChain*BuildPipelines or after initialization function -
- * XEFG_SWAPCHAIN_RESULT_ERROR_WRONG_CALL_ORDER will be returned.
+ * @brief Returns current state of the pipeline build
  *
- * @param hContext The XeSS FG Swap Chain context handle.
- * @return XEFG_SWAPCHAIN_RESULT_SUCCESS if pipelines already built.
+ * This function can only be called after @ref xefgSwapChainD3D12BuildPipelines but
+ * before XeSS-FG swap chain initialization (@ref xefgSwapChainD3D12InitFromSwapChain
+ * or @ref xefgSwapChainD3D12InitFromSwapChainDesc).
+ *
+ * @param hSwapChain The XeSS-FG Swap Chain context handle.
+ * @return XEFG_SWAPCHAIN_RESULT_SUCCESS if pipelines are already built.
  *         XEFG_SWAPCHAIN_RESULT_ERROR_OPERATION_IN_PROGRESS if pipeline build are in progress.
  *         XEFG_SWAPCHAIN_RESULT_ERROR_WRONG_CALL_ORDER if the function is called out of order.
  */

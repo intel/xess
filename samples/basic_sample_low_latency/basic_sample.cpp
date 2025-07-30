@@ -463,9 +463,9 @@ void BasicSample::LoadAssets()
 #endif
 
         ThrowIfFailed(D3DCompileFromFile(GetAssetFullPath(L"basic_sample_shaders/hlsl/shader_xell.hlsl").c_str(), nullptr,
-            nullptr, "VSMainColor", "vs_5_0", compileFlags, 0, &vertexShader, nullptr), "Unable to find shader basic_sample_shaders/hlsl/shader_xell.hlsl");
+            nullptr, "VSMainColor", "vs_5_0", compileFlags, 0, &vertexShader, nullptr));
         ThrowIfFailed(D3DCompileFromFile(GetAssetFullPath(L"basic_sample_shaders/hlsl/shader_xell.hlsl").c_str(), nullptr,
-            nullptr, "PSMainColor", "ps_5_0", compileFlags, 0, &pixelShader, nullptr), "Unable to find shader basic_sample_shaders/hlsl/shader_xell.hlsl");
+            nullptr, "PSMainColor", "ps_5_0", compileFlags, 0, &pixelShader, nullptr));
 
         // Define the vertex input layout.
         D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =
@@ -514,9 +514,9 @@ void BasicSample::LoadAssets()
 #endif
 
         ThrowIfFailed(D3DCompileFromFile(GetAssetFullPath(L"basic_sample_shaders/hlsl/shader_xell.hlsl").c_str(), nullptr,
-            nullptr, "VSMainVelocity", "vs_5_0", compileFlags, 0, &vertexShader, nullptr), "Unable to find shader basic_sample_shaders/hlsl/shader_xell.hlsl");
+            nullptr, "VSMainVelocity", "vs_5_0", compileFlags, 0, &vertexShader, nullptr));
         ThrowIfFailed(D3DCompileFromFile(GetAssetFullPath(L"basic_sample_shaders/hlsl/shader_xell.hlsl").c_str(), nullptr,
-            nullptr, "PSMainVelocity", "ps_5_0", compileFlags, 0, &pixelShader, nullptr), "Unable to find shader basic_sample_shaders/hlsl/shader_xell.hlsl");
+            nullptr, "PSMainVelocity", "ps_5_0", compileFlags, 0, &pixelShader, nullptr));
 
         // Define the vertex input layout.
         D3D12_INPUT_ELEMENT_DESC inputElementDescs[] = {
@@ -737,9 +737,9 @@ void BasicSample::CreateFSQPipeline()
 #endif
 
         ThrowIfFailed(D3DCompileFromFile(GetAssetFullPath(L"basic_sample_shaders/hlsl/shader_xell.hlsl").c_str(), nullptr,
-            nullptr, "VSMainFSQ", "vs_5_0", compileFlags, 0, &vertexShader, nullptr), "Unable to find shader basic_sample_shaders/hlsl/shader_xell.hlsl");
+            nullptr, "VSMainFSQ", "vs_5_0", compileFlags, 0, &vertexShader, nullptr));
         ThrowIfFailed(D3DCompileFromFile(GetAssetFullPath(L"basic_sample_shaders/hlsl/shader_xell.hlsl").c_str(), nullptr,
-            nullptr, "PSMainFSQ", "ps_5_0", compileFlags, 0, &pixelShader, nullptr), "Unable to find shader basic_sample_shaders/hlsl/shader_xell.hlsl");
+            nullptr, "PSMainFSQ", "ps_5_0", compileFlags, 0, &pixelShader, nullptr));
 
         // Describe and create the graphics pipeline state object (PSO).
         D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};

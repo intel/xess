@@ -1,6 +1,6 @@
-# XeSS FG DX12 basic sample
+# XeSS-FG DX12 basic sample
 
-Shows basic XeSS FG integration with DX12.
+Shows basic XeSS-FG integration with DX12.
 
 ### Windows build steps
 

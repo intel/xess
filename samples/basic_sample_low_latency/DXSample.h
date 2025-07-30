@@ -50,7 +50,11 @@ public:
     // Use Full Screen
     bool m_fullScreen = false;
 
+#ifdef ENABLE_XELL
+    bool m_latencyReductionEnabled = false;
+#endif
 
+    UINT GetFrameCountLimit() const { return m_frame_count_limit; }
 protected:
     std::wstring GetAssetFullPath(LPCWSTR assetName);
 
@@ -69,6 +73,8 @@ protected:
     // Adapter info.
     bool m_useWarpDevice;
     INT m_hardwareAdapterId;
+
+    UINT m_frame_count_limit = 0;
 
 private:
     // Root assets path.

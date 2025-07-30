@@ -20,12 +20,10 @@ extern "C" {
 #endif
 
 /**
- * @brief Create the X<sup>e</sup>LL DX12 context .
- * @param context: The X<sup>e</sup>LL context handle.
- * @param device: DX12 device
- * @param queue: DX12 command queue
- * @param[out] out_context: Returned X<sup>e</sup>LL context handle.
- * @return X<sup>e</sup>LL return status code.
+ * @brief Create the XeLL DX12 context .
+ * @param[in] device: DX12 device
+ * @param[out] out_context: Returned XeLL context handle.
+ * @return XeLL return status code.
  */
 XELL_EXPORT xell_result_t xellD3D12CreateContext(ID3D12Device* device, xell_context_handle_t* out_context);
 

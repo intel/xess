@@ -82,7 +82,7 @@ DWORD WINAPI RenderThread(LPVOID lpParam)
     catch (const std::runtime_error& err)
     {
         m_exit = true;
-        MessageBoxA(NULL, (std::string("XeSS FG sample error: ") + err.what()).c_str(), "Error", MB_OK | MB_TOPMOST | MB_ICONINFORMATION);
+        MessageBoxA(NULL, (std::string("XeSS-FG sample error: ") + err.what()).c_str(), "Error", MB_OK | MB_TOPMOST | MB_ICONINFORMATION);
         return 1;
     }
     return 0;

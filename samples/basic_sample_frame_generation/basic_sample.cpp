@@ -80,7 +80,7 @@ inline void ThrowIfFailed(xefg_swapchain_result_t result, const std::string &err
 {
     if (result > XEFG_SWAPCHAIN_RESULT_SUCCESS) // warnings
     {
-        OutputDebugStringA(("XeSS FG warning: " + XefgSwapchainResultToString(result)).c_str());
+        OutputDebugStringA(("XeSS-FG warning: " + XefgSwapchainResultToString(result)).c_str());
     }
     else if (result != XEFG_SWAPCHAIN_RESULT_SUCCESS)
     {
@@ -104,8 +104,37 @@ inline void ThrowIfFailed(HRESULT result, const std::string& err)
     }
 }
 
+static void SetDebugMessageFilter(ID3D12Device* device)
+{
+#if defined(_DEBUG)
+    ComPtr<ID3D12InfoQueue> infoQueue;
+    if (FAILED(device->QueryInterface(IID_PPV_ARGS(&infoQueue))))
+    {
+        return;
+    }
+
+    // Set the message filter to ignore warnings.
+    D3D12_MESSAGE_ID hide[] =
+    {
+        D3D12_MESSAGE_ID_CLEARRENDERTARGETVIEW_MISMATCHINGCLEARVALUE,  // benign
+        D3D12_MESSAGE_ID_CLEARDEPTHSTENCILVIEW_MISMATCHINGCLEARVALUE,  // benign
+    };
+
+    D3D12_INFO_QUEUE_FILTER filter = {};
+    filter.DenyList.NumIDs = _countof(hide);
+    filter.DenyList.pIDList = hide;
+
+    if (FAILED(infoQueue->AddStorageFilterEntries(&filter)))
+    {
+        return;
+    }
+#else
+    (void)device;
+#endif
+}
+
 BasicSample::BasicSample(UINT width, UINT height, std::wstring name) :
-    DXSample(width, height, name),
+    DXSample(width, height, std::move(name)),
     m_frameIndex(0),
     m_backBufferIndex(0),
     m_fenceEvent(nullptr),
@@ -113,6 +142,7 @@ BasicSample::BasicSample(UINT width, UINT height, std::wstring name) :
 #ifdef ENABLE_XEFG_SWAPCHAIN
     m_xefgSwapChain(nullptr),
     m_xellContext(nullptr),
+    lastPresentStatus(),
     props(),
 #endif
     m_pCbvDataBegin(nullptr),
@@ -224,7 +254,7 @@ void BasicSample::OnInit()
     xell_sleep_params_t xellParams = {};
     xellParams.bLowLatencyMode = 1;
     ThrowIfFailed(xellSetSleepMode(m_xellContext, &xellParams), "Failed to set XeLL sleep mode");
-    ThrowIfFailed(xefgSwapChainSetEnabled(m_xefgSwapChain, true), "Failed to enable XeSS FG");
+    ThrowIfFailed(xefgSwapChainSetEnabled(m_xefgSwapChain, true), "Failed to enable XeSS-FG");
 #endif
 }
 
@@ -313,6 +343,8 @@ void BasicSample::LoadDX12()
         ));
     }
 
+    SetDebugMessageFilter(m_device.Get());
+
     SetCustomWindowText(selectedAdapterShortDesc.c_str());
     OutputDebugString((L"Selected adapter: " + selectedAdapterFullDesc).c_str());
 
@@ -352,7 +384,7 @@ void BasicSample::LoadDX12()
     ThrowIfFailed(xellD3D12CreateContext(m_device.Get(), &m_xellContext), "Unable to create XeLL context");
 
     //XeFG
-    ThrowIfFailed(xefgSwapChainD3D12CreateContext(m_device.Get(), &m_xefgSwapChain), "Unable to create XeSS FG context");
+    ThrowIfFailed(xefgSwapChainD3D12CreateContext(m_device.Get(), &m_xefgSwapChain), "Unable to create XeSS-FG context");
 
 #ifdef _DEBUG
     xefg_swapchain_logging_level_t log_level = xefg_swapchain_logging_level_t::XEFG_SWAPCHAIN_LOGGING_LEVEL_DEBUG;
@@ -380,17 +412,17 @@ void BasicSample::LoadDX12()
     params.uiMode = XEFG_SWAPCHAIN_UI_MODE_AUTO;
 
 #ifdef USE_APP_SWAPCHAIN_OBJECT
-    ThrowIfFailed(xefgSwapChainD3D12InitFromSwapChain(m_xefgSwapChain, m_commandQueue.Get(), &params), "Unable to initialize XeSS FG context");
+    ThrowIfFailed(xefgSwapChainD3D12InitFromSwapChain(m_xefgSwapChain, m_commandQueue.Get(), &params), "Unable to initialize XeSS-FG context");
     swapChain = nullptr;
 #else
     ThrowIfFailed(xefgSwapChainD3D12InitFromSwapChainDesc(m_xefgSwapChain, Win32Application::GetHwnd(), &swapChainDesc, nullptr, m_commandQueue.Get(), factory.Get(), &params),
-                  "Unable to initialize XeSS FG context");
+                  "Unable to initialize XeSS-FG context");
 #endif
 
     ThrowIfFailed(xefgSwapChainD3D12GetSwapChainPtr(m_xefgSwapChain, IID_PPV_ARGS(&m_swapChain)),
                   "Unable to get swap chain pointer");
 
-    ThrowIfFailed(xefgSwapChainGetProperties(m_xefgSwapChain, &props), "Unable to get XeSS FG swap chain properties");
+    ThrowIfFailed(xefgSwapChainGetProperties(m_xefgSwapChain, &props), "Unable to get XeSS-FG swap chain properties");
 #else // !ENABLE_XEFG_SWAPCHAIN
     ThrowIfFailed(swapChain.As(&m_swapChain));
 #endif // ENABLE_XEFG_SWAPCHAIN
@@ -1147,12 +1179,15 @@ void BasicSample::OnRender()
                   "Failed to add XELL_PRESENT_END marker");
 
     ThrowIfFailed(xefgSwapChainGetLastPresentStatus(m_xefgSwapChain, &lastPresentStatus),
-                  "Failed to get last presentation status from XeSS FG");
-#ifdef _DEBUG
-    OutputDebugStringA("Number of frames presented: ");
-    OutputDebugStringA(std::to_string(lastPresentStatus.framesPresented).c_str());
-    OutputDebugStringA("\n");
-#endif
+                  "Failed to get last presentation status from XeSS-FG");
+
+    if (lastPresentStatus.frameGenResult != XEFG_SWAPCHAIN_RESULT_SUCCESS)
+    {
+        std::stringstream ss;
+        ss << "XeSS-FG frame generation failed with error code: " << lastPresentStatus.frameGenResult << "\n";
+        OutputDebugStringA(ss.str().c_str());
+    }
+
 #endif
     m_frameCounter++;
     WaitForPreviousFrame();
@@ -1179,7 +1214,7 @@ void BasicSample::OnDestroy()
 
 #ifdef ENABLE_XEFG_SWAPCHAIN
     m_swapChain.Reset();
-    ThrowIfFailed(xefgSwapChainDestroy(m_xefgSwapChain), "Failed to destroy XeSS FG swap chain context");
+    ThrowIfFailed(xefgSwapChainDestroy(m_xefgSwapChain), "Failed to destroy XeSS-FG swap chain context");
     ThrowIfFailed(xellDestroyContext(m_xellContext), "Failed to destroy XeLL context");
 #endif
 }

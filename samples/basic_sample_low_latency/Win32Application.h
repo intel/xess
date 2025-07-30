@@ -9,8 +9,12 @@
 // PURPOSE, MERCHANTABILITY, OR NON-INFRINGEMENT.
 //
 //*********************************************************
-
 #pragma once
+
+#define ENABLE_XELL 1
+#ifdef ENABLE_XELL
+#include "xell/xell_d3d12.h"
+#endif
 
 #include "DXSample.h"
 #include <chrono>
@@ -28,3 +32,5 @@ public:
 protected:
     static LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 };
+
+DWORD __stdcall RenderThread(LPVOID lpParam);

@@ -38,13 +38,13 @@ extern "C" {
 #endif
 
 /**
-* @brief  X<sup>e</sup>LL return codes.
+* @brief  XeLL return codes.
 */
 typedef enum _xell_result_t
 {
-	/** X<sup>e</sup>LL operation was successful. */
+	/** XeLL operation was successful. */
 	XELL_RESULT_SUCCESS = 0,
-	/** X<sup>e</sup>LL not supported on the GPU. */
+	/** XeLL not supported on the GPU. */
 	XELL_RESULT_ERROR_UNSUPPORTED_DEVICE = -1,
 	/** An unsupported driver. */
 	XELL_RESULT_ERROR_UNSUPPORTED_DRIVER = -2,
@@ -65,9 +65,9 @@ typedef enum _xell_result_t
 } xell_result_t;
 
 /**
- * @brief X<sup>e</sup>LL markers.
+ * @brief XeLL markers.
  *
- * X<sup>e</sup>LL markers for game instrumentation.
+ * XeLL markers for game instrumentation.
  */
 typedef enum _xell_latency_marker_type_t
 {
@@ -100,7 +100,7 @@ typedef struct _xell_sleep_params_t
 XELL_PACK_E()
 
 /**
- * @brief X<sup>e</sup>LL logging level
+ * @brief XeLL logging level
  */
 typedef enum _xell_logging_level_t
 {
@@ -119,9 +119,9 @@ typedef void (*xell_app_log_callback_t)(const char* message, xell_logging_level_
 
 XELL_PACK_B()
 /**
-* @brief X<sup>e</sup>LL version.
+* @brief XeLL version.
 *
-* X<sup>e</sup>LL uses major.minor.patch version format and Numeric 90+ scheme for development stage builds.
+* XeLL uses major.minor.patch version format and Numeric 90+ scheme for development stage builds.
 */
 typedef struct _xell_version_t
 {
@@ -146,67 +146,67 @@ XELL_PACK_E()
 typedef struct _xell_context_handle_t* xell_context_handle_t;
 
 /**
- * @brief Destroy the X<sup>e</sup>LL context.
- * @param context: The X<sup>e</sup>LL context handle.
- * @return X<sup>e</sup>LL return status code.
+ * @brief Destroy the XeLL context.
+ * @param context: The XeLL context handle.
+ * @return XeLL return status code.
  */
 XELL_EXPORT xell_result_t xellDestroyContext(xell_context_handle_t context);
 
 /**
- * @brief Setup how X<sup>e</sup>LL operate.
- * @param context: The X<sup>e</sup>LL context handle.
+ * @brief Setup how XeLL operate.
+ * @param context: The XeLL context handle.
  * @param param: Initialization parameters.
- * @return X<sup>e</sup>LL return status code.
+ * @return XeLL return status code.
  */
 XELL_EXPORT xell_result_t xellSetSleepMode(xell_context_handle_t context, const xell_sleep_params_t* param);
 
 /**
- * @brief Get current X<sup>e</sup>LL parameters.
- * @param context: The X<sup>e</sup>LL context handle.
+ * @brief Get current XeLL parameters.
+ * @param context: The XeLL context handle.
  * @param param: Returned parameters.
- * @return X<sup>e</sup>LL return status code.
+ * @return XeLL return status code.
  */
 XELL_EXPORT xell_result_t xellGetSleepMode(xell_context_handle_t context, xell_sleep_params_t* param);
 
 /**
- * @brief X<sup>e</sup>LL will sleep here for the simulation start.
- * @param context: The X<sup>e</sup>LL context handle.
+ * @brief XeLL will sleep here for the simulation start.
+ * @param context: The XeLL context handle.
  * @param frame_id: The incremental frame counter from the game.
- * @return X<sup>e</sup>LL return status code.
+ * @return XeLL return status code.
  */
 XELL_EXPORT xell_result_t xellSleep(xell_context_handle_t context, uint32_t frame_id);
 
 /**
- * @brief Pass markers to inform X<sup>e</sup>LL how long the game simulation, render and present time are.
- * @param context: The X<sup>e</sup>LL context handle.
+ * @brief Pass markers to inform XeLL how long the game simulation, render and present time are.
+ * @param context: The XeLL context handle.
  * @param frame_id: The incremental frame counter from the game.
- * @param e_marker" Marker type.
- * @return X<sup>e</sup>LL return status code.
+ * @param marker: Marker type.
+ * @return XeLL return status code.
  */
 XELL_EXPORT xell_result_t xellAddMarkerData(xell_context_handle_t context, uint32_t frame_id, xell_latency_marker_type_t marker);
 
 /**
- * @brief Gets the X<sup>e</sup>LL version. This is baked into the X<sup>e</sup>LL SDK release.
- * @param[out] pVersion Returned X<sup>e</sup>LL version.
- * @return X<sup>e</sup>LL return status code.
+ * @brief Gets the XeLL version. This is baked into the XeLL SDK release.
+ * @param[out] pVersion Returned XeLL version.
+ * @return XeLL return status code.
  */
 XELL_EXPORT xell_result_t xellGetVersion(xell_version_t* pVersion);
 
 /**
  * @brief Sets logging callback
  *
- * @param hContext The X<sup>e</sup>LL context handle.
+ * @param hContext The XeLL context handle.
  * @param loggingLevel Minimum logging level for logging callback.
  * @param loggingCallback Logging callback
- * @return X<sup>e</sup>LL return status code.
+ * @return XeLL return status code.
  */
 XELL_EXPORT xell_result_t xellSetLoggingCallback(xell_context_handle_t hContext, xell_logging_level_t loggingLevel, xell_app_log_callback_t loggingCallback);
 
 XELL_PACK_B()
 /**
- * @brief X<sup>e</sup>LL frame stats.
+ * @brief XeLL frame stats.
  *
- * X<sup>e</sup>LL frame timestamps.
+ * XeLL frame timestamps.
  */
 typedef struct _xell_frame_report_t
 {
@@ -229,9 +229,9 @@ XELL_PACK_E()
 
 /**
  * @brief Get frame stats for debugging purpose.
- * @param context: The X<sup>e</sup>LL context handle.
- * @param[out] out_data: Last 64 frames reports.
- * @return X<sup>e</sup>LL return status code.
+ * @param context: The XeLL context handle.
+ * @param[out] outdata: Last 64 frames reports.
+ * @return XeLL return status code.
 */
 XELL_EXPORT xell_result_t xellGetFramesReports(xell_context_handle_t context, xell_frame_report_t* outdata);
 

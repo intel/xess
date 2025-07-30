@@ -52,7 +52,7 @@ inline void ThrowIfFailed(xess_result_t result, const std::string& err)
 {
     if (result > XESS_RESULT_SUCCESS) // warnings
     {
-        OutputDebugStringA(("XeSS SR warning: " + XeSSResultToString(result)).c_str());
+        OutputDebugStringA(("XeSS-SR warning: " + XeSSResultToString(result)).c_str());
     }
     else if (result != XESS_RESULT_SUCCESS)
     {
@@ -66,6 +66,35 @@ inline void ThrowIfFailed(HRESULT result, const std::string& err)
     {
         throw std::runtime_error(err);
     }
+}
+
+static void SetDebugMessageFilter(ID3D12Device* device)
+{
+#if defined(_DEBUG)
+    ComPtr<ID3D12InfoQueue> infoQueue;
+    if (FAILED(device->QueryInterface(IID_PPV_ARGS(&infoQueue))))
+    {
+        return;
+    }
+
+    // Set the message filter to ignore warnings.
+    D3D12_MESSAGE_ID hide[] =
+    {
+        D3D12_MESSAGE_ID_CLEARRENDERTARGETVIEW_MISMATCHINGCLEARVALUE,  // benign
+        D3D12_MESSAGE_ID_CLEARDEPTHSTENCILVIEW_MISMATCHINGCLEARVALUE,  // benign
+    };
+
+    D3D12_INFO_QUEUE_FILTER filter = {};
+    filter.DenyList.NumIDs = _countof(hide);
+    filter.DenyList.pIDList = hide;
+
+    if (FAILED(infoQueue->AddStorageFilterEntries(&filter)))
+    {
+        return;
+    }
+#else
+    (void)device;
+#endif
 }
 
 void BasicSampleD3D12::OnKeyUp(UINT8 key)
@@ -122,7 +151,7 @@ void BasicSampleD3D12::InitDx()
 {
     UINT dxgiFactoryFlags = 0;
 
-#ifdef ENABLE_DX_DEBUG_LAYER
+#if defined(_DEBUG)
     // Enable the debug layer (requires the Graphics Tools "optional feature").
     // NOTE: Enabling the debug layer after device creation will invalidate the active device.
     {
@@ -185,6 +214,8 @@ void BasicSampleD3D12::InitDx()
         ThrowIfFailed(D3D12CreateDevice(
             hardwareAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&m_device)));
     }
+
+    SetDebugMessageFilter(m_device.Get());
 
     m_gpuName = selectedAdapterShortDesc;
     OutputDebugString((L"Selected adapter: " + selectedAdapterFullDesc).c_str());
@@ -267,13 +298,13 @@ void BasicSampleD3D12::InitXess()
         /* Specfies the node visibility mask for internally created resources
          * on multi-adapter systems. */
         0,
-        /* Optional externally allocated buffers storage for X<sup>e</sup>SS. If NULL the
+        /* Optional externally allocated buffers storage for XeSS-SR. If NULL the
          * storage is allocated internally. If allocated, the heap type must be
          * D3D12_HEAP_TYPE_DEFAULT. This heap is not accessed by the CPU. */
         nullptr,
         /* Offset in the externally allocated heap for temporary buffers storage. */
         0,
-        /* Optional externally allocated textures storage for X<sup>e</sup>SS. If NULL the
+        /* Optional externally allocated textures storage for XeSS-SR. If NULL the
          * storage is allocated internally. If allocated, the heap type must be
          * D3D12_HEAP_TYPE_DEFAULT. This heap is not accessed by the CPU. */
         m_texturesHeap.Get(),

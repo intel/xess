@@ -81,3 +81,9 @@ else ()
             RESOURCE DESTINATION bin
     )
 endif()
+
+if (NOT XESS_BUILD_INTERNAL_SAMPLE)
+    add_dependencies(BasicSampleD3D12 CopyBasicSampleD3D12RequiredFiles)
+    add_dependencies(BasicSampleD3D12 CopyRequiredDLLs)
+endif()
+

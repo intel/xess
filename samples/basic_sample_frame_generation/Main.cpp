@@ -20,12 +20,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow)
     SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE);
     try
     {
-        BasicSample sample(1920, 1080, L"XeSS FG DX12 basic sample");
+        BasicSample sample(1920, 1080, L"XeSS-FG DX12 basic sample");
         return Win32Application::Run(&sample, hInstance, nCmdShow);
     }
     catch (const std::runtime_error& err)
     {
-        MessageBoxA(NULL, (std::string("XeSS FG sample error: ") + err.what()).c_str(), "Error", MB_OK | MB_TOPMOST | MB_ICONINFORMATION);
+        MessageBoxA(NULL, (std::string("XeSS-FG sample error: ") + err.what()).c_str(), "Error", MB_OK | MB_TOPMOST | MB_ICONINFORMATION);
         return 1;
     }
 }

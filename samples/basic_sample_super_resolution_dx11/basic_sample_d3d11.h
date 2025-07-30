@@ -37,6 +37,7 @@ public:
     virtual void OnUpdate();
     virtual void OnRender();
     virtual void OnDestroy();
+    virtual void OnKeyUp(UINT8 key);
 
 private:
     enum RTIndices

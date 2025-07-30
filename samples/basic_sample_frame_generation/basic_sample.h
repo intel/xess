@@ -172,7 +172,7 @@ private:
 #ifdef ENABLE_XEFG_SWAPCHAIN
     static void LogCallback(const char* message, xefg_swapchain_logging_level_t level, void* userData)
     {
-        OutputDebugStringA(("[XeFG Runtime][" + std::to_string(level) + "]: " + message + "\n").c_str());
+        OutputDebugStringA(("[XeSS-FG Runtime][" + std::to_string(level) + "]: " + message + "\n").c_str());
     }
 #endif
 

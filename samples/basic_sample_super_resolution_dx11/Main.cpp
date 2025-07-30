@@ -20,12 +20,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow)
     SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE);
     try
     {
-        BasicSampleD3D11 sample(1920, 1080, L"XeSS SR DX11 basic sample");
+        BasicSampleD3D11 sample(1920, 1080, L"XeSS-SR DX11 basic sample");
         return Win32Application::Run(&sample, hInstance, nCmdShow);
     }
     catch(std::runtime_error &err)
     {
-        MessageBoxA(NULL, (std::string("XeSS SR sample error: ") + err.what()).c_str(), "Error", MB_OK | MB_TOPMOST | MB_ICONINFORMATION);
+        MessageBoxA(NULL, (std::string("XeSS-SR sample error: ") + err.what()).c_str(), "Error", MB_OK | MB_TOPMOST | MB_ICONINFORMATION);
         return 1;
     }
 }

@@ -22,7 +22,7 @@ extern "C" {
 #include "xefg_swapchain.h"
 
 /**
- * @brief XeSS FG Swap Chain debug features list.
+ * @brief XeSS-FG Swap Chain debug features list.
  */
 typedef enum _xefg_swapchain_debug_feature_t
 {
@@ -36,14 +36,14 @@ typedef enum _xefg_swapchain_debug_feature_t
 } xefg_swapchain_debug_feature_t;
 
 /**
- * @addtogroup xefgswapchain_debug XeSS FG Swap Chain debug features
+ * @addtogroup xefgswapchain_debug XeSS-FG Swap Chain debug features
  * @{
  */
 
 /**
- * @brief Controls for debug features of XeSS FG Swap Chain API library.
+ * @brief Controls for debug features of XeSS-FG Swap Chain API library.
  *
- * @param hSwapChain The XeSS FG Swap Chain context handle.
+ * @param hSwapChain The XeSS-FG Swap Chain context handle.
  *
  * @param featureId The debug feature to enable or disable.
  *
@@ -51,7 +51,7 @@ typedef enum _xefg_swapchain_debug_feature_t
  *
  * @param pArgument Feature-defined arguments. Please refer to the debug feature documentation.
  *
- * @return XeSS FG Swap Chain return status code.
+ * @return XeSS-FG Swap Chain return status code.
  */
 XEFG_SWAPCHAIN_API xefg_swapchain_result_t xefgSwapChainEnableDebugFeature(xefg_swapchain_handle_t hSwapChain,
     xefg_swapchain_debug_feature_t featureId, uint32_t enable, void* pArgument);

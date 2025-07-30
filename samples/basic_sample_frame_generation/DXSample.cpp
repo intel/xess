@@ -19,7 +19,7 @@ using namespace Microsoft::WRL;
 DXSample::DXSample(UINT width, UINT height, std::wstring name) :
     m_width(width),
     m_height(height),
-    m_title(name),
+    m_title(std::move(name)),
     m_useWarpDevice(false),
     m_useDebugDevice(false),
     m_hardwareAdapterId(-1)

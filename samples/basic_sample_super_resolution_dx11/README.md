@@ -1,6 +1,6 @@
-# XeSS SR DX11 basic sample
+# XeSS-SR DX11 basic sample
 
-Shows basic XeSS SR integration with DX11.
+Shows basic XeSS-SR integration with DX11.
 
 ### Windows build steps
 

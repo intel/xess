@@ -1,6 +1,6 @@
-# XeSS SR DX12 basic sample
+# XeSS-SR DX12 basic sample
 
-Shows basic XeSS SR integration with DX12.
+Shows basic XeSS-SR integration with DX12.
 
 ### Windows build steps
 

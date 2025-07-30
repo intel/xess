@@ -52,7 +52,7 @@ inline void ThrowIfFailed(xess_result_t result, const std::string& err)
 {
     if (result > XESS_RESULT_SUCCESS) // warnings
     {
-        OutputDebugStringA(("XeSS SR warning: " + XeSSResultToString(result)).c_str());
+        OutputDebugStringA(("XeSS-SR warning: " + XeSSResultToString(result)).c_str());
     }
     else if (result != XESS_RESULT_SUCCESS)
     {
@@ -95,7 +95,7 @@ void BasicSampleD3D11::InitDx()
 {
     UINT createDeviceFlags = 0;
 
-#ifdef ENABLE_DX_DEBUG_LAYER
+#if defined(_DEBUG)
     // Enable the debug layer 
     createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
@@ -666,6 +666,16 @@ void BasicSampleD3D11::OnDestroy()
     //CloseHandle(m_fenceEvent);
 }
 
+void BasicSampleD3D11::OnKeyUp(UINT8 key)
+{
+    switch (key)
+    {
+    case VK_SPACE:
+        m_pause = !m_pause;
+        break;
+    }
+}
+
 // Fill the command list with all the render commands and dependent state.
 void BasicSampleD3D11::ExecuteCommandList()
 {
@@ -685,7 +695,7 @@ void BasicSampleD3D11::ExecuteCommandList()
         m_immediateContext->RSSetScissorRects(1, &render_res_scissors);
 
         auto rtvHandle = reinterpret_cast<ID3D11RenderTargetView*>( m_renderTargets[ m_frameIndex ].view[ VI_RTV ].Get() );
-        auto dsvHandle = reinterpret_cast<ID3D11DepthStencilView*>( m_renderTargets[ m_frameIndex ].view[ VI_DSV ].Get() );
+        auto dsvHandle = reinterpret_cast<ID3D11DepthStencilView*>( m_depthTargets[ m_frameIndex ].view[ VI_RTV ].Get() );
         m_immediateContext->OMSetRenderTargets( 1, &rtvHandle,dsvHandle );
 
         m_immediateContext->ClearRenderTargetView( rtvHandle, m_clearColor);

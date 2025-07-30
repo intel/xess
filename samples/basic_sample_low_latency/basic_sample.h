@@ -10,16 +10,8 @@
 // PURPOSE, MERCHANTABILITY, OR NON-INFRINGEMENT.
 //
 //*********************************************************
-
 #pragma once
-
 #include "DXSample.h"
-
-#define ENABLE_XELL 1
-#ifdef ENABLE_XELL
-#include "xell/xell_d3d12.h"
-#endif
-
 
 using namespace DirectX;
 
@@ -130,7 +122,6 @@ private:
     // Xell
     xell_context_handle_t m_xellContext = nullptr;
     UINT32 m_frameCounter = 0;
-    bool m_latencyReductionEnabled = false;
     void InitXell();
     void SetSleepMode();
 #endif

@@ -45,8 +45,16 @@ DWORD WINAPI RenderThread(LPVOID lpParam)
         // Wait for window creation
         WaitForSingleObject(hWindowCreated, INFINITE);
 
+        UINT frame_count = 0;
+        UINT frame_count_limit = pSample->GetFrameCountLimit();
+
         while (!m_exit)
         {
+            if (frame_count_limit && frame_count_limit == frame_count)
+            {
+                m_exit = true;
+            }
+            frame_count++;
             // Allow the sample to pace/delay to minimize latency
             pSample->OnSleep();
 

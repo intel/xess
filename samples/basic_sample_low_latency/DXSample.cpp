@@ -141,6 +141,21 @@ void DXSample::ParseCommandLineArgs(WCHAR* argv[], int argc)
             m_useAsyncFlip = true;
         }
 
+        if (_wcsnicmp(argv[i], L"-xell", wcslen(argv[i])) == 0 ||
+            _wcsnicmp(argv[i], L"/xell", wcslen(argv[i])) == 0)
+        {
+#ifdef ENABLE_XELL
+            m_latencyReductionEnabled = true;
+#endif
+        }
+
+        if ((_wcsnicmp(argv[i], L"-frame_count", wcslen(argv[i])) == 0 ||
+            _wcsnicmp(argv[i], L"/frame_count", wcslen(argv[i])) == 0) && (i + 1 < argc))
+        {
+            m_frame_count_limit = _wtoi(argv[i + 1]);
+            i++;
+        }
+
         if (_wcsnicmp(argv[i], L"-fps", wcslen(argv[i])) == 0 ||
             _wcsnicmp(argv[i], L"/fps", wcslen(argv[i])) == 0)
         {

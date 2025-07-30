@@ -121,3 +121,8 @@ else ()
     )
     install(FILES shader_xess_fg.hlsl DESTINATION bin/basic_sample_shaders/hlsl)
 endif()
+
+if (NOT XEFG_BUILD_INTERNAL_SAMPLE)
+    add_dependencies(basic_xess_fg_sample basic_xess_fg_sample_RequiredFiles)
+    add_dependencies(basic_xess_fg_sample basic_xess_fg_sample_RequiredDLLs)
+endif()
