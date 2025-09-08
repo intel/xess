@@ -459,12 +459,15 @@ Each call to tag a resource must specify one of following resource validity mode
 - `XEFG_SWAPCHAIN_RV_ONLY_NOW` – resource is only valid now and XeSS-FG will
   record a copy operation to the provided command list.
 
-The application must provide valid state for each tagged resource: XeSS-FG will add appropriate
-state transition barriers from/to the provided state. To minimize the number of state transitions,
-use the following states depending on resource validity:
+The application must provide valid state for each tagged resource. XeSS-FG will add appropriate
+state transition barriers from/to the provided state.
 
-- For `XEFG_SWAPCHAIN_RV_UNTIL_NEXT_PRESENT` use `D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE`.
-- For `XEFG_SWAPCHAIN_RV_ONLY_NOW` use `D3D12_RESOURCE_STATE_COPY_SOURCE`.
+Use `D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE` for `XEFG_SWAPCHAIN_RV_UNTIL_NEXT_PRESENT` resources
+to minimize the number of state transitions.
+
+XeSS-FG will always transition `XEFG_SWAPCHAIN_RV_ONLY_NOW` resources to `D3D12_RESOURCE_STATE_COPY_SOURCE` state,
+so the incoming state must be different from `D3D12_RESOURCE_STATE_COPY_SOURCE`. Future versions of XeSS-FG will
+support all incoming resource states.
 
 Here is an example of resource tagging for HUD-less color:
 
@@ -834,3 +837,4 @@ Corporation in the United States and/or other countries.
 
 © 2025 Intel Corporation. Intel, the Intel logo, and other Intel marks are trademarks of Intel
 Corporation or its subsidiaries. Other names and brands may be claimed as the property of others.
+
