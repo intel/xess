@@ -524,9 +524,10 @@ resolution.
 
 #### Depth
 
-Any depth format, such as `D32_FLOAT` or `D24_UNORM`, is supported. By default, XeSS-FG assumes that
-smaller depth values are closer to the camera. However, inverted depth can be enabled by setting
-`XEFG_SWAPCHAIN_INIT_FLAG_INVERTED_DEPTH`.
+Any depth format, such as `D32_FLOAT` or `D24_UNORM`, is supported. XeSS-FG assumes that
+larger depth values are closer to the camera and behaves as if `XEFG_SWAPCHAIN_INIT_FLAG_INVERTED_DEPTH`
+is always set. Next release of XeSS-FG will respect the flag and properly support both
+normal and inverted depth.
 
 Buffer size must be the same as the Motion Vectors buffer size.
 
@@ -837,4 +838,5 @@ Corporation in the United States and/or other countries.
 
 © 2025 Intel Corporation. Intel, the Intel logo, and other Intel marks are trademarks of Intel
 Corporation or its subsidiaries. Other names and brands may be claimed as the property of others.
+
 
