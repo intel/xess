@@ -166,7 +166,7 @@ private:
     void PopulateDescriptorHeap();
     void LoadAssets();
     void PopulateCommandList();
-    void PopulateRenderTargetCommandList(uint32_t srcIndex);
+    void PopulateRenderTargetCommandList();
     void WaitForExec();
     void WaitForPreviousFrame();
 #ifdef ENABLE_XEFG_SWAPCHAIN

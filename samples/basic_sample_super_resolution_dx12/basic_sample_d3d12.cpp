@@ -143,7 +143,7 @@ void BasicSampleD3D12::OnInit()
     InitXess();
     LoadPipeline();
     LoadAssets();
-    CreateFSQPipeline();
+    CreateFSQPipelines();
     PopulateDescriptorHeap();
 }
 
@@ -766,7 +766,7 @@ void BasicSampleD3D12::PopulateDescriptorHeap()
     }
 }
 
-void BasicSampleD3D12::CreateFSQPipeline()
+void BasicSampleD3D12::CreateFSQPipelines()
 {
     // Create a root signature
     {
@@ -819,7 +819,8 @@ void BasicSampleD3D12::CreateFSQPipeline()
     // Create the pipeline state, which includes compiling and loading shaders.
     {
         ComPtr<ID3DBlob> vertexShader;
-        ComPtr<ID3DBlob> pixelShader;
+        ComPtr<ID3DBlob> pixelShaderCopy;
+        ComPtr<ID3DBlob> pixelShaderScaleVelocity;
 
 #if defined(_DEBUG)
         // Enable better shader debugging with the graphics debugging tools.
@@ -829,14 +830,15 @@ void BasicSampleD3D12::CreateFSQPipeline()
 #endif
 
         CompileFromFile(L"basic_sample_shaders/hlsl/shader_xess_sr_d3d12.hlsl", "VSMainFSQ", "vs_5_0", compileFlags, vertexShader);
-        CompileFromFile(L"basic_sample_shaders/hlsl/shader_xess_sr_d3d12.hlsl", "PSMainFSQ", "ps_5_0", compileFlags, pixelShader);
+        CompileFromFile(L"basic_sample_shaders/hlsl/shader_xess_sr_d3d12.hlsl", "PSMainCopyFSQ", "ps_5_0", compileFlags, pixelShaderCopy);
+        CompileFromFile(L"basic_sample_shaders/hlsl/shader_xess_sr_d3d12.hlsl", "PSMainVelocityFSQ", "ps_5_0", compileFlags, pixelShaderScaleVelocity);
 
         // Describe and create the graphics pipeline state object (PSO).
         D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
         psoDesc.InputLayout = {};
         psoDesc.pRootSignature = m_rootSignatureFSQ.Get();
         psoDesc.VS = CD3DX12_SHADER_BYTECODE(vertexShader.Get());
-        psoDesc.PS = CD3DX12_SHADER_BYTECODE(pixelShader.Get());
+        psoDesc.PS = CD3DX12_SHADER_BYTECODE(pixelShaderCopy.Get());
         psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
         psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
         psoDesc.DepthStencilState.DepthEnable = FALSE;
@@ -849,6 +851,10 @@ void BasicSampleD3D12::CreateFSQPipeline()
 
         ThrowIfFailed(
             m_device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pipelineStateFSQPass)));
+
+        psoDesc.PS = CD3DX12_SHADER_BYTECODE(pixelShaderScaleVelocity.Get());
+        ThrowIfFailed(
+            m_device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pipelineStateFSQVelocityPass)));
     }
 }
 
@@ -1056,7 +1062,15 @@ void BasicSampleD3D12::PopulateCommandList()
             D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
         m_commandList->ResourceBarrier(1, &transition);
 
-        m_commandList->SetPipelineState(m_pipelineStateFSQPass.Get());
+        if (m_outputIndex == DHI_Velocity)
+        {
+            m_commandList->SetPipelineState(m_pipelineStateFSQVelocityPass.Get());
+
+        }
+        else
+        {
+            m_commandList->SetPipelineState(m_pipelineStateFSQPass.Get());
+        }
 
         m_commandList->SetGraphicsRootSignature(m_rootSignatureFSQ.Get());
 

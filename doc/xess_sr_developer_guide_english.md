@@ -1007,6 +1007,10 @@ function, an advisory message or notice should be displayed to the user recommen
 newer driver. `XESS_RESULT_WARNING_OLD_DRIVER` is not a fatal error, and the user should be allowed
 to continue.
 
+**Note:** On Vulkan, `XESS_RESULT_WARNING_OLD_DRIVER` may be also returned when
+'VK_LAYER_KHRONOS_validation` layer from Vulkan SDK is enabled, even if the latest driver 
+is installed. Running with the validation layer enabled may have performance impact on XeSS-SR.
+
 ### Debugging Tips
 
 #### Motion Vectors Debugging

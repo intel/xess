@@ -65,7 +65,7 @@ private:
 
     virtual void InitDx();
     virtual void InitXess();
-    virtual void CreateFSQPipeline();
+    virtual void CreateFSQPipelines();
     virtual void PopulateDescriptorHeap();
 
     struct Vertex
@@ -112,6 +112,7 @@ private:
 
     ComPtr<ID3D12RootSignature> m_rootSignatureFSQ;
     ComPtr<ID3D12PipelineState> m_pipelineStateFSQPass;
+    ComPtr<ID3D12PipelineState> m_pipelineStateFSQVelocityPass;
     ComPtr<ID3D12Resource> m_sapmlerFSQ;
 
     const float m_clearColor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
@@ -149,7 +150,7 @@ private:
     std::chrono::time_point<std::chrono::high_resolution_clock> last_time;
     std::chrono::time_point<std::chrono::high_resolution_clock> last_fps_time;
 
-    uint32_t frame_counter;
+    uint32_t frame_counter = 0;
 
     void LoadPipeline();
     void LoadAssets();

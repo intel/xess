@@ -62,7 +62,7 @@ private:
 
     virtual void InitDx();
     virtual void InitXess();
-    virtual void CreateFSQPipeline();
+    virtual void CreateFSQPipelines();
 
     struct Vertex
     {
@@ -125,6 +125,7 @@ private:
     DXGI_FORMAT m_dsvTypedFormat = DXGI_FORMAT_UNKNOWN;
 
     D3D11PipelineState m_pipelineStateFSQPass_d3d11;
+    D3D11PipelineState m_pipelineStateFSQVelocityPass_d3d11;
 
     const float m_clearColor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 
@@ -140,6 +141,15 @@ private:
     UINT64 m_fenceValues[FrameCount];
 
     bool m_pause = false;
+
+    std::wstring m_gpuName;
+
+    enum class OutputIndex
+    {
+        kColor,
+        kVelocity,
+        kXeSSOutput,
+    } m_outputIndex = OutputIndex::kXeSSOutput;
 
     // Jitter
     std::vector<std::pair<float, float>> m_haltonPointSet;

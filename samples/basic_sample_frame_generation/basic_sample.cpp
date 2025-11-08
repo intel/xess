@@ -90,7 +90,7 @@ inline void ThrowIfFailed(xefg_swapchain_result_t result, const std::string &err
 
 inline void ThrowIfFailed(xell_result_t result, const std::string& err)
 {
-    if (result != XEFG_SWAPCHAIN_RESULT_SUCCESS)
+    if (result != XELL_RESULT_SUCCESS)
     {
         throw std::runtime_error(err + ". Error code: " + XellResultToString(result) + ".");
     }
@@ -981,6 +981,15 @@ void BasicSample::OnUpdate()
 
         LoadPipeline();
         PopulateDescriptorHeap();
+
+        if (!m_fullScreen && m_enableXeFG)
+        {
+            // If the application enters fullscreen exclusive mode while XeSS-FG is enabled,
+            // frame generation will be disabled.
+            // After leaving fullscreen exclusive mode, xefgSwapChainSetEnabled
+            // must be called again to enable frame generation.
+            xefgSwapChainSetEnabled(m_xefgSwapChain, m_enableXeFG);
+        }
     }
     if (m_switchResolution)
     {
@@ -1076,16 +1085,21 @@ void BasicSample::OnRender()
     m_commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 
     // Present rendered frame
-    PopulateRenderTargetCommandList(RT_Color);
+    PopulateRenderTargetCommandList();
 
     ID3D12CommandList* ppCommandLists2[] = { m_commandList.Get() };
-    m_commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists2);
+    m_commandQueue->ExecuteCommandLists(_countof(ppCommandLists2), ppCommandLists2);
 
 #ifdef ENABLE_XEFG_SWAPCHAIN
     lastPresentStatus = {};
     if(m_enableXeFG)
     {
-        // Tag resources for XeFG
+        ThrowIfFailed(m_commandList->Reset(m_commandAllocator.Get(), nullptr));
+
+        // Tag resources for XeSS-FG.
+        // All of these resources are valid until `Present`, but we are going to tag
+        // some of them as "valid only now" for illustration purposes.
+
         // color
         {
             xefg_swapchain_d3d12_resource_data_t hudlessColor = {};
@@ -1095,27 +1109,27 @@ void BasicSample::OnRender()
             hudlessColor.resourceSize = { m_width, m_height };
             hudlessColor.pResource = m_renderTargets[m_frameIndex].Get();
             hudlessColor.incomingState = D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
-            xefgSwapChainD3D12TagFrameResource(m_xefgSwapChain, m_commandList.Get(), m_frameCounter, &hudlessColor);
+            xefgSwapChainD3D12TagFrameResource(m_xefgSwapChain, nullptr, m_frameCounter, &hudlessColor);
         }
 
         // motion vectors
         {
             xefg_swapchain_d3d12_resource_data_t velocity = {};
             velocity.type = XEFG_SWAPCHAIN_RES_MOTION_VECTOR;
-            velocity.validity = XEFG_SWAPCHAIN_RV_UNTIL_NEXT_PRESENT;
+            velocity.validity = XEFG_SWAPCHAIN_RV_ONLY_NOW;
             velocity.pResource = m_renderTargetsVelocity[m_frameIndex].Get();
             D3D12_RESOURCE_DESC desc = m_renderTargetsVelocity[m_frameIndex]->GetDesc();
             velocity.resourceSize = { (std::uint32_t)desc.Width, (std::uint32_t)desc.Height };
             velocity.resourceBase = { 0, 0 };
             velocity.incomingState = D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
             xefgSwapChainD3D12TagFrameResource(m_xefgSwapChain, m_commandList.Get(), m_frameCounter, &velocity);
-}
+        }
 
         // depth
         {
             xefg_swapchain_d3d12_resource_data_t depth = {};
             depth.type = XEFG_SWAPCHAIN_RES_DEPTH;
-            depth.validity = XEFG_SWAPCHAIN_RV_UNTIL_NEXT_PRESENT;
+            depth.validity = XEFG_SWAPCHAIN_RV_ONLY_NOW;
             depth.pResource = m_depthTargets[m_frameIndex].Get();
             D3D12_RESOURCE_DESC desc = m_depthTargets[m_frameIndex]->GetDesc();
             depth.resourceSize = { (std::uint32_t)desc.Width, (std::uint32_t)desc.Height };
@@ -1129,8 +1143,8 @@ void BasicSample::OnRender()
             xefg_swapchain_frame_constant_data_t constData = {};
 
             XMFLOAT4X4 float4x4;
-            float fx = m_constantBufferData.offset.x;// +m_constantBufferData.offset.z / m_constantBufferData.resolution.x;
-            float fy = m_constantBufferData.offset.y;// +m_constantBufferData.offset.w / m_constantBufferData.resolution.y;
+            float fx = m_constantBufferData.offset.x;
+            float fy = m_constantBufferData.offset.y;
             XMStoreFloat4x4(&float4x4, DirectX::XMMatrixTranslation(fx, fy, 0));
             memcpy( constData.viewMatrix, float4x4.m, sizeof(float) * 16 );
 
@@ -1143,6 +1157,14 @@ void BasicSample::OnRender()
 
             ThrowIfFailed(xefgSwapChainTagFrameConstants(m_xefgSwapChain, m_frameCounter, &constData),
                           "Failed to tag frame constants");
+        }
+
+        ThrowIfFailed(m_commandList->Close());
+
+        // Command lists used for resource tagging must be submitted before the corresponding `Present` call.
+        {
+            ID3D12CommandList* command_lists[] = { m_commandList.Get() };
+            m_commandQueue->ExecuteCommandLists(_countof(command_lists), command_lists);
         }
 
         if (m_enableExternalDH)
@@ -1313,7 +1335,7 @@ void BasicSample::PopulateCommandList()
     ThrowIfFailed(m_commandList->Close());
 }
 
-void BasicSample::PopulateRenderTargetCommandList(uint32_t srcIndex)
+void BasicSample::PopulateRenderTargetCommandList()
 {
     ThrowIfFailed(m_commandList->Reset(m_commandAllocator.Get(), m_pipelineStateColorPass.Get()));
 
@@ -1328,7 +1350,7 @@ void BasicSample::PopulateRenderTargetCommandList(uint32_t srcIndex)
         // Use selected output 
         CD3DX12_GPU_DESCRIPTOR_HANDLE gpuDescHandle(
             m_appDescriptorHeap->GetGPUDescriptorHandleForHeapStart(),
-            (INT)((DescriptorsPerFrame * m_frameIndex) + srcIndex), m_uavDescriptorSize);
+            (INT)((DescriptorsPerFrame * m_frameIndex) + RT_Color), m_uavDescriptorSize);
         m_commandList->SetGraphicsRootDescriptorTable(0, gpuDescHandle);
         m_commandList->RSSetViewports(1, &m_viewport);
         m_commandList->RSSetScissorRects(1, &m_scissorRect);
@@ -1337,7 +1359,9 @@ void BasicSample::PopulateRenderTargetCommandList(uint32_t srcIndex)
             // Indicate that the back buffer will be used as a render target.
             std::vector<CD3DX12_RESOURCE_BARRIER> transitions = {
                 CD3DX12_RESOURCE_BARRIER::Transition(m_presentRenderTargets[m_backBufferIndex].Get(),
-                    D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET)
+                    D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET),
+                CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex].Get(),
+                    D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE),
             };
             // Transition RT to present
             m_commandList->ResourceBarrier((UINT)transitions.size(), transitions.data());
@@ -1356,7 +1380,9 @@ void BasicSample::PopulateRenderTargetCommandList(uint32_t srcIndex)
         {
             std::vector<CD3DX12_RESOURCE_BARRIER> transitions = {
                 CD3DX12_RESOURCE_BARRIER::Transition(m_presentRenderTargets[m_backBufferIndex].Get(),
-                    D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT)
+                    D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT),
+                CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex].Get(),
+                    D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
             };
             // Transition RT to present
             m_commandList->ResourceBarrier((UINT)transitions.size(), transitions.data());

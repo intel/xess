@@ -95,6 +95,9 @@ public:
 	// Pipeline for full screen quad
 	VkPipeline fsqPipeline = VK_NULL_HANDLE;
 
+	// Pipeline for full screen quad with velocity scaling
+	VkPipeline fsqVelocityPipeline = VK_NULL_HANDLE;
+
 	// The descriptor set layout describes the shader binding layout (without actually referencing descriptor)
 	// Like the pipeline layout it's pretty much a blueprint and can be used with different descriptor sets as long as their layout matches
 	VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
@@ -109,13 +112,14 @@ public:
 	// Synchronization is an important concept of Vulkan that OpenGL mostly hid away. Getting this right is crucial to using Vulkan.
 
 	// Semaphores are used to coordinate operations within the graphics queue and ensure correct command ordering
-	std::array<VkSemaphore, MAX_CONCURRENT_FRAMES> presentCompleteSemaphores{ VK_NULL_HANDLE };
-	std::array<VkSemaphore, MAX_CONCURRENT_FRAMES> renderCompleteSemaphores{ VK_NULL_HANDLE };
+	std::vector<VkSemaphore> presentCompleteSemaphores;
+	std::vector<VkSemaphore> renderCompleteSemaphores;
 
 	VkCommandPool commandPool = VK_NULL_HANDLE;
 	std::array<VkCommandBuffer, MAX_CONCURRENT_FRAMES> commandBuffers{ VK_NULL_HANDLE };
 	std::array<VkFence, MAX_CONCURRENT_FRAMES> waitFences{ VK_NULL_HANDLE };
 
+	uint32_t currentPresentSemaphore = 0;
 	uint32_t currentFrame = 0;
 
 	xess_2d_t xessInputResolution = { 0u, 0u };
@@ -188,7 +192,14 @@ public:
 	uint32_t velocityHeight = 0;
 
 	FrameBufferAttachment xessOutput;
-	
+
+	enum class OutputIndex
+	{
+		kColor,
+		kVelocity,
+		kXeSSOutput,
+	} outputIndex = OutputIndex::kXeSSOutput;
+
 	VulkanExample() : VulkanExampleBase(ENABLE_VALIDATION)
 	{
 		title = "XeSS-SR VK basic sample";
@@ -221,6 +232,7 @@ public:
 		vkDestroyPipeline(device, pipeline, nullptr);
 		vkDestroyPipeline(device, velocityPipeline, nullptr);
 		vkDestroyPipeline(device, fsqPipeline, nullptr);
+		vkDestroyPipeline(device, fsqVelocityPipeline, nullptr);
 
 		offscreenFrameBuffers.render.destroy(device);
 		offscreenFrameBuffers.render.color.destroy(device);
@@ -248,20 +260,38 @@ public:
 		for (uint32_t i = 0; i < MAX_CONCURRENT_FRAMES; i++)
 		{
 			vkDestroyFence(device, waitFences[i], nullptr);
-			vkDestroySemaphore(device, presentCompleteSemaphores[i], nullptr);
-			vkDestroySemaphore(device, renderCompleteSemaphores[i], nullptr);
 			vkDestroyBuffer(device, uniformBuffers[i].buffer, nullptr);
 			vkFreeMemory(device, uniformBuffers[i].memory, nullptr);
+		}
+		for (size_t i = 0; i < presentCompleteSemaphores.size(); i++)
+		{
+			vkDestroySemaphore(device, renderCompleteSemaphores[i], nullptr);
+			vkDestroySemaphore(device, presentCompleteSemaphores[i], nullptr);
 		}
 	}
 
 	void keyReleased(uint32_t key) // override
 	{
+		auto oldOutputIndex = outputIndex;
 		switch (key)
 		{
+			case KEY_1:
+				outputIndex = OutputIndex::kColor;
+				break;
+			case KEY_2:
+				outputIndex = OutputIndex::kVelocity;
+				break;
+			case KEY_3:
+				outputIndex = OutputIndex::kXeSSOutput;
+				break;
 			case VK_SPACE:
 				m_pause = !m_pause;
 				break;
+		}
+		if (oldOutputIndex != outputIndex)
+		{
+			vkQueueWaitIdle(queue);
+			updateFsqDescriptorSet();
 		}
 	}
 
@@ -470,16 +500,8 @@ public:
 	// Create the Vulkan synchronization primitives used in this example
 	void createSynchronizationPrimitives()
 	{
-		for (uint32_t i = 0; i < MAX_CONCURRENT_FRAMES; i++) {
-			
-			// Semaphores (Used for correct command ordering)
-			VkSemaphoreCreateInfo semaphoreCI{};
-			semaphoreCI.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-			// Semaphore used to ensure that image presentation is complete before starting to submit again
-			VK_CHECK_RESULT(vkCreateSemaphore(device, &semaphoreCI, nullptr, &presentCompleteSemaphores[i]));
-			// Semaphore used to ensure that all commands submitted have been finished before submitting the image to the queue
-			VK_CHECK_RESULT(vkCreateSemaphore(device, &semaphoreCI, nullptr, &renderCompleteSemaphores[i]));
-
+		for (uint32_t i = 0; i < MAX_CONCURRENT_FRAMES; i++)
+		{
 			// Fences (Used to check draw command buffer completion)
 			VkFenceCreateInfo fenceCI{};
 			fenceCI.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
@@ -487,6 +509,17 @@ public:
 			fenceCI.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 			VK_CHECK_RESULT(vkCreateFence(device, &fenceCI, nullptr, &waitFences[i]));
 
+		}
+		presentCompleteSemaphores.resize(swapChain.imageCount);
+		renderCompleteSemaphores.resize(swapChain.imageCount);
+		for (size_t i = 0; i < presentCompleteSemaphores.size(); ++i)
+		{
+			VkSemaphoreCreateInfo semaphoreCI{};
+			semaphoreCI.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+			// Semaphore used to ensure that image presentation is complete before starting to submit again
+			VK_CHECK_RESULT(vkCreateSemaphore(device, &semaphoreCI, nullptr, &presentCompleteSemaphores[i]));
+			// Semaphore used to ensure that all commands submitted have been finished before submitting the image to the queue
+			VK_CHECK_RESULT(vkCreateSemaphore(device, &semaphoreCI, nullptr, &renderCompleteSemaphores[i]));
 		}
 	}
 
@@ -701,7 +734,7 @@ public:
 	}
 
 	// Shaders access data using descriptor sets that "point" at our uniform buffers
-	// The descriptor sets make use of the descriptor set layouts created above 
+	// The descriptor sets make use of the descriptor set layouts created above
 	void createDescriptorSets()
 	{
 		// Allocate one descriptor set per frame from the global descriptor pool
@@ -717,7 +750,7 @@ public:
 			// For every binding point used in a shader there needs to be one
 			// descriptor set matching that binding point
 			VkWriteDescriptorSet writeDescriptorSet{};
-			
+
 			// The buffer's information is passed using a descriptor info structure
 			VkDescriptorBufferInfo bufferInfo{};
 			bufferInfo.buffer = uniformBuffers[i].buffer;
@@ -742,26 +775,46 @@ public:
 			allocInfo.pSetLayouts = &fsqDescriptorSetLayout;
 			VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &fsqDescriptorSet));
 
-			// Update the descriptor set determining the shader binding points
+			updateFsqDescriptorSet();
+		}
+	}
+
+	void updateFsqDescriptorSet()
+	{
+		// Update the descriptor set determining the shader binding points
 			// For every binding point used in a shader there needs to be one
 			// descriptor set matching that binding point
-			VkWriteDescriptorSet writeDescriptorSet{};
+		VkWriteDescriptorSet writeDescriptorSet{};
 
-			// The image + sampler  information is passed using a descriptor info structure
-			VkDescriptorImageInfo imageInfo{};
-			imageInfo.sampler = fsqSampler;
+		// The image + sampler  information is passed using a descriptor info structure
+		VkDescriptorImageInfo imageInfo{};
+		imageInfo.sampler = fsqSampler;
+		switch (outputIndex)
+		{
+		case OutputIndex::kColor:
+			imageInfo.imageView = offscreenFrameBuffers.render.color.view;
+			break;
+		case OutputIndex::kVelocity:
+			imageInfo.imageView = offscreenFrameBuffers.velocity.velocity.view;
+			break;
+		case OutputIndex::kXeSSOutput:
 			imageInfo.imageView = xessOutput.view;
-			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-			// Binding 0 : Uniform buffer
-			writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			writeDescriptorSet.dstSet = fsqDescriptorSet;
-			writeDescriptorSet.descriptorCount = 1;
-			writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			writeDescriptorSet.pImageInfo = &imageInfo;
-			writeDescriptorSet.dstBinding = 0;
-			vkUpdateDescriptorSets(device, 1, &writeDescriptorSet, 0, nullptr);
+			break;
+		default:
+			assert(!"Unrecognized outputIndex value");
+			imageInfo.imageView = xessOutput.view;
 		}
+
+		imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+		// Binding 0 : Uniform buffer
+		writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		writeDescriptorSet.dstSet = fsqDescriptorSet;
+		writeDescriptorSet.descriptorCount = 1;
+		writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		writeDescriptorSet.pImageInfo = &imageInfo;
+		writeDescriptorSet.dstBinding = 0;
+		vkUpdateDescriptorSets(device, 1, &writeDescriptorSet, 0, nullptr);
 	}
 
 	// Create a frame buffer for each swap chain image
@@ -914,7 +967,7 @@ public:
 
 	void prepareOffscreenFramebuffers()
 	{
-		
+
 #if defined(USE_LOWRES_MV)
 		velocityWidth = xessInputResolution.x;
 		velocityHeight = xessInputResolution.y;
@@ -979,13 +1032,8 @@ public:
 			// Use subpass dependencies for attachment layout transitions
 			std::array<VkSubpassDependency, 2> dependencies;
 
-#if defined(USE_LOWRES_MV)
 			VkPipelineStageFlags attachmentWriteStages = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
 			VkAccessFlags attachmentAccess = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-#else
-			VkPipelineStageFlags attachmentWriteStages = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-			VkAccessFlags attachmentAccess = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-#endif
 
 			dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
 			dependencies[0].dstSubpass = 0;
@@ -1273,7 +1321,11 @@ public:
 		// Create rendering pipeline using the specified states
 		VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCI, nullptr, &fsqPipeline));
 
-		// Shader modules are no longer needed once the graphics pipeline has been created
+		vkDestroyShaderModule(device, shaderStages[1].module, nullptr);
+		shaderStages[1].module = loadSPIRVShader(getShadersPath() + "triangle/quad-velocity.frag.spv");
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCI, nullptr, &fsqVelocityPipeline));
+
+		// Shader modules are no longer needed once the graphics pipelines have been created
 		vkDestroyShaderModule(device, shaderStages[0].module, nullptr);
 		vkDestroyShaderModule(device, shaderStages[1].module, nullptr);
 	}
@@ -1366,7 +1418,7 @@ public:
 		// Get the next swap chain image from the implementation
 		// Note that the implementation is free to return the images in any order, so we must use the acquire function and can't just cycle through the images
 		uint32_t imageIndex;
-		VkResult result = vkAcquireNextImageKHR(device, swapChain.swapChain, UINT64_MAX, presentCompleteSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+		VkResult result = vkAcquireNextImageKHR(device, swapChain.swapChain, UINT64_MAX, presentCompleteSemaphores[currentPresentSemaphore], VK_NULL_HANDLE, &imageIndex);
 		if (result == VK_ERROR_OUT_OF_DATE_KHR) {
 			windowResize();
 			return;
@@ -1496,11 +1548,11 @@ public:
 		renderPassBeginInfo.renderArea.extent.height = velocityHeight;
 		renderPassBeginInfo.clearValueCount = 1;
 		vkCmdBeginRenderPass(commandBuffers[currentBuffer], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-	
+
 		// Bind the rendering pipeline
 		// The pipeline (state object) contains all states of the rendering pipeline, binding it will set all the states specified at pipeline creation time
 		vkCmdBindPipeline(commandBuffers[currentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, velocityPipeline);
-		
+
 		// Draw triangle
 		vkCmdDraw(commandBuffers[currentBuffer], vertices.count, 1, 0, 0);
 		vkCmdEndRenderPass(commandBuffers[currentBuffer]);
@@ -1580,7 +1632,14 @@ public:
 
 		// Bind the rendering pipeline
 		// The pipeline (state object) contains all states of the rendering pipeline, binding it will set all the states specified at pipeline creation time
-		vkCmdBindPipeline(commandBuffers[currentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, fsqPipeline);
+		if (outputIndex == OutputIndex::kVelocity)
+		{
+			vkCmdBindPipeline(commandBuffers[currentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, fsqVelocityPipeline);
+		}
+		else
+		{
+			vkCmdBindPipeline(commandBuffers[currentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, fsqPipeline);
+		}
 
 		vkCmdBindDescriptorSets(commandBuffers[currentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, fsqPipelineLayout, 0, 1, &fsqDescriptorSet, 0, nullptr);
 
@@ -1607,12 +1666,14 @@ public:
 		submitInfo_.commandBufferCount = 1;                           // One command buffer
 
 		// Semaphore to wait upon before the submitted command buffer starts executing
-		submitInfo_.pWaitSemaphores = &presentCompleteSemaphores[currentFrame];
+		submitInfo_.pWaitSemaphores = &presentCompleteSemaphores[currentPresentSemaphore];
 		// Semaphore to be signaled when command buffers have completed
-		submitInfo_.pSignalSemaphores = &renderCompleteSemaphores[currentFrame];
+		submitInfo_.pSignalSemaphores = &renderCompleteSemaphores[currentPresentSemaphore];
 
 		// Submit to the graphics queue passing a wait fence
 		VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo_, waitFences[currentFrame]));
+
+		currentBuffer = (currentBuffer + 1) % MAX_CONCURRENT_FRAMES;
 
 		// Present the current frame buffer to the swap chain
 		// Pass the semaphore signaled by the command buffer submission from the submit info as the wait semaphore for swap chain presentation
@@ -1621,7 +1682,7 @@ public:
 		VkPresentInfoKHR presentInfo{};
 		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 		presentInfo.waitSemaphoreCount = 1;
-		presentInfo.pWaitSemaphores = &renderCompleteSemaphores[currentFrame];
+		presentInfo.pWaitSemaphores = &renderCompleteSemaphores[currentPresentSemaphore];
 		presentInfo.swapchainCount = 1;
 		presentInfo.pSwapchains = &swapChain.swapChain;
 		presentInfo.pImageIndices = &imageIndex;
@@ -1633,7 +1694,8 @@ public:
 		else if (result != VK_SUCCESS) {
 			throw "Could not present the image to the swap chain!";
 		}
-
+		currentFrame = (currentFrame + 1) % MAX_CONCURRENT_FRAMES;
+		currentPresentSemaphore = (currentPresentSemaphore + 1) % presentCompleteSemaphores.size();
 	}
 };
 
@@ -1653,6 +1715,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 }
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int)
 {
+	if (!SetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_SYSTEM32))
+	{
+		MessageBoxA(NULL, "SetDefaultDllDirectories failed", "Error", MB_OK | MB_TOPMOST | MB_ICONERROR);
+		return 1;
+	}
 	try
 	{
 		for (size_t i = 0; i < __argc; i++)
@@ -1669,7 +1736,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int)
 	}
 	catch (const std::exception& err)
 	{
-		MessageBoxA(NULL, (std::string("XeSS-SR sample error: ") + err.what()).c_str(), "Error", MB_OK | MB_TOPMOST | MB_ICONINFORMATION);
+		MessageBoxA(NULL, (std::string("XeSS-SR sample error: ") + err.what()).c_str(), "Error", MB_OK | MB_TOPMOST | MB_ICONERROR);
 		return -1;
 	}
 }

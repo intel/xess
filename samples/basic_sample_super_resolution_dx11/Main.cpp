@@ -17,6 +17,11 @@
 _Use_decl_annotations_
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow)
 {
+    if (!SetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_SYSTEM32))
+    {
+        MessageBoxA(NULL, "SetDefaultDllDirectories failed", "Error", MB_OK | MB_TOPMOST | MB_ICONERROR);
+        return 1;
+    }
     SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE);
     try
     {
@@ -25,7 +30,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow)
     }
     catch(std::runtime_error &err)
     {
-        MessageBoxA(NULL, (std::string("XeSS-SR sample error: ") + err.what()).c_str(), "Error", MB_OK | MB_TOPMOST | MB_ICONINFORMATION);
+        MessageBoxA(NULL, (std::string("XeSS-SR sample error: ") + err.what()).c_str(), "Error", MB_OK | MB_TOPMOST | MB_ICONERROR);
         return 1;
     }
 }

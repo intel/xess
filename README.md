@@ -7,8 +7,8 @@ Visit [XeSS 2 Developer Page](https://www.intel.com/content/www/us/en/developer/
 ## What's Inside?
 
 - **XeSS Super Resolution (XeSS-SR)** - boosts frame rates on **all GPUs** with SM 6.4 (DP4a) support.
-- **XeSS Frame Generation (XeSS-FG)** - achieves fluid motion and higher displayed frame rates, available on **all GPUs** with SM 6.4[^1] support.
-- **Xe Low Latency (XeLL)** - minimizes input lag for a more responsive gaming experience, available on discrete and integrated Intel® Arc™ GPUs and all GPUs when combined with XeSS-FG.
+- **XeSS Frame Generation (XeSS-FG)** - achieves fluid motion and higher displayed frame rates; available on discrete and integrated Intel® Arc™ GPUs, as well as non-Intel GPUs with SM 6.4 support.
+- **Xe Low Latency (XeLL)** - minimizes input lag for a more responsive gaming experience; available on discrete and integrated Intel® Arc™ GPUs, as well as non-Intel GPUs when combined with XeSS-FG.
 
 The SDK provides everything you need to integrate XeSS 2 into your application. While XeSS-FG requires XeLL integration, both XeSS-SR and XeLL can be enabled independently, giving you flexibility.
 
@@ -28,5 +28,3 @@ Explore our [samples](./samples) to get started quickly and check out the develo
 - [XeLL Developer Guide](./doc/xell_developer_guide_english.md)
 
 Leverage [XeSS Inspector tool](https://github.com/GameTechDev/XeSSInspector) designed for verifying, debugging, and tuning XeSS 2 SDK integrations. XeSS Inspector allows you to inspect and visualize data coming from the game, markers/events, API calls, and create frame dumps.
-
-[^1]: On Intel® Arc™ GPUs XeSS-FG requires Intel® Xe Matrix Extensions (XMX) support.

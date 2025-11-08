@@ -13,6 +13,7 @@
 
 #include "basic_sample_d3d11.h"
 
+#include <sstream>
 #include <iostream>
 #include <filesystem>
 #include <locale>
@@ -88,7 +89,7 @@ void BasicSampleD3D11::OnInit()
     InitXess();
     LoadPipeline();
     LoadAssets();
-    CreateFSQPipeline();
+    CreateFSQPipelines();
 }
 
 void BasicSampleD3D11::InitDx()
@@ -96,7 +97,7 @@ void BasicSampleD3D11::InitDx()
     UINT createDeviceFlags = 0;
 
 #if defined(_DEBUG)
-    // Enable the debug layer 
+    // Enable the debug layer
     createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
@@ -123,6 +124,9 @@ void BasicSampleD3D11::InitDx()
     };
     UINT numFeatureLevels = ARRAYSIZE( featureLevels );
     ComPtr<IDXGISwapChain> swapChain;
+
+    std::wstring selectedAdapterShortDesc, selectedAdapterFullDesc;
+
     if (m_useWarpDevice)
     {
         auto driverType = D3D_DRIVER_TYPE_WARP;
@@ -150,6 +154,27 @@ void BasicSampleD3D11::InitDx()
 
     ThrowIfFailed(swapChain.As(&m_swapChain));
     m_frameIndex = m_swapChain->GetCurrentBackBufferIndex();
+
+    ComPtr<IDXGIDevice> dxgiDevice;
+    ThrowIfFailed(m_device->QueryInterface(__uuidof(IDXGIDevice), reinterpret_cast<void**>(dxgiDevice.GetAddressOf())), "Cannot obtain IDXGIDevice");
+    ComPtr<IDXGIAdapter> dxgiAdapter;
+    ThrowIfFailed(dxgiDevice->GetAdapter(&dxgiAdapter), "Cannot obtain IDXGIAdapter");
+
+    DXGI_ADAPTER_DESC desc;
+    ThrowIfFailed(dxgiAdapter->GetDesc(&desc), "Cannot obtain adapter description");
+
+    std::wostringstream sstream;
+    sstream << std::hex << std::showbase
+        << "VendorId=" << desc.VendorId
+        << " DeviceId=" << desc.DeviceId
+        << " AdapterLuid.LowPart=" << desc.AdapterLuid.LowPart
+        << " AdapterLuid.HighPart=" << desc.AdapterLuid.HighPart
+        << std::dec << std::noshowbase
+        << " Revision=" << desc.Revision << " SubSysId=" << desc.SubSysId
+        << " Desc=" << desc.Description << std::endl;
+
+    m_gpuName = desc.Description;
+    OutputDebugString((L"Selected adapter: " + sstream.str()).c_str());
 }
 
 void BasicSampleD3D11::InitXess()
@@ -243,7 +268,7 @@ void BasicSampleD3D11::LoadPipeline()
     for( UINT n = 0; n < FrameCount; n++ )
     {
         DXGI_FORMAT fmt = DXGI_FORMAT_R16G16B16A16_FLOAT;
-       
+
         D3D11_TEXTURE2D_DESC desc;
         ZeroMemory( &desc, sizeof( desc ) );
 
@@ -258,7 +283,7 @@ void BasicSampleD3D11::LoadPipeline()
             desc.Usage = D3D11_USAGE_DEFAULT;
             desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
 
-            hr = m_device->CreateTexture2D( &desc, NULL, 
+            hr = m_device->CreateTexture2D( &desc, NULL,
                 reinterpret_cast<ID3D11Texture2D**>( m_renderTargets[ n ].resource.GetAddressOf() ) );
             ThrowIfFailed( hr );
         }
@@ -296,7 +321,8 @@ void BasicSampleD3D11::LoadPipeline()
                 reinterpret_cast<ID3D11Texture2D**>( m_renderTargetsVelocity[ n ].resource.GetAddressOf() ) ) );
         }
 
-        // Create RTVs
+        // Create RTV and SRV
+
         // RT_Color
         {
             D3D11_RENDER_TARGET_VIEW_DESC rtv_desc;
@@ -308,6 +334,18 @@ void BasicSampleD3D11::LoadPipeline()
                 reinterpret_cast<ID3D11RenderTargetView**>( m_renderTargets[ n ].view[ VI_RTV ].GetAddressOf() ) ));
         }
 
+        // SRV_Color (only for displaying instead of XeSS SR output, see m_outputIndex)
+        {
+            auto srv_desc = D3D11_SHADER_RESOURCE_VIEW_DESC{};
+            srv_desc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
+            srv_desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+            srv_desc.Texture2D.MostDetailedMip = 0;
+            srv_desc.Texture2D.MipLevels = 1;
+            ThrowIfFailed(m_device->CreateShaderResourceView(m_renderTargets[n].resource.Get(), &srv_desc,
+                reinterpret_cast<ID3D11ShaderResourceView**>(m_renderTargets[n].view[VI_SRV].GetAddressOf())));
+            ThrowIfFailed(hr);
+        }
+
         // RT_Velocity
         {
             D3D11_RENDER_TARGET_VIEW_DESC rtv_desc;
@@ -317,6 +355,17 @@ void BasicSampleD3D11::LoadPipeline()
 
             ThrowIfFailed( m_device->CreateRenderTargetView( m_renderTargetsVelocity[ n ].resource.Get(), &rtv_desc,
                 reinterpret_cast<ID3D11RenderTargetView**>( m_renderTargetsVelocity[ n ].view[ VI_RTV ].GetAddressOf() ) ) );
+        }
+
+        // SRV_Velocity (only for displaying instead of XeSS SR output, see m_outputIndex)
+        {
+            auto srv_desc = D3D11_SHADER_RESOURCE_VIEW_DESC{};
+            srv_desc.Format = DXGI_FORMAT_R16G16_FLOAT;
+            srv_desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+            srv_desc.Texture2D.MostDetailedMip = 0;
+            srv_desc.Texture2D.MipLevels = 1;
+            ThrowIfFailed(m_device->CreateShaderResourceView(m_renderTargetsVelocity[n].resource.Get(), &srv_desc,
+                reinterpret_cast<ID3D11ShaderResourceView**>(m_renderTargetsVelocity[n].view[VI_SRV].GetAddressOf())));
         }
 
         // RT_Depth
@@ -386,11 +435,11 @@ void BasicSampleD3D11::LoadAssets()
 
         //State creation for d3d11 pipeline
 
-        auto hr = m_device->CreateVertexShader( vertexShader->GetBufferPointer(), 
+        auto hr = m_device->CreateVertexShader( vertexShader->GetBufferPointer(),
             vertexShader->GetBufferSize(), NULL, m_pipelineStateColorPass_d3d11.vertexShader.GetAddressOf() );
         ThrowIfFailed( hr );
 
-        hr = m_device->CreatePixelShader( pixelShader->GetBufferPointer(), 
+        hr = m_device->CreatePixelShader( pixelShader->GetBufferPointer(),
             pixelShader->GetBufferSize(), NULL, m_pipelineStateColorPass_d3d11.pixelShader.GetAddressOf() );
         ThrowIfFailed(hr);
 
@@ -398,7 +447,7 @@ void BasicSampleD3D11::LoadAssets()
             {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
             {"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0}};
 
-        hr = m_device->CreateInputLayout( inputElementDescsD3D11, ARRAYSIZE( inputElementDescsD3D11 ), 
+        hr = m_device->CreateInputLayout( inputElementDescsD3D11, ARRAYSIZE( inputElementDescsD3D11 ),
             vertexShader->GetBufferPointer(), vertexShader->GetBufferSize(),
             m_pipelineStateColorPass_d3d11.inputLayout.GetAddressOf() );
         ThrowIfFailed( hr );
@@ -522,13 +571,14 @@ void BasicSampleD3D11::LoadAssets()
     }
 }
 
-void BasicSampleD3D11::CreateFSQPipeline()
+void BasicSampleD3D11::CreateFSQPipelines()
 {
 
     // Create the pipeline state, which includes compiling and loading shaders.
     {
         ComPtr<ID3DBlob> vertexShader;
-        ComPtr<ID3DBlob> pixelShader;
+        ComPtr<ID3DBlob> pixelShaderCopy;
+        ComPtr<ID3DBlob> pixelShaderScaleVelocity;
 
 #if defined(_DEBUG)
         // Enable better shader debugging with the graphics debugging tools.
@@ -538,15 +588,16 @@ void BasicSampleD3D11::CreateFSQPipeline()
 #endif
 
         CompileFromFile(L"basic_sample_shaders/hlsl/shader_xess_sr_d3d11.hlsl", "VSMainFSQ", "vs_5_0", compileFlags, vertexShader);
-        CompileFromFile(L"basic_sample_shaders/hlsl/shader_xess_sr_d3d11.hlsl", "PSMainFSQ", "ps_5_0", compileFlags, pixelShader);
+        CompileFromFile(L"basic_sample_shaders/hlsl/shader_xess_sr_d3d11.hlsl", "PSMainCopyFSQ", "ps_5_0", compileFlags, pixelShaderCopy);
+        CompileFromFile(L"basic_sample_shaders/hlsl/shader_xess_sr_d3d11.hlsl", "PSMainVelocityFSQ", "ps_5_0", compileFlags, pixelShaderScaleVelocity);
 
         //State creation for d3d11 pipeline
         auto hr = m_device->CreateVertexShader( vertexShader->GetBufferPointer(),
             vertexShader->GetBufferSize(), NULL, m_pipelineStateFSQPass_d3d11.vertexShader.GetAddressOf() );
         ThrowIfFailed( hr );
 
-        hr = m_device->CreatePixelShader( pixelShader->GetBufferPointer(),
-            pixelShader->GetBufferSize(), NULL, m_pipelineStateFSQPass_d3d11.pixelShader.GetAddressOf() );
+        hr = m_device->CreatePixelShader( pixelShaderCopy->GetBufferPointer(),
+            pixelShaderCopy->GetBufferSize(), NULL, m_pipelineStateFSQPass_d3d11.pixelShader.GetAddressOf() );
         ThrowIfFailed( hr );
 
         CD3D11_DEFAULT defaultDesc;
@@ -580,6 +631,11 @@ void BasicSampleD3D11::CreateFSQPipeline()
         depthStencilDesc.StencilEnable = FALSE;
         hr = m_device->CreateDepthStencilState( &depthStencilDesc, m_pipelineStateFSQPass_d3d11.depthStencilState.GetAddressOf() );
         ThrowIfFailed( hr );
+
+        m_pipelineStateFSQVelocityPass_d3d11 = m_pipelineStateFSQPass_d3d11;
+        hr = m_device->CreatePixelShader(pixelShaderScaleVelocity->GetBufferPointer(),
+            pixelShaderScaleVelocity->GetBufferSize(), NULL, m_pipelineStateFSQVelocityPass_d3d11.pixelShader.ReleaseAndGetAddressOf());
+        ThrowIfFailed(hr);
     }
 }
 
@@ -636,7 +692,7 @@ void BasicSampleD3D11::OnUpdate()
     float fps_timer = (float)(std::chrono::duration<double, std::milli>(current_time - last_fps_time).count());
     if (fps_timer > 1000.0f)
     {
-        SetCustomWindowText((std::to_wstring(frame_counter) + L" fps").c_str());
+        SetCustomWindowText((m_gpuName + L" - " + std::to_wstring(frame_counter) + L" fps").c_str());
         frame_counter = 0;
         last_fps_time = current_time;
     }
@@ -670,6 +726,15 @@ void BasicSampleD3D11::OnKeyUp(UINT8 key)
 {
     switch (key)
     {
+    case 0x31:  // Key 1
+        m_outputIndex = OutputIndex::kColor;
+        break;
+    case 0x32:  // Key 2
+        m_outputIndex = OutputIndex::kVelocity;
+        break;
+    case 0x33:  // Key 3
+        m_outputIndex = OutputIndex::kXeSSOutput;
+        break;
     case VK_SPACE:
         m_pause = !m_pause;
         break;
@@ -702,7 +767,7 @@ void BasicSampleD3D11::ExecuteCommandList()
         m_immediateContext->ClearDepthStencilView(
             dsvHandle, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 0.0f, 0 );
         m_immediateContext->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
-        
+
         auto vbHandle = m_vertexBuffer_d3d11.Get();
         UINT stride = sizeof( Vertex );
         UINT offset = 0;
@@ -764,9 +829,16 @@ void BasicSampleD3D11::ExecuteCommandList()
     // Render XeSS output using full screen quad
     {
         //m_immediateContext->Flush();
-        m_pipelineStateFSQPass_d3d11.SetPipelineState(m_immediateContext.Get());
 
-        //m_commandList->SetGraphicsRootSignature(m_rootSignatureFSQ.Get());
+        if (m_outputIndex == OutputIndex::kVelocity)
+        {
+            m_pipelineStateFSQVelocityPass_d3d11.SetPipelineState(m_immediateContext.Get());
+        }
+        else
+        {
+            m_pipelineStateFSQPass_d3d11.SetPipelineState(m_immediateContext.Get());
+        }
+
 
         m_immediateContext->RSSetViewports( 1, &m_viewport );
         m_immediateContext->RSSetScissorRects( 1, &m_scissorRect );
@@ -781,7 +853,24 @@ void BasicSampleD3D11::ExecuteCommandList()
         UINT stride = sizeof( Vertex );
         UINT offset = 0;
         m_immediateContext->IASetVertexBuffers( 0, 1, &vbHandle, &stride, &offset );
-        auto srvHandle = reinterpret_cast<ID3D11ShaderResourceView*>( m_xessOutput[ m_frameIndex ].view[ VI_SRV ].Get() );
+
+        ID3D11ShaderResourceView* srvHandle = nullptr;
+        switch (m_outputIndex)
+        {
+            case OutputIndex::kColor:
+                srvHandle = reinterpret_cast<ID3D11ShaderResourceView*>(m_renderTargets[m_frameIndex].view[VI_SRV].Get());
+                break;
+            case OutputIndex::kVelocity:
+                srvHandle = reinterpret_cast<ID3D11ShaderResourceView*>(m_renderTargetsVelocity[m_frameIndex].view[VI_SRV].Get());
+                break;
+            case OutputIndex::kXeSSOutput:
+                srvHandle = reinterpret_cast<ID3D11ShaderResourceView*>(m_xessOutput[m_frameIndex].view[VI_SRV].Get());
+                break;
+            default:
+                assert(!"Unrecognized m_outputIndex value");
+                srvHandle = reinterpret_cast<ID3D11ShaderResourceView*>(m_xessOutput[m_frameIndex].view[VI_SRV].Get());
+        }
+
         m_immediateContext->PSSetShaderResources( 0, 1, &srvHandle );
         m_immediateContext->DrawInstanced( 3, 1, 0, 0 );
 

@@ -90,8 +90,16 @@ PSInputFSQ VSMainFSQ(uint vertex_id: SV_VERTEXID)
     return output;
 }
 
-float4 PSMainFSQ(PSInputFSQ input) : SV_TARGET
+float4 PSMainCopyFSQ(PSInputFSQ input) : SV_TARGET
 {
     return input_color.Sample(samp, input.texcoord);
+}
+
+float4 PSMainVelocityFSQ(PSInputFSQ input) : SV_TARGET
+{
+    float2 value = input_color.Sample(samp, input.texcoord).xy;
+    float maxVal = 0.02;   // assumed min/max velocity
+    float minVal = -0.02;
+    return float4(saturate((value - minVal) / (maxVal - minVal)), 0.0, 1.0);
 }
 

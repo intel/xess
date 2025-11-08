@@ -1,12 +1,12 @@
 ################################################################################
 # Copyright (C) 2025 Intel Corporation
-# 
+#
 # This software and the related documents are Intel copyrighted materials, and
 # your use of them is governed by the express license under which they were
 # provided to you ("License"). Unless the License provides otherwise, you may
 # not use, modify, copy, publish, distribute, disclose or transmit this
 # software or the related documents without Intel's prior written permission.
-# 
+#
 # This software and the related documents are provided as is, with no express
 # or implied warranties, other than those that are expressly stated in the
 # License.
@@ -51,7 +51,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR} base)
 
 add_executable(BasicSampleVK WIN32 ${SOURCES} ${VULKAN_SAMPLE_SOURCES})
 
-set_target_properties(BasicSampleVK PROPERTIES COMPILE_FLAGS "-DVK_USE_PLATFORM_WIN32_KHR=1 -DXESS=1") 
+set_target_properties(BasicSampleVK PROPERTIES COMPILE_FLAGS "-DVK_USE_PLATFORM_WIN32_KHR=1 -DXESS=1")
 
 if (NOT XESS_BUILD_INTERNAL_SAMPLE)
 	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../inc)
@@ -109,7 +109,8 @@ target_compile_shaders(BasicSampleVK SRC_DIR . DEST_DIR ${DESTDIR} SOURCES
 	basic_sample_shaders/glsl/triangle/velocity.vert
 	basic_sample_shaders/glsl/triangle/velocity.frag
 	basic_sample_shaders/glsl/triangle/quad.vert
-	basic_sample_shaders/glsl/triangle/quad.frag)
+	basic_sample_shaders/glsl/triangle/quad.frag
+	basic_sample_shaders/glsl/triangle/quad-velocity.frag)
 
 if (NOT XESS_BUILD_INTERNAL_SAMPLE)
     set(SRC_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../bin/")

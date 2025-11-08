@@ -83,6 +83,13 @@ cmake --build build --config Debug --target ALL_BUILD
 
 - `-gpu_id value`: Selects GPU by ID.
 
+### Keyboard Shortcuts
+
+- `1`: Display input color.
+- `2`: Display input velocity.
+- `3`: Display output.
+- `space`: Pause animation.
+
 ---
 
 ## XeSS-SR DX11 Basic Sample
@@ -101,6 +108,14 @@ cmake --build build --config Debug --target ALL_BUILD
 ### Command Line Options
 
 - `-gpu_id value`: Selects GPU by ID.
+
+
+### Keyboard Shortcuts
+
+- `1`: Display input color.
+- `2`: Display input velocity.
+- `3`: Display output.
+- `space`: Pause animation.
 
 ---
 

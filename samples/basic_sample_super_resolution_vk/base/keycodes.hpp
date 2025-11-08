@@ -29,6 +29,9 @@
 #define KEY_N 0x4E
 #define KEY_O 0x4F
 #define KEY_T 0x54
+#define KEY_1 0x31
+#define KEY_2 0x32
+#define KEY_3 0x33
 
 #elif defined(VK_USE_PLATFORM_ANDROID_KHR)
 #define GAMEPAD_BUTTON_A 0x1000

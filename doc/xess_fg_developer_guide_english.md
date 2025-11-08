@@ -67,11 +67,12 @@ additional frames produced by XeSS-FG.
 ## Requirements
 
 - Windows 10/11 x64 - 10.0.19043/22000 or later
-- DirectX12
-  - Intel® Arc™ Graphics with Intel® Xe Matrix eXtensions (XMX)
-  - Intel® Graphics Driver Version 32.0.101.6252 or later
+- DirectX 12
+  - Intel GPU with driver version 32.0.101.7029 or later:
+    - Intel Arc™ Graphics family (Codename Alchemist, Battlemage)
+    - Intel Core™ Ultra processor family (Codename Meteor Lake, Lunar Lake, Arrow Lake-S, Arrow Lake-H)
   - or any non-Intel GPU supporting Shader Model 6.4
-- Intel® XeLL 1.2.0 or later
+- Intel XeLL 1.2.1 or later
 
 ## Deployment
 
@@ -193,7 +194,7 @@ xefg_swapchain_logging_level_t logLevel = XEFG_SWAPCHAIN_LOGGING_LEVEL_WARNING;
 xefgSwapChainSetLoggingCallback(xefgSwapChain, logLevel, logCallback, userData);
 ```
 
-There are four verbosity levels of logging:
+The logging supports four verbosity levels:
 
 - `XEFG_SWAPCHAIN_LOGGING_LEVEL_DEBUG`
 - `XEFG_SWAPCHAIN_LOGGING_LEVEL_INFO`
@@ -459,15 +460,12 @@ Each call to tag a resource must specify one of following resource validity mode
 - `XEFG_SWAPCHAIN_RV_ONLY_NOW` – resource is only valid now and XeSS-FG will
   record a copy operation to the provided command list.
 
-The application must provide valid state for each tagged resource. XeSS-FG will add appropriate
-state transition barriers from/to the provided state.
+The application must provide valid state for each tagged resource: XeSS-FG will add appropriate
+state transition barriers from/to the provided state. To minimize the number of state transitions,
+use the following states depending on resource validity:
 
-Use `D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE` for `XEFG_SWAPCHAIN_RV_UNTIL_NEXT_PRESENT` resources
-to minimize the number of state transitions.
-
-XeSS-FG will always transition `XEFG_SWAPCHAIN_RV_ONLY_NOW` resources to `D3D12_RESOURCE_STATE_COPY_SOURCE` state,
-so the incoming state must be different from `D3D12_RESOURCE_STATE_COPY_SOURCE`. Future versions of XeSS-FG will
-support all incoming resource states.
+- For `XEFG_SWAPCHAIN_RV_UNTIL_NEXT_PRESENT` use `D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE`.
+- For `XEFG_SWAPCHAIN_RV_ONLY_NOW` use `D3D12_RESOURCE_STATE_COPY_SOURCE`.
 
 Here is an example of resource tagging for HUD-less color:
 
@@ -524,10 +522,9 @@ resolution.
 
 #### Depth
 
-Any depth format, such as `D32_FLOAT` or `D24_UNORM`, is supported. XeSS-FG assumes that
-larger depth values are closer to the camera and behaves as if `XEFG_SWAPCHAIN_INIT_FLAG_INVERTED_DEPTH`
-is always set. Next release of XeSS-FG will respect the flag and properly support both
-normal and inverted depth.
+Any depth format, such as `D32_FLOAT` or `D24_UNORM`, is supported. By default, XeSS-FG assumes that
+smaller depth values are closer to the camera. However, inverted depth can be enabled by setting
+`XEFG_SWAPCHAIN_INIT_FLAG_INVERTED_DEPTH`.
 
 Buffer size must be the same as the Motion Vectors buffer size.
 
@@ -688,10 +685,7 @@ xefg_swapchain_present_status_t lastPresentStatus = {};
 xefgSwapChainGetLastPresentStatus(xefgSwapChain, &lastPresentStatus);
 ```
 
-> ***Important!** Call `xefgSwapChainGetLastPresentStatus` as soon as possible after `Present`, before the next call
-to `xefgSwapChainSetPresentId`.*
-
-When frame generation is disabled, `xefgSwapChainGetLastPresentStatus` will report zero presented frames even if the application frame was presented. This is a known limitation and it will be fixed in a future release.
+Any call to `Present` will update the status, including a call with `DXGI_PRESENT_TEST` flag.
 
 #### Changing Window State
 
@@ -838,5 +832,3 @@ Corporation in the United States and/or other countries.
 
 © 2025 Intel Corporation. Intel, the Intel logo, and other Intel marks are trademarks of Intel
 Corporation or its subsidiaries. Other names and brands may be claimed as the property of others.
-
-
