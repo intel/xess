@@ -1,4 +1,4 @@
-# Intel® Xe Low Latency (XeLL) Developer Guide 1.2
+# Intel® Xe Low Latency (XeLL) Developer Guide 1.3
 
 Intel® Xe Low Latency (XeLL) enables latency reduction in applications to enhance user experience
 and utilize the GPU in the most optimal way.
@@ -110,7 +110,7 @@ in DXGI Present call.
 ## Integration Considerations
 
 It is recommended that an application calls the XeLL API each frame even if all the features are
-currently disabled. XeLL ensures that minimal work is done in the system when running in
+currently disabled (call both 'xellSleep' and 'xellAddMarkerData'). XeLL ensures that minimal work is done in the system when running in
 pass-through mode. Features should be controlled only via `xellSetSleepMode`. Such approach should
 simplify the integration and minimize work that needs to be done during settings change.
 
@@ -227,7 +227,7 @@ The following file must be placed next to the executable or in the DLL search pa
 
 ## Naming Conventions and Branding Guidance
 
-Please see [“XeSS 2 Naming Structure and Examples”](xess_2_naming_structure_and_examples_english.md)
+Please see [“XeSS 3 Naming Structure and Examples”](xess_naming_structure_and_examples_english.md)
 for approved naming conventions, branding guidance and settings menu examples.
 
 ## Programming Guide
@@ -295,7 +295,7 @@ At the beginning of each frame, before sampling user input, an application shoul
 which calculates and executes a delay for a current frame based on previous statistics and markers.
 Frames are uniquely identified by an application by assigning them increasing `frame_id` values.
 `xellSleep` must be the first XeLL API function called with a newly assigned `frame_id` value if Low
-Latency is enabled.
+Latency is enabled. The call must return before any markers can be submitted for given `frame_id`. Only one call per frame is allowed.
 
 ```cpp
 frameId++;
@@ -318,7 +318,7 @@ xellAddMarkerData(xellContext, frameId, markerType);
 ```
 
 Markers define the following phases of the frame. It's expected that each \*END marker comes after
-the corresponding \*START marker.
+the corresponding \*START marker. Phases are allowed to overlap.
 
 #### Simulation
 

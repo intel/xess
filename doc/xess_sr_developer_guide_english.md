@@ -168,7 +168,7 @@ a consistent experience when modifying XeSS-SR related options.
 
 #### Naming Conventions and Branding Guidance
 
-Please see [“XeSS 2 Naming Structure and Examples”](xess_2_naming_structure_and_examples_english.md)
+Please see [“XeSS 3 Naming Structure and Examples”](xess_naming_structure_and_examples_english.md)
 for approved naming conventions, branding guidance and settings menu examples.
 
 The official font for XeSS-SR-related communication is `IntelOneText-Regular`.

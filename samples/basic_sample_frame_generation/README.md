@@ -1,30 +1,38 @@
-# XeSS-FG DX12 basic sample
+# XeSS-FG DX12 Basic Sample
 
-Shows basic XeSS-FG integration with DX12.
+This sample demonstrates basic XeSS-FG integration with DirectX 12.
 
-### Windows build steps
+## Windows Build Steps
 
-Run a 'Developer Command Prompt for Visual Studio 2019", then type the following:
-```
+Open a "Developer Command Prompt for Visual Studio 2019" and run:
+
+```console
 cmake -S . -B build
 cmake --build build --config Debug --target ALL_BUILD
 ```
 
-### Command line options
-- `-gpu_id value`. Allow to select gpu id.
-- `-async`. Use asynchronous flip.
-- `-fps value`. Force sample to run at a given fps.
-- `-maximized`. Force window to be maximized.
-- `-width value`. Override default window width.
-- `-height value`. Override default window height.
-- `-top`. Force window to be topmost.
-- `-tag_interpolated_frames value`. Tag interpolated frames by showing purple stripes. Default is true.
-- `-fullscreen`. Start the application in exclusive fullscreen mode.
+## Command Line Options
 
-### Shortcuts
+- `-gpu_id <value>`: Select a specific GPU.
+- `-async`: Enable asynchronous flip mode.
+- `-fps <value>`: Lock the application to a specific framerate.
+- `-maximized`: Launch with maximized window.
+- `-width <value>`: Set custom window width.
+- `-height <value>`: Set custom window height.
+- `-top`: Make the window stay on top.
+- `-tag_interpolated_frames <value>`: Mark interpolated frames with purple stripes (default: true).
+- `-fullscreen`: Launch in exclusive fullscreen mode.
+- `-init_from_swap_chain`: Initialize XeSS-FG proxy swap chain from an existing DXGI swap chain instance
+  using `xefgSwapChainD3D12InitFromSwapChain` (default: uses `xefgSwapChainD3D12InitFromSwapChainDesc`).
+- `-external_descriptor_heap`: Use external descriptor heap during frame generation.
+
+## Keyboard Shortcuts
+
 - `3`: Toggle frame interpolation ON/OFF.
-- `space`: Pause animation.
-- `F3`. Switch between 1080p and 1440p.
-- `F4`. Switch between exclusive fullscreen and windowed mode.
-- `F5`. Switch show only interpolated frames.
-- `F6`. Switch tag interpolated frames.
+- `4`: Cycle through number of generated frames (1 to maximum supported).
+- `5`: Toggle frame generation mode between auto and application-controlled.
+- `Space`: Pause animation.
+- `F3`: Switch between 1080p and 1440p resolution.
+- `F4`: Toggle between exclusive fullscreen and windowed modes.
+- `F5`: Toggle display of interpolated frames only.
+- `F6`: Toggle interpolated frame markers.

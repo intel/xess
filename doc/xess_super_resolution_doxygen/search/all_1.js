@@ -1,5 +1,7 @@
 var searchData=
 [
   ['any_5fprofiling_5fdata_5fin_5fflight_0',['any_profiling_data_in_flight',['../struct__xess__profiling__data__t.html#a7ce6d3494f6a8695edf94fcad38c455e',1,'_xess_profiling_data_t']]],
-  ['as_5ftensor_1',['as_tensor',['../struct__xess__resources__to__dump__t.html#a055a00bb33a3ade096f537cee6d614ca',1,'_xess_resources_to_dump_t::as_tensor()'],['../struct__xess__vk__resources__to__dump__t.html#a055a00bb33a3ade096f537cee6d614ca',1,'_xess_vk_resources_to_dump_t::as_tensor()']]]
+  ['api_20debug_20exports_1',['API debug exports',['../group__xess-debug.html',1,'XeSS API debug exports'],['../group__xess-d3d12-debug.html',1,'XeSS D3D12 API debug exports'],['../group__xess-vk-debug.html',1,'XeSS Vulkan API debug exports']]],
+  ['api_20exports_2',['API exports',['../group__xess.html',1,'XeSS API exports'],['../group__xess-d3d11.html',1,'XeSS D3D11 API exports'],['../group__xess-d3d12.html',1,'XeSS D3D12 API exports'],['../group__xess-vulkan.html',1,'XeSS VK API exports']]],
+  ['as_5ftensor_3',['as_tensor',['../struct__xess__resources__to__dump__t.html#a055a00bb33a3ade096f537cee6d614ca',1,'_xess_resources_to_dump_t::as_tensor'],['../struct__xess__vk__resources__to__dump__t.html#a055a00bb33a3ade096f537cee6d614ca',1,'_xess_vk_resources_to_dump_t::as_tensor']]]
 ];

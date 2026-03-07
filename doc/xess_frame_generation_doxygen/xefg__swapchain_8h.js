@@ -13,6 +13,7 @@ var xefg__swapchain_8h =
     [ "XEFG_SWAPCHAIN_PACK_E", "xefg__swapchain_8h.html#a333c83bf005356bed6724c5f5b51d7d6", null ],
     [ "XEFG_SWAPCHAIN_PRAGMA", "xefg__swapchain_8h.html#a441be7eb9434e15555d72275f1f09a76", null ],
     [ "XEFG_SWAPCHAIN_STATIC_ASSERT", "xefg__swapchain_8h.html#aa4f6797e657a445fe2335f9ed143074f", null ],
+    [ "XEFG_SWAPCHAIN_USE_MAX_SUPPORTED_INTERPOLATED_FRAMES", "xefg__swapchain_8h.html#a789d70e7403b3d91c776c84599cd7adc", null ],
     [ "xefg_swapchain_2d_t", "xefg__swapchain_8h.html#abbe39d66ca5692b5ffa14e298e9865de", null ],
     [ "xefg_swapchain_app_log_callback_t", "xefg__swapchain_8h.html#adf938016e6f8462e7f9c6e24dd9e2c98", null ],
     [ "xefg_swapchain_frame_constant_data_t", "xefg__swapchain_8h.html#a6e94794e75974c90fae86b5899f2947d", null ],
@@ -92,6 +93,10 @@ var xefg__swapchain_8h =
       [ "XEFG_SWAPCHAIN_UI_MODE_BACKBUFFER_HUDLESS", "xefg__swapchain_8h.html#a61355ff6fd805c383cd8ff99cc132b58ad48035836d4982fc231c31c07ca8cae2", null ],
       [ "XEFG_SWAPCHAIN_UI_MODE_BACKBUFFER_HUDLESS_UITEXTURE", "xefg__swapchain_8h.html#a61355ff6fd805c383cd8ff99cc132b58a5d43192efc32d43c23e66e08a31415d2", null ]
     ] ],
+    [ "xefg_swapchain_ui_composition_state_t", "group__xefgswapchain.html#ga3de391f3527dc0698a4167957926dba5", [
+      [ "XEFG_SWAPCHAIN_UI_COMPOSITION_STATE_DISABLED", "group__xefgswapchain.html#gga3de391f3527dc0698a4167957926dba5afc9f15ec096a625d914e152b75fc8f6c", null ],
+      [ "XEFG_SWAPCHAIN_UI_COMPOSITION_STATE_ENABLED", "group__xefgswapchain.html#gga3de391f3527dc0698a4167957926dba5a3da6fdec9b9ec3ec908dd65eba79d1dd", null ]
+    ] ],
     [ "XEFG_SWAPCHAIN_STATIC_ASSERT", "xefg__swapchain_8h.html#ae35fe5a98f362a6e84eecdb06e3df141", null ],
     [ "XEFG_SWAPCHAIN_STATIC_ASSERT", "xefg__swapchain_8h.html#ab24bc4e643928f57a3f25a0779ff6501", null ],
     [ "XEFG_SWAPCHAIN_STATIC_ASSERT", "xefg__swapchain_8h.html#a2a07ee5181ec3f3f8108b6902811d522", null ],
@@ -106,7 +111,9 @@ var xefg__swapchain_8h =
     [ "xefgSwapChainSetEnabled", "group__xefgswapchain.html#ga0736dcd0aa28b66ae84f47d1eeee8cf8", null ],
     [ "xefgSwapChainSetLatencyReduction", "group__xefgswapchain.html#ga78d583d6998d2ce952edff7d0ec2f283", null ],
     [ "xefgSwapChainSetLoggingCallback", "group__xefgswapchain.html#ga7c95b36660495ccfdb84dd95bd2f40ac", null ],
+    [ "xefgSwapChainSetNumInterpolatedFrames", "group__xefgswapchain.html#ga205a4ecca9f3ea3731bdca7975aba918", null ],
     [ "xefgSwapChainSetPresentId", "group__xefgswapchain.html#ga99d3ede193b7f015c37e58475121585e", null ],
     [ "xefgSwapChainSetSceneChangeThreshold", "group__xefgswapchain.html#ga7ac3e8f95efa59a95607c0c6d248e824", null ],
+    [ "xefgSwapChainSetUiCompositionState", "group__xefgswapchain.html#gaa87f288bcca9e2e55b49d359479d1265", null ],
     [ "xefgSwapChainTagFrameConstants", "group__xefgswapchain.html#gac881c68bad8488c3e4e916cdd011b336", null ]
 ];

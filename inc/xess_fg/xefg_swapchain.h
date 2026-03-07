@@ -39,7 +39,21 @@
 #define XEFG_SWAPCHAIN_STATIC_ASSERT(cond)\
     typedef int XEFG_SWAPCHAIN_CAT(XEFG_SWAPCHAIN_STATIC_ASSERT_IMPL, __COUNTER__)[(cond) ? 1 : -1]
 
+#include <limits.h>
 #include <stdint.h>
+
+/**
+ * @brief Use maximum supported number of interpolated frames.
+ *
+ * Use this constant during XeSS-FG swap chain initialization to set number
+ * of interpolated frames to the maximum supported value.
+ *
+ * The actual value can be queried later using @ref xefgSwapChainGetProperties
+ * or by retrieving back the initialization parameters.
+ *
+ * @see @ref xefgswapchain-d3d12
+ */
+#define XEFG_SWAPCHAIN_USE_MAX_SUPPORTED_INTERPOLATED_FRAMES UINT32_MAX
 
 #ifdef __cplusplus
 extern "C" {
@@ -188,7 +202,7 @@ typedef enum _xefg_swapchain_result_t
     XEFG_SWAPCHAIN_RESULT_WARNING_FRAMES_ID_MISMATCH = 4,
     /** Warning. There is no present status for last present. */
     XEFG_SWAPCHAIN_RESULT_WARNING_MISSING_PRESENT_STATUS = 5,
-    /** Warning. Resource sizes for the interpolation doesn't match between previouse and next frames.
+    /** Warning. Resource sizes for the interpolation doesn't match between previous and next frames.
         Interpolation skipped. */
     XEFG_SWAPCHAIN_RESULT_WARNING_RESOURCE_SIZES_MISMATCH = 6,
     /** Operation was successful. */
@@ -252,21 +266,30 @@ typedef enum _xefg_swapchain_logging_level_t
 } xefg_swapchain_logging_level_t;
 
 /**
- * @brief XeSS-FG Swap Chain UI handling mode.
+ * @brief XeSS-FG UI composition mode.
+ *
+ * XeSS-FG can either interpolate UI (default) or compose a UI texture as-is on top of the interpolated frames.
+ * The application can provide the UI texture directly or rely on XeSS-FG to extract the texture from
+ * other available resources.
+ *
+ * UI composition can be enabled or disabled by changing the composition state.
+ * When UI composition is enabled, the UI mode determines which composition method is used.
+ *
+ * @see xefgSwapChainSetUiCompositionState for enabling or disabling UI composition.
  */
 typedef enum _xefg_swapchain_ui_mode_t
 {
-    /** Determine UI handling mode automatically, based on provided inputs: hudless color and UI texture. */
+    /** Determine UI composition mode automatically, based on provided inputs: hudless color and UI texture. */
     XEFG_SWAPCHAIN_UI_MODE_AUTO = 0,
-    /** Interpolate on backbuffer, without any UI handling. */
+    /** Interpolate back buffer, without any UI composition. */
     XEFG_SWAPCHAIN_UI_MODE_NONE = 1,
-    /** Interpolate on backbuffer, refine UI using UI texture + alpha. */
+    /** Interpolate back buffer, refine UI using UI texture + alpha. */
     XEFG_SWAPCHAIN_UI_MODE_BACKBUFFER_UITEXTURE = 2,
-    /** Interpolate on hudless color, blend UI from UI texture + alpha. */
+    /** Interpolate hudless color, blend UI from UI texture + alpha. */
     XEFG_SWAPCHAIN_UI_MODE_HUDLESS_UITEXTURE = 3,
-    /** Interpolate on hudless color, extract UI from backbuffer. */
+    /** Interpolate hudless color, extract UI from backbuffer. */
     XEFG_SWAPCHAIN_UI_MODE_BACKBUFFER_HUDLESS = 4,
-    /** Interpolate on hudless color, blend UI from UI texture + alpha and refine it by extracting from backbuffer. */
+    /** Interpolate hudless color, blend UI from UI texture + alpha and refine it by extracting from back buffer. */
     XEFG_SWAPCHAIN_UI_MODE_BACKBUFFER_HUDLESS_UITEXTURE = 5
 } xefg_swapchain_ui_mode_t;
 
@@ -311,7 +334,13 @@ typedef void (*xefg_swapchain_app_log_callback_t)(const char* message, xefg_swap
 XEFG_SWAPCHAIN_API xefg_swapchain_result_t xefgSwapChainGetVersion(xefg_swapchain_version_t* pVersion);
 
  /**
- * @brief Gets XeSS-FG Swap Chain internal resources properties.
+ * @brief Retrieves various XeSS-FG Swap Chain properties.
+ *
+ * @note When called before the proxy swap chain initialization, this function will only report
+ *       `pProperties->maxSupportedInterpolations`, all other fields of `pProperties` will be set to zero.
+ *
+ * If you need to query the required heap sizes and the descriptor count before the proxy swap chain
+ * initialization, use @ref xefgSwapChainD3D12GetProperties.
  *
  * @param hSwapChain The XeSS-FG Swap Chain context handle.
  *
@@ -429,6 +458,56 @@ XEFG_SWAPCHAIN_API xefg_swapchain_result_t xefgSwapChainSetSceneChangeThreshold(
  *         XEFG_SWAPCHAIN_RESULT_ERROR_WRONG_CALL_ORDER if the function is called out of order.
  */
 XEFG_SWAPCHAIN_API xefg_swapchain_result_t xefgSwapChainGetPipelineBuildStatus(xefg_swapchain_handle_t hSwapChain);
+
+/**
+ * @brief Adjust the number of interpolated frames after initialization.
+ * 
+ * By default, XeSS-FG swap chain will produce the maximum number of interpolated frames
+ * specified during initialization.
+ * 
+ * Use this function to change the number of interpolated frames without reinitializing the swap chain.
+ * The number of interpolated frames must be between 1 and the maximum provided during swap chain
+ * initialization.
+ * 
+ * Avoid frequent calls to this function: changing the number of interpolated frames may trigger
+ * a reallocation of internal resources.
+ * 
+ * If this function fails for any reason other than an invalid argument, it is recommended to
+ * reinitialize the swap chain.
+ * 
+ * This function is not thread-safe with regard to calls to @ref xefgSwapChainD3D12InitFromSwapChain,
+ * @ref xefgSwapChainD3D12InitFromSwapChainDesc, and @ref xefgSwapChainDestroy. Do not call
+ * @ref xefgSwapChainSetNumInterpolatedFrames if another thread might be initializing or
+ * destroying the same context.
+ * 
+ */
+XEFG_SWAPCHAIN_API xefg_swapchain_result_t xefgSwapChainSetNumInterpolatedFrames(
+    xefg_swapchain_handle_t hSwapChain, uint32_t numInterpolatedFrames);
+
+/**
+ * @brief Controls whether UI composition is enabled or disabled.
+ */
+typedef enum
+{
+    /* UI mode set during initialization has no effect. This is the default state. */
+    XEFG_SWAPCHAIN_UI_COMPOSITION_STATE_DISABLED,
+    /* UI is composited on top of the interpolated frame according to the UI mode set during initialization. */
+    XEFG_SWAPCHAIN_UI_COMPOSITION_STATE_ENABLED
+} xefg_swapchain_ui_composition_state_t;
+
+/**
+ * @brief Enable or disable UI composition.
+ *
+ * If UI composition is disabled, UI mode will have no effect.
+ *
+ * Setting UI mode to `XEFG_SWAPCHAIN_UI_MODE_NONE` and enabling UI composition is the same
+ * as disabling UI composition.
+ *
+ * @note Try no UI composition first (default), then switch to UI composition if you are not happy
+ * with the no-composition output.
+ */
+XEFG_SWAPCHAIN_API xefg_swapchain_result_t xefgSwapChainSetUiCompositionState(
+    xefg_swapchain_handle_t hSwapChain, xefg_swapchain_ui_composition_state_t state);
 
 /** @}*/
 

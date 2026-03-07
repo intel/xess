@@ -52,10 +52,12 @@ var searchData=
   ['xefg_5fswapchain_5frv_5fcount_49',['XEFG_SWAPCHAIN_RV_COUNT',['../xefg__swapchain_8h.html#a382af9be9870bf20dc587ec9a2f2c479a5a484465fcf9d43c8b52d23d9e86e184',1,'xefg_swapchain.h']]],
   ['xefg_5fswapchain_5frv_5fonly_5fnow_50',['XEFG_SWAPCHAIN_RV_ONLY_NOW',['../xefg__swapchain_8h.html#a382af9be9870bf20dc587ec9a2f2c479a39daadd9bcbdd8ee923bcda74a38dfa0',1,'xefg_swapchain.h']]],
   ['xefg_5fswapchain_5frv_5funtil_5fnext_5fpresent_51',['XEFG_SWAPCHAIN_RV_UNTIL_NEXT_PRESENT',['../xefg__swapchain_8h.html#a382af9be9870bf20dc587ec9a2f2c479ad8ca966a7a6dd3e405cb69242f2744f2',1,'xefg_swapchain.h']]],
-  ['xefg_5fswapchain_5fui_5fmode_5fauto_52',['XEFG_SWAPCHAIN_UI_MODE_AUTO',['../xefg__swapchain_8h.html#a61355ff6fd805c383cd8ff99cc132b58a2559ad07874f4085c74857920993fa6b',1,'xefg_swapchain.h']]],
-  ['xefg_5fswapchain_5fui_5fmode_5fbackbuffer_5fhudless_53',['XEFG_SWAPCHAIN_UI_MODE_BACKBUFFER_HUDLESS',['../xefg__swapchain_8h.html#a61355ff6fd805c383cd8ff99cc132b58ad48035836d4982fc231c31c07ca8cae2',1,'xefg_swapchain.h']]],
-  ['xefg_5fswapchain_5fui_5fmode_5fbackbuffer_5fhudless_5fuitexture_54',['XEFG_SWAPCHAIN_UI_MODE_BACKBUFFER_HUDLESS_UITEXTURE',['../xefg__swapchain_8h.html#a61355ff6fd805c383cd8ff99cc132b58a5d43192efc32d43c23e66e08a31415d2',1,'xefg_swapchain.h']]],
-  ['xefg_5fswapchain_5fui_5fmode_5fbackbuffer_5fuitexture_55',['XEFG_SWAPCHAIN_UI_MODE_BACKBUFFER_UITEXTURE',['../xefg__swapchain_8h.html#a61355ff6fd805c383cd8ff99cc132b58a95bd3c997dbc5e0c2bc199758972cedd',1,'xefg_swapchain.h']]],
-  ['xefg_5fswapchain_5fui_5fmode_5fhudless_5fuitexture_56',['XEFG_SWAPCHAIN_UI_MODE_HUDLESS_UITEXTURE',['../xefg__swapchain_8h.html#a61355ff6fd805c383cd8ff99cc132b58a31bb1b59d20c91c991c6b0eb5ba2792e',1,'xefg_swapchain.h']]],
-  ['xefg_5fswapchain_5fui_5fmode_5fnone_57',['XEFG_SWAPCHAIN_UI_MODE_NONE',['../xefg__swapchain_8h.html#a61355ff6fd805c383cd8ff99cc132b58a82c215ba79e5315e3ad0dedb3b6e6fc8',1,'xefg_swapchain.h']]]
+  ['xefg_5fswapchain_5fui_5fcomposition_5fstate_5fdisabled_52',['XEFG_SWAPCHAIN_UI_COMPOSITION_STATE_DISABLED',['../group__xefgswapchain.html#gga3de391f3527dc0698a4167957926dba5afc9f15ec096a625d914e152b75fc8f6c',1,'xefg_swapchain.h']]],
+  ['xefg_5fswapchain_5fui_5fcomposition_5fstate_5fenabled_53',['XEFG_SWAPCHAIN_UI_COMPOSITION_STATE_ENABLED',['../group__xefgswapchain.html#gga3de391f3527dc0698a4167957926dba5a3da6fdec9b9ec3ec908dd65eba79d1dd',1,'xefg_swapchain.h']]],
+  ['xefg_5fswapchain_5fui_5fmode_5fauto_54',['XEFG_SWAPCHAIN_UI_MODE_AUTO',['../xefg__swapchain_8h.html#a61355ff6fd805c383cd8ff99cc132b58a2559ad07874f4085c74857920993fa6b',1,'xefg_swapchain.h']]],
+  ['xefg_5fswapchain_5fui_5fmode_5fbackbuffer_5fhudless_55',['XEFG_SWAPCHAIN_UI_MODE_BACKBUFFER_HUDLESS',['../xefg__swapchain_8h.html#a61355ff6fd805c383cd8ff99cc132b58ad48035836d4982fc231c31c07ca8cae2',1,'xefg_swapchain.h']]],
+  ['xefg_5fswapchain_5fui_5fmode_5fbackbuffer_5fhudless_5fuitexture_56',['XEFG_SWAPCHAIN_UI_MODE_BACKBUFFER_HUDLESS_UITEXTURE',['../xefg__swapchain_8h.html#a61355ff6fd805c383cd8ff99cc132b58a5d43192efc32d43c23e66e08a31415d2',1,'xefg_swapchain.h']]],
+  ['xefg_5fswapchain_5fui_5fmode_5fbackbuffer_5fuitexture_57',['XEFG_SWAPCHAIN_UI_MODE_BACKBUFFER_UITEXTURE',['../xefg__swapchain_8h.html#a61355ff6fd805c383cd8ff99cc132b58a95bd3c997dbc5e0c2bc199758972cedd',1,'xefg_swapchain.h']]],
+  ['xefg_5fswapchain_5fui_5fmode_5fhudless_5fuitexture_58',['XEFG_SWAPCHAIN_UI_MODE_HUDLESS_UITEXTURE',['../xefg__swapchain_8h.html#a61355ff6fd805c383cd8ff99cc132b58a31bb1b59d20c91c991c6b0eb5ba2792e',1,'xefg_swapchain.h']]],
+  ['xefg_5fswapchain_5fui_5fmode_5fnone_59',['XEFG_SWAPCHAIN_UI_MODE_NONE',['../xefg__swapchain_8h.html#a61355ff6fd805c383cd8ff99cc132b58a82c215ba79e5315e3ad0dedb3b6e6fc8',1,'xefg_swapchain.h']]]
 ];

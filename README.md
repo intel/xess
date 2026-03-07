@@ -1,8 +1,8 @@
-# XeSS 2 SDK
+# XeSS 3 SDK
 
-The XeSS 2 SDK is a set of real-time AI-based technologies that drastically boost your frame rate at the highest visual quality while keeping your game responsive. This repository contains the SDK for integrating XeSS 2 into your game or application.
+The XeSS 3 SDK is a set of real-time AI-based technologies that drastically boost your frame rate at the highest visual quality while keeping your game responsive. This repository contains the SDK for integrating XeSS 3 into your game or application.
 
-Visit [XeSS 2 Developer Page](https://www.intel.com/content/www/us/en/developer/topic-technology/gamedev/xess2.html) for an overview of the technology.
+Visit [XeSS 3 Developer Page](https://www.intel.com/content/www/us/en/developer/topic-technology/gamedev/xess.html) for an overview of the technology.
 
 ## What's Inside?
 
@@ -10,7 +10,7 @@ Visit [XeSS 2 Developer Page](https://www.intel.com/content/www/us/en/developer/
 - **XeSS Frame Generation (XeSS-FG)** - achieves fluid motion and higher displayed frame rates; available on discrete and integrated Intel® Arc™ GPUs, as well as non-Intel GPUs with SM 6.4 support.
 - **Xe Low Latency (XeLL)** - minimizes input lag for a more responsive gaming experience; available on discrete and integrated Intel® Arc™ GPUs, as well as non-Intel GPUs when combined with XeSS-FG.
 
-The SDK provides everything you need to integrate XeSS 2 into your application. While XeSS-FG requires XeLL integration, both XeSS-SR and XeLL can be enabled independently, giving you flexibility.
+The SDK provides everything you need to integrate XeSS 3 into your application. While XeSS-FG requires XeLL integration, both XeSS-SR and XeLL can be enabled independently, giving you flexibility.
 
 Additionally, we provide plugins for Unreal Engine and Unity:
 
@@ -27,4 +27,4 @@ Explore our [samples](./samples) to get started quickly and check out the develo
 - [XeSS-FG Developer Guide](./doc/xess_fg_developer_guide_english.md)
 - [XeLL Developer Guide](./doc/xell_developer_guide_english.md)
 
-Leverage [XeSS Inspector tool](https://github.com/GameTechDev/XeSSInspector) designed for verifying, debugging, and tuning XeSS 2 SDK integrations. XeSS Inspector allows you to inspect and visualize data coming from the game, markers/events, API calls, and create frame dumps.
+Leverage [XeSS Inspector tool](https://github.com/GameTechDev/XeSSInspector) designed for verifying, debugging, and tuning XeSS 3 SDK integrations. XeSS Inspector allows you to inspect and visualize data coming from the game, markers/events, API calls, and create frame dumps.

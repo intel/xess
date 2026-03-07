@@ -767,9 +767,10 @@ void BasicSample::OnUpdate()
 {
 #ifdef ENABLE_XELL
     VERIFY_XELL(xellAddMarkerData(m_xellContext, m_frameCounter, XELL_SIMULATION_START));
-#endif
+    
     xell_frame_report_t xell_frames_reports[64];
     VERIFY_XELL(xellGetFramesReports(m_xellContext, xell_frames_reports));
+#endif
 
     if (last_time.time_since_epoch().count() == 0)
     {

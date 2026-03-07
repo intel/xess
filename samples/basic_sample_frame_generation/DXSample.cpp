@@ -152,7 +152,7 @@ void DXSample::ParseCommandLineArgs(WCHAR* argv[], int argc)
         if ((_wcsnicmp(argv[i], L"-fps", wcslen(argv[i])) == 0 ||
             _wcsnicmp(argv[i], L"/fps", wcslen(argv[i])) == 0) && (i + 1 < argc))
         {
-            m_frameMS = 1000 / _wtof(argv[i + 1]);
+            m_minimumFrameTimeMS = 1000.f / static_cast<float>(_wtof(argv[i + 1]));
             i++;
         }
 
@@ -199,6 +199,46 @@ void DXSample::ParseCommandLineArgs(WCHAR* argv[], int argc)
         {
             m_tagInterpolatedFrames = _wtoi(argv[i + 1]);
             i++;
+        }
+
+        if ((_wcsnicmp(argv[i], L"-max_frames", wcslen(argv[i])) == 0 ||
+            _wcsnicmp(argv[i], L"/max_frames", wcslen(argv[i])) == 0) && (i + 1 < argc))
+        {
+            int frames = _wtoi(argv[i + 1]);
+            if (frames > 0)
+            {
+                m_maxFrames = frames;
+            }
+            i++;
+        }
+
+        if (_wcsnicmp(argv[i], L"-init_from_swap_chain", wcslen(argv[i])) == 0 ||
+            _wcsnicmp(argv[i], L"/init_from_swap_chain", wcslen(argv[i])) == 0)
+        {
+            m_initializeFromApplicationSwapChain = true;
+        }
+
+        if (_wcsnicmp(argv[i], L"-external_descriptor_heap", wcslen(argv[i])) == 0 ||
+            _wcsnicmp(argv[i], L"/external_descriptor_heap", wcslen(argv[i])) == 0)
+        {
+            m_enableExternalDescriptorHeap = true;
+        }
+
+        if (_wcsnicmp(argv[i], L"-mfg_count", wcslen(argv[i])) == 0 ||
+            _wcsnicmp(argv[i], L"/mfg_count", wcslen(argv[i])) == 0)
+        {
+            ++i;
+            if (i < argc)
+            {
+                // We rely on XeSS-FG to check if this value is supported.
+                m_maxInterpolatedFrames = static_cast<uint32_t>(_wtoi(argv[i]));
+            }
+        }
+
+        if (_wcsnicmp(argv[i], L"-waitable", wcslen(argv[i])) == 0 ||
+            _wcsnicmp(argv[i], L"/waitable", wcslen(argv[i])) == 0)
+        {
+            m_useWaitableSwapChain = true;
         }
     }
 }

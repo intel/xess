@@ -15,14 +15,10 @@
 
 #include "DXSample.h"
 
+#include <xefg_swapchain_d3d12.h>
+#include <xell_d3d12.h>
+
 #include <chrono>
-
-#define ENABLE_XEFG_SWAPCHAIN 1
-
-#ifdef ENABLE_XEFG_SWAPCHAIN
-#include "xefg_swapchain_d3d12.h"
-#include "xell_d3d12.h"
-#endif
 
 using namespace DirectX;
 
@@ -38,14 +34,14 @@ class BasicSample : public DXSample
 public:
     BasicSample(UINT width, UINT height, std::wstring name);
 
-    virtual void OnInit();
-    virtual void OnUpdate();
-    virtual void OnRender();
-    virtual void OnDestroy();
-    virtual void SetViewPort(UINT width, UINT height);
-    virtual void OnMouseWheel(WORD wValue);
-    virtual void OnKeyUp(UINT8 key);
-    virtual void OnSleep();
+    void OnInit() override;
+    void OnUpdate() override;
+    void OnRender() override;
+    void OnDestroy() override;
+    void SetViewPort(UINT width, UINT height) override;
+    void OnMouseWheel(WORD wValue) override;
+    void OnKeyUp(UINT8 key) override;
+    void OnSleep() override;
 
 private:
     enum DescriptorHeapIndices
@@ -112,7 +108,7 @@ private:
     UINT m_rtvDescriptorSize;
     UINT m_dsvDescriptorSize;
     UINT m_uavDescriptorSize;
-    const FLOAT clearColor[4] = { 0.0, 0.2, 0.4, 1.0 };
+    const FLOAT clearColor[4] = { 0.0f, 0.2f, 0.4f, 1.0f };
 
     D3D12_SHADER_RESOURCE_VIEW_DESC blankResDesc;
     ComPtr<ID3D12Resource> blankRes = nullptr;
@@ -124,40 +120,41 @@ private:
     SceneConstantBuffer m_constantBufferData;
     UINT8* m_pCbvDataBegin;
     float m_verticalOffset = 0;
-    std::chrono::time_point<std::chrono::high_resolution_clock> last_time;
+    std::chrono::time_point<std::chrono::high_resolution_clock> m_lastUpdateTime;
     bool m_pause = false;
 
     // Synchronization objects.
     UINT m_frameIndex;
     UINT m_backBufferIndex;
-    HANDLE m_fenceEvent;
     ComPtr<ID3D12Fence> m_fence;
     UINT64 m_fenceValue;
     //That format is used for creating backbuffers, interpolation resources and views, so please check compliance before use
     //DXGI_FORMAT m_format = DXGI_FORMAT_R10G10B10A2_UNORM;
-    DXGI_FORMAT m_format = DXGI_FORMAT_R8G8B8A8_UNORM; 
+    DXGI_FORMAT m_format = DXGI_FORMAT_R8G8B8A8_UNORM;
 
-#define INTERPOLATION_COUNT 1
-
-#ifdef ENABLE_XEFG_SWAPCHAIN
     // XeFG
     bool m_enableXeFG = true;
-    xefg_swapchain_handle_t m_xefgSwapChain;
-    xefg_swapchain_present_status_t lastPresentStatus;
-    xell_context_handle_t m_xellContext;
+    xefg_swapchain_handle_t m_xefgSwapChain = nullptr;
+    xefg_swapchain_present_status_t m_lastPresentStatus = {};
+    xell_context_handle_t m_xellContext = nullptr;
 
-    bool m_enableExternalDH =
-#ifdef USE_EXTERNAL_DESCRIPTOR
-        true;
-#else
-        false;
-#endif
-    xefg_swapchain_properties_t props;
-    ComPtr<ID3D12DescriptorHeap> m_pDH;
-    uint32_t m_descriptorCount = 0;
-    uint32_t requiredDescriptorCount = 0;
-#endif
+    // If your application uses frame latency waitable object,
+    // the logic can remain active when switching to XeSS-FG proxy swap chain.
+    HANDLE m_frameLatencyWaitableObject = nullptr;
+
+    xefg_swapchain_properties_t m_xefgProperties = {};
+    ComPtr<ID3D12DescriptorHeap> m_xefgDescriptorHeap;
+    ComPtr<ID3D12Heap> m_fgTextureHeap;
+    ComPtr<ID3D12Heap> m_fgBufferHeap;
+    uint32_t m_xefgDescriptorCount = 0;
+
     UINT m_frameCounter = 0;
+
+    // Currently selected number of interpolated frames.
+    uint32_t m_numInterpolatedFrames = 0;
+
+    xefg_swapchain_ui_composition_state_t m_uiCompositionState
+        = XEFG_SWAPCHAIN_UI_COMPOSITION_STATE_DISABLED;
 
     void LoadDX12();
     void CreateFrameResources();
@@ -169,20 +166,14 @@ private:
     void PopulateRenderTargetCommandList();
     void WaitForExec();
     void WaitForPreviousFrame();
-#ifdef ENABLE_XEFG_SWAPCHAIN
-    static void LogCallback(const char* message, xefg_swapchain_logging_level_t level, void* userData)
-    {
-        OutputDebugStringA(("[XeSS-FG Runtime][" + std::to_string(level) + "]: " + message + "\n").c_str());
-    }
-#endif
 
-    // Busy wait for a specified duration
-    void BusyWait(std::chrono::microseconds duration)
+    void CycleNumInterpolatedFrames();
+
+    void CycleUiCompositionState();
+
+    static void LogCallback(const char* message, xefg_swapchain_logging_level_t /*level*/, void* userData)
     {
-        auto start = std::chrono::high_resolution_clock::now();
-        while (std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start) < duration)
-        {
-            // Do nothing
-        }
+        const char* prefix = static_cast<const char*>(userData);
+        DebugPrintf("%s %s\n", prefix, message);
     }
 };

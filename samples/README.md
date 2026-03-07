@@ -12,17 +12,19 @@ Contents:
 - [XeSS-SR Vulkan Basic Sample](#xess-sr-vulkan-basic-sample)
   - [Windows Build Steps](#windows-build-steps-1)
   - [Command Line Options](#command-line-options-1)
+  - [Keyboard Shortcuts](#keyboard-shortcuts-1)
 - [XeSS-SR DX11 Basic Sample](#xess-sr-dx11-basic-sample)
   - [Windows Build Steps](#windows-build-steps-2)
   - [Command Line Options](#command-line-options-2)
+  - [Keyboard Shortcuts](#keyboard-shortcuts-2)
 - [XeSS-FG DX12 Basic Sample](#xess-fg-dx12-basic-sample)
   - [Windows Build Steps](#windows-build-steps-3)
   - [Command Line Options](#command-line-options-3)
-  - [Keyboard Shortcuts](#keyboard-shortcuts-1)
+  - [Keyboard Shortcuts](#keyboard-shortcuts-3)
 - [XeLL DX12 Basic Sample](#xell-dx12-basic-sample)
   - [Windows Build Steps](#windows-build-steps-4)
   - [Command Line Options](#command-line-options-4)
-  - [Keyboard Shortcuts](#keyboard-shortcuts-2)
+  - [Keyboard Shortcuts](#keyboard-shortcuts-4)
 
 ## System Requirements
 
@@ -147,6 +149,8 @@ cmake --build build --config Debug --target ALL_BUILD
 ### Keyboard Shortcuts
 
 - `3`: Toggle frame interpolation ON/OFF.
+- `4`: Cycle number of interpolated frames.
+- `5`: Toggle UI composition ON/OFF.
 - `space`: Pause animation.
 - `F3`: Switch between 1080p and 1440p.
 - `F4`: Switch between exclusive fullscreen and windowed mode.

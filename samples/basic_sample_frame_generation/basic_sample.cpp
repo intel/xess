@@ -13,17 +13,16 @@
 
 #include "stdafx.h"
 #include "basic_sample.h"
-#include <algorithm>
 
-#ifdef ENABLE_XEFG_SWAPCHAIN
-#include "xefg_swapchain_debug.h"
-#endif
+#include <xefg_swapchain_debug.h>
+
+#include <algorithm>
 #include <mutex>
 #include <sstream>
 
 #define USE_APP_SWAPCHAIN_OBJECT
 
-inline std::string XefgSwapchainResultToString(xefg_swapchain_result_t result)
+inline const char* ToString(xefg_swapchain_result_t result)
 {
     switch (result)
     {
@@ -58,7 +57,7 @@ inline std::string XefgSwapchainResultToString(xefg_swapchain_result_t result)
     }
 }
 
-inline std::string XellResultToString(xell_result_t result)
+inline const char* ToString(xell_result_t result)
 {
     switch (result)
     {
@@ -80,19 +79,19 @@ inline void ThrowIfFailed(xefg_swapchain_result_t result, const std::string &err
 {
     if (result > XEFG_SWAPCHAIN_RESULT_SUCCESS) // warnings
     {
-        OutputDebugStringA(("XeSS-FG warning: " + XefgSwapchainResultToString(result)).c_str());
+        DebugPrintf("XeSS-FG warning: %s\n", ToString(result));
     }
     else if (result != XEFG_SWAPCHAIN_RESULT_SUCCESS)
     {
-        throw std::runtime_error(err + ". Error code: " + XefgSwapchainResultToString(result) + ".");
+        throw std::runtime_error(err + ". Error code: " + ToString(result) + ".");
     }
 }
 
 inline void ThrowIfFailed(xell_result_t result, const std::string& err)
 {
-    if (result != XELL_RESULT_SUCCESS)
+    if (result != XEFG_SWAPCHAIN_RESULT_SUCCESS)
     {
-        throw std::runtime_error(err + ". Error code: " + XellResultToString(result) + ".");
+        throw std::runtime_error(err + ". Error code: " + ToString(result) + ".");
     }
 }
 
@@ -133,18 +132,59 @@ static void SetDebugMessageFilter(ID3D12Device* device)
 #endif
 }
 
+template<class T>
+T Clamp(T value, T lower, T upper)
+{
+    if (value < lower)
+    {
+        return lower;
+    }
+
+    if (value > upper)
+    {
+        return upper;
+    }
+
+    return value;
+}
+
+static ComPtr<ID3D12Heap> CreateExternalBufferHeap(ID3D12Device* device, uint64_t size)
+{
+    ComPtr<ID3D12Heap> heap;
+
+    D3D12_HEAP_DESC desc{};
+    desc.SizeInBytes = size;
+    desc.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
+    desc.Flags = D3D12_HEAP_FLAG_ALLOW_ONLY_BUFFERS;
+    desc.Properties.Type = D3D12_HEAP_TYPE_DEFAULT;
+    ThrowIfFailed(device->CreateHeap(&desc, IID_PPV_ARGS(&heap)));
+
+    heap->SetName(L"ExternalBufferHeap");
+
+    return heap;
+}
+
+static ComPtr<ID3D12Heap> CreateExternalTextureHeap(ID3D12Device* device, uint64_t size)
+{
+    ComPtr<ID3D12Heap> heap;
+
+    D3D12_HEAP_DESC desc{};
+    desc.SizeInBytes = size;
+    desc.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
+    desc.Flags = D3D12_HEAP_FLAG_DENY_BUFFERS | D3D12_HEAP_FLAG_DENY_RT_DS_TEXTURES;
+    desc.Properties.Type = D3D12_HEAP_TYPE_DEFAULT;
+    ThrowIfFailed(device->CreateHeap(&desc, IID_PPV_ARGS(&heap)));
+
+    heap->SetName(L"ExternalTextureHeap");
+
+    return heap;
+}
+
 BasicSample::BasicSample(UINT width, UINT height, std::wstring name) :
     DXSample(width, height, std::move(name)),
     m_frameIndex(0),
     m_backBufferIndex(0),
-    m_fenceEvent(nullptr),
     m_fenceValue(0),
-#ifdef ENABLE_XEFG_SWAPCHAIN
-    m_xefgSwapChain(nullptr),
-    m_xellContext(nullptr),
-    lastPresentStatus(),
-    props(),
-#endif
     m_pCbvDataBegin(nullptr),
     m_viewport(0.0f, 0.0f, static_cast<float>(width), static_cast<float>(height)),
     m_scissorRect(0, 0, static_cast<LONG>(width), static_cast<LONG>(height)),
@@ -169,14 +209,24 @@ void BasicSample::OnKeyUp(UINT8 key)
     case 0x32:  // Key 2
         m_outputIndex = DHI_Velocity;
         break;
-#ifdef ENABLE_XEFG_SWAPCHAIN
-    case 0x33: //Key 3
+    case 0x33: // Key 3
         m_enableXeFG = !m_enableXeFG;
-        m_switchEnablement = true;
+        ThrowIfFailed(xefgSwapChainSetEnabled(m_xefgSwapChain, m_enableXeFG), "Failed to toggle XeSS-FG");
+        DebugPrintf("XeSS-FG %s\n", m_enableXeFG ? "ON" : "OFF");
         break;
-#endif
-#ifdef ENABLE_XEFG_SWAPCHAIN
-#ifdef XEFG_SWAPCHAIN_DEBUG_H
+    case 0x34: // Key 4
+        CycleNumInterpolatedFrames();
+        break;
+    case 0x35:
+        CycleUiCompositionState();
+        break;
+    case VK_F3: // Key F3
+        m_switchResolution = true;
+        break;
+    case VK_F4: // Key F4
+        m_fullScreen = !m_fullScreen;
+        m_switchFullScreen = true;
+        break;
     case VK_F5: // Key F5
         m_showOnlyInterpolation = !m_showOnlyInterpolation;
         ThrowIfFailed(xefgSwapChainEnableDebugFeature(m_xefgSwapChain,
@@ -191,15 +241,6 @@ void BasicSample::OnKeyUp(UINT8 key)
                                                       m_tagInterpolatedFrames, nullptr),
                       "Failed to set XEFG_SWAPCHAIN_DEBUG_FEATURE_TAG_INTERPOLATED_FRAMES");
         break;
-#endif
-    case VK_F4: //Key F4
-        m_fullScreen = !m_fullScreen;
-        m_switchFullScreen = true;
-        break;
-    case VK_F3: //Key F3
-        m_switchResolution = true;
-        break;
-#endif
     case VK_SPACE:
         m_pause = !m_pause;
         break;
@@ -212,8 +253,8 @@ void BasicSample::SetViewPort(UINT width, UINT height)
     m_width = width;
     m_height = height;
 
-    m_viewport.Width = width;
-    m_viewport.Height = height;
+    m_viewport.Width = static_cast<FLOAT>(width);
+    m_viewport.Height = static_cast<FLOAT>(height);
 
     m_scissorRect.right = width;
     m_scissorRect.bottom = height;
@@ -221,25 +262,22 @@ void BasicSample::SetViewPort(UINT width, UINT height)
 
 void BasicSample::OnMouseWheel(WORD wValue)
 {
-#ifdef ENABLE_XEFG_SWAPCHAIN
     ThrowIfFailed(xellAddMarkerData(m_xellContext, m_frameCounter, XELL_INPUT_SAMPLE),
                   "Failed to XeLL input sample marker");
-#endif
 
-    m_verticalOffset += ((short)wValue > 1) ? 0.1 : -0.1;
+    m_verticalOffset += wValue > 1 ? 0.1f : -0.1f;
 
-    if (m_verticalOffset > 1.0)
-        m_verticalOffset = 1.0;
-    else if (m_verticalOffset < -1.0)
-        m_verticalOffset = -1.0;
+    m_verticalOffset = Clamp(m_verticalOffset, -1.0f, 1.0f);
 }
 
 void BasicSample::OnSleep()
 {
-#ifdef ENABLE_XEFG_SWAPCHAIN
     // Pace the application with predicted sleep interval
     xellSleep(m_xellContext, m_frameCounter);
-#endif
+    if (m_frameLatencyWaitableObject)
+    {
+        (void)WaitForSingleObject(m_frameLatencyWaitableObject, INFINITE);
+    }
 }
 
 void BasicSample::OnInit()
@@ -250,12 +288,10 @@ void BasicSample::OnInit()
     CreateFSQPipeline();
     PopulateDescriptorHeap();
 
-#ifdef ENABLE_XEFG_SWAPCHAIN
     xell_sleep_params_t xellParams = {};
     xellParams.bLowLatencyMode = 1;
     ThrowIfFailed(xellSetSleepMode(m_xellContext, &xellParams), "Failed to set XeLL sleep mode");
     ThrowIfFailed(xefgSwapChainSetEnabled(m_xefgSwapChain, true), "Failed to enable XeSS-FG");
-#endif
 }
 
 // Load the rendering pipeline dependencies.
@@ -318,7 +354,9 @@ void BasicSample::LoadDX12()
         ComPtr<IDXGIAdapter1> hardwareAdapter;
         if (m_hardwareAdapterId != -1)
         {
-            ThrowIfFailed(factory->EnumAdapters1((UINT)m_hardwareAdapterId, &hardwareAdapter), "Unable to use hardware adapter with id " + std::to_string(m_hardwareAdapterId));
+            ThrowIfFailed(
+                factory->EnumAdapters1((UINT)m_hardwareAdapterId, &hardwareAdapter),
+                "Failed to use hardware adapter with id " + std::to_string(m_hardwareAdapterId));
         }
         else
         {
@@ -346,7 +384,7 @@ void BasicSample::LoadDX12()
     SetDebugMessageFilter(m_device.Get());
 
     SetCustomWindowText(selectedAdapterShortDesc.c_str());
-    OutputDebugString((L"Selected adapter: " + selectedAdapterFullDesc).c_str());
+    DebugPrintf("Selected adapter: %ls\n", selectedAdapterShortDesc.c_str());
 
     // Describe and create the command queue.
     D3D12_COMMAND_QUEUE_DESC queueDesc = {};
@@ -366,75 +404,135 @@ void BasicSample::LoadDX12()
     swapChainDesc.SampleDesc.Count = 1;
     swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
 
-
-#ifdef USE_APP_SWAPCHAIN_OBJECT
-    IDXGISwapChain1 *swapChain = nullptr;
-    ThrowIfFailed(factory->CreateSwapChainForHwnd(
-        m_commandQueue.Get(),        // Swap chain needs the queue so that it can force a flush on it.
-        Win32Application::GetHwnd(),
-        &swapChainDesc,
-        nullptr,
-        nullptr,
-        &swapChain
-    ));
-#endif
-
-#ifdef ENABLE_XEFG_SWAPCHAIN
-    //XeLR
-    ThrowIfFailed(xellD3D12CreateContext(m_device.Get(), &m_xellContext), "Unable to create XeLL context");
-
-    //XeFG
-    ThrowIfFailed(xefgSwapChainD3D12CreateContext(m_device.Get(), &m_xefgSwapChain), "Unable to create XeSS-FG context");
-
-#ifdef _DEBUG
-    xefg_swapchain_logging_level_t log_level = xefg_swapchain_logging_level_t::XEFG_SWAPCHAIN_LOGGING_LEVEL_DEBUG;
-#else
-    xefg_swapchain_logging_level_t log_level = xefg_swapchain_logging_level_t::XEFG_SWAPCHAIN_LOGGING_LEVEL_WARNING;
-#endif
-    if (xefgSwapChainSetLoggingCallback(m_xefgSwapChain, log_level, (xefg_swapchain_app_log_callback_t)LogCallback, nullptr) != XEFG_SWAPCHAIN_RESULT_SUCCESS)
+    if (m_useWaitableSwapChain)
     {
-        std::stringstream ss;
-        ss << "XeFG Logging (" << log_level << ") can't be enabled" << std::endl;
-        OutputDebugStringA(ss.str().c_str());
+        swapChainDesc.Flags |= DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT;
     }
-    ThrowIfFailed(xefgSwapChainSetLatencyReduction(m_xefgSwapChain, m_xellContext), "Unable to set XeLL context");
+
+    ComPtr<IDXGISwapChain1> applicationSwapChain;
+
+    if (m_initializeFromApplicationSwapChain)
+    {
+        ThrowIfFailed(factory->CreateSwapChainForHwnd(
+            m_commandQueue.Get(),
+            Win32Application::GetHwnd(),
+            &swapChainDesc,
+            nullptr,
+            nullptr,
+            &applicationSwapChain));
+    }
+
+    // XeLL
+    ThrowIfFailed(xellD3D12CreateContext(m_device.Get(), &m_xellContext), "Failed to create XeLL context");
+
+    // XeSS-FG
+    ThrowIfFailed(xefgSwapChainD3D12CreateContext(m_device.Get(), &m_xefgSwapChain), "Failed to create XeSS-FG context");
+
+    // We pass a prefix string as the logging callback user data.
+    const char* loggingContext = "XeSS-FG: ";
+    if (xefgSwapChainSetLoggingCallback(
+            m_xefgSwapChain, XEFG_SWAPCHAIN_LOGGING_LEVEL_DEBUG, LogCallback, const_cast<char*>(loggingContext)) !=
+        XEFG_SWAPCHAIN_RESULT_SUCCESS)
+    {
+        DebugPrintf("Failed to set XeSS-FG logging callback.\n");
+    }
+
+    ThrowIfFailed(xefgSwapChainSetLatencyReduction(m_xefgSwapChain, m_xellContext), "Failed to set XeLL context");
 
     xefg_swapchain_d3d12_init_params_t params = {};
-#ifdef USE_APP_SWAPCHAIN_OBJECT
-    params.pApplicationSwapChain = swapChain;
-#else
-    params.pApplicationSwapChain = nullptr;
-#endif
-    params.maxInterpolatedFrames = INTERPOLATION_COUNT;
-    if (m_enableExternalDH)
-        params.initFlags |= XEFG_SWAPCHAIN_INIT_FLAG_EXTERNAL_DESCRIPTOR_HEAP;
-
+    params.maxInterpolatedFrames = m_maxInterpolatedFrames
+                                       ? m_maxInterpolatedFrames
+                                       : XEFG_SWAPCHAIN_USE_MAX_SUPPORTED_INTERPOLATED_FRAMES;
     params.uiMode = XEFG_SWAPCHAIN_UI_MODE_AUTO;
 
-#ifdef USE_APP_SWAPCHAIN_OBJECT
-    ThrowIfFailed(xefgSwapChainD3D12InitFromSwapChain(m_xefgSwapChain, m_commandQueue.Get(), &params), "Unable to initialize XeSS-FG context");
-    swapChain = nullptr;
-#else
-    ThrowIfFailed(xefgSwapChainD3D12InitFromSwapChainDesc(m_xefgSwapChain, Win32Application::GetHwnd(), &swapChainDesc, nullptr, m_commandQueue.Get(), factory.Get(), &params),
-                  "Unable to initialize XeSS-FG context");
-#endif
-
-    ThrowIfFailed(xefgSwapChainD3D12GetSwapChainPtr(m_xefgSwapChain, IID_PPV_ARGS(&m_swapChain)),
-                  "Unable to get swap chain pointer");
-
-    ThrowIfFailed(xefgSwapChainGetProperties(m_xefgSwapChain, &props), "Unable to get XeSS-FG swap chain properties");
-#else // !ENABLE_XEFG_SWAPCHAIN
-    ThrowIfFailed(swapChain.As(&m_swapChain));
-#endif // ENABLE_XEFG_SWAPCHAIN
-
-    if (m_tagInterpolatedFrames)
+    if (m_enableExternalDescriptorHeap)
     {
-        ThrowIfFailed(xefgSwapChainEnableDebugFeature(m_xefgSwapChain,
-                                                      XEFG_SWAPCHAIN_DEBUG_FEATURE_TAG_INTERPOLATED_FRAMES, 1, nullptr),
-                      "Failed to enable XEFG_SWAPCHAIN_DEBUG_FEATURE_TAG_INTERPOLATED_FRAMES");
+        params.initFlags |= XEFG_SWAPCHAIN_INIT_FLAG_EXTERNAL_DESCRIPTOR_HEAP;
     }
 
-    if (m_fullScreen) {
+    ThrowIfFailed(xefgSwapChainD3D12GetProperties(
+                      m_xefgSwapChain,
+                      &params,
+                      swapChainDesc.Width,
+                      swapChainDesc.Height,
+                      swapChainDesc.Format,
+                      &m_xefgProperties),
+                  "Failed to query XeSS-FG properties");
+
+    // This sample is using external heaps purely for illustration purposes.
+    // In practice it would be better to use `tempBufferHeapSize` and `tempTextureHeapSize`
+    // to give XeSS-FG a portion of a bigger heap and share this heap with the application.
+    //
+    // If the swap chain resolution changes, XeSS-FG may require more heap space - see implementation
+    // of `OnUpdate` for more details.
+
+    m_fgBufferHeap = CreateExternalBufferHeap(m_device.Get(), m_xefgProperties.tempBufferHeapSize);
+    params.pTempBufferHeap = m_fgBufferHeap.Get();
+
+    m_fgTextureHeap = CreateExternalTextureHeap(m_device.Get(), m_xefgProperties.tempTextureHeapSize);
+    params.pTempTextureHeap = m_fgTextureHeap.Get();
+
+    if (m_initializeFromApplicationSwapChain)
+    {
+        // Important: XeSS-FG takes ownership of the native swap chain and destroys it.
+        // Do not reference the application swap chain after calling `xefgSwapChainD3D12InitFromSwapChain`,
+        // instead obtain a new pointer using `xefgSwapChainD3D12GetSwapChainPtr`.
+        params.pApplicationSwapChain = applicationSwapChain.Detach();
+    }
+
+    // At this point: either we never created our own swap chain, or we've transferred the ownership to XeSS-FG.
+    assert(applicationSwapChain == nullptr);
+
+    if (m_initializeFromApplicationSwapChain)
+    {
+        ThrowIfFailed(
+            xefgSwapChainD3D12InitFromSwapChain(m_xefgSwapChain, m_commandQueue.Get(), &params),
+            "Failed to initialize XeSS-FG context");
+    }
+    else
+    {
+        ThrowIfFailed(
+            xefgSwapChainD3D12InitFromSwapChainDesc(
+                m_xefgSwapChain,
+                Win32Application::GetHwnd(),
+                &swapChainDesc,
+                nullptr,
+                m_commandQueue.Get(),
+                factory.Get(),
+                &params),
+            "Failed to initialize XeSS-FG context");
+    }
+
+    ThrowIfFailed(
+        xefgSwapChainD3D12GetSwapChainPtr(m_xefgSwapChain, IID_PPV_ARGS(&m_swapChain)),
+        "Failed to get swap chain pointer");
+
+    if (m_useWaitableSwapChain)
+    {
+        m_frameLatencyWaitableObject = m_swapChain->GetFrameLatencyWaitableObject();
+        if (!m_frameLatencyWaitableObject)
+        {
+            throw std::runtime_error("Failed to get frame latency waitable object");
+        }
+    }
+
+    if (!m_maxInterpolatedFrames)
+    {
+        m_maxInterpolatedFrames = m_xefgProperties.maxSupportedInterpolations;
+    }
+
+    m_numInterpolatedFrames = m_maxInterpolatedFrames;
+    ThrowIfFailed(
+        xefgSwapChainSetNumInterpolatedFrames(m_xefgSwapChain, m_numInterpolatedFrames),
+        "Failed to set max interpolated frames");
+
+    ThrowIfFailed(
+        xefgSwapChainEnableDebugFeature(
+            m_xefgSwapChain, XEFG_SWAPCHAIN_DEBUG_FEATURE_TAG_INTERPOLATED_FRAMES, m_tagInterpolatedFrames, nullptr),
+        "Failed to enable XEFG_SWAPCHAIN_DEBUG_FEATURE_TAG_INTERPOLATED_FRAMES");
+
+    if (m_fullScreen)
+    {
         m_swapChain->SetFullscreenState(TRUE, nullptr);
         ThrowIfFailed(m_swapChain->ResizeBuffers(FrameCount, m_width, m_height, m_format, DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING));
     }
@@ -444,8 +542,8 @@ void BasicSample::LoadDX12()
 
     m_backBufferIndex = m_swapChain->GetCurrentBackBufferIndex();
 
-    D3D12_DESCRIPTOR_HEAP_DESC descriptor_heap_desc{D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
-        AppDescriptorCount, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE, 0};
+    D3D12_DESCRIPTOR_HEAP_DESC descriptor_heap_desc{
+        D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, AppDescriptorCount, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE, 0};
 
     m_device->CreateDescriptorHeap(&descriptor_heap_desc, IID_PPV_ARGS(&m_appDescriptorHeap));
     m_appDescriptorHeap->SetName(L"app_descriptor_heap");
@@ -499,6 +597,7 @@ void BasicSample::CreateFrameResources()
             tex_desc = CD3DX12_RESOURCE_DESC::Tex2D(
                 fmt, m_width, m_height);
             tex_desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET | D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+            tex_desc.MipLevels = 1;
             clear_value.Format = fmt;
             ThrowIfFailed(m_device->CreateCommittedResource(&heap_props, D3D12_HEAP_FLAG_NONE,
                 &tex_desc, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, &clear_value,
@@ -509,6 +608,7 @@ void BasicSample::CreateFrameResources()
             tex_desc = CD3DX12_RESOURCE_DESC::Tex2D(
                 fmt, m_width, m_height);
             tex_desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+            tex_desc.MipLevels = 1;
             clear_value.Format = fmt;
             ThrowIfFailed(m_device->CreateCommittedResource(&heap_props, D3D12_HEAP_FLAG_NONE,
                 &tex_desc, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, &clear_value,
@@ -584,18 +684,20 @@ void BasicSample::LoadPipeline()
 
     CreateFrameResources();
 
-    if (m_enableExternalDH)
+    if (m_enableExternalDescriptorHeap)
     {
-        requiredDescriptorCount = props.requiredDescriptorCount;
-        if (m_descriptorCount < (requiredDescriptorCount * FrameCount))
+        const uint32_t requiredDescriptorCount = m_xefgProperties.requiredDescriptorCount;
+        if (m_xefgDescriptorCount < requiredDescriptorCount * FrameCount)
         {
-            D3D12_DESCRIPTOR_HEAP_DESC desc = { D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, FrameCount * requiredDescriptorCount, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE, 0 };
+            D3D12_DESCRIPTOR_HEAP_DESC desc = {
+                D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
+                FrameCount * requiredDescriptorCount,
+                D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE,
+                0};
 
-            HRESULT hr = m_device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&m_pDH));
-            ThrowIfFailed(hr);
+            ThrowIfFailed(m_device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&m_xefgDescriptorHeap)));
 
-            m_descriptorCount = FrameCount * requiredDescriptorCount;
-
+            m_xefgDescriptorCount = FrameCount * requiredDescriptorCount;
         }
     }
 
@@ -651,10 +753,31 @@ void BasicSample::LoadAssets()
         UINT compileFlags = 0;
 #endif
 
-        ThrowIfFailed(D3DCompileFromFile(GetAssetFullPath(L"basic_sample_shaders/hlsl/shader_xess_fg.hlsl").c_str(), nullptr,
-            nullptr, "VSMainColor", "vs_5_0", compileFlags, 0, &vertexShader, nullptr), "Unable to find shader basic_sample_shaders/hlsl/shader_xess_fg.hlsl");
-        ThrowIfFailed(D3DCompileFromFile(GetAssetFullPath(L"basic_sample_shaders/hlsl/shader_xess_fg.hlsl").c_str(), nullptr,
-            nullptr, "PSMainColor", "ps_5_0", compileFlags, 0, &pixelShader, nullptr), "Unable to find shader basic_sample_shaders/hlsl/shader_xess_fg.hlsl");
+        ThrowIfFailed(
+            D3DCompileFromFile(
+                GetAssetFullPath(L"basic_sample_shaders/hlsl/shader_xess_fg.hlsl").c_str(),
+                nullptr,
+                nullptr,
+                "VSMainColor",
+                "vs_5_0",
+                compileFlags,
+                0,
+                &vertexShader,
+                nullptr),
+            "Failed to find shader basic_sample_shaders/hlsl/shader_xess_fg.hlsl");
+
+        ThrowIfFailed(
+            D3DCompileFromFile(
+                GetAssetFullPath(L"basic_sample_shaders/hlsl/shader_xess_fg.hlsl").c_str(),
+                nullptr,
+                nullptr,
+                "PSMainColor",
+                "ps_5_0",
+                compileFlags,
+                0,
+                &pixelShader,
+                nullptr),
+            "Failed to find shader basic_sample_shaders/hlsl/shader_xess_fg.hlsl");
 
         // Define the vertex input layout.
         D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =
@@ -702,10 +825,31 @@ void BasicSample::LoadAssets()
         UINT compileFlags = 0;
 #endif
 
-        ThrowIfFailed(D3DCompileFromFile(GetAssetFullPath(L"basic_sample_shaders/hlsl/shader_xess_fg.hlsl").c_str(), nullptr,
-            nullptr, "VSMainVelocity", "vs_5_0", compileFlags, 0, &vertexShader, nullptr), "Unable to find shader basic_sample_shaders/hlsl/shader_xess_fg.hlsl");
-        ThrowIfFailed(D3DCompileFromFile(GetAssetFullPath(L"basic_sample_shaders/hlsl/shader_xess_fg.hlsl").c_str(), nullptr,
-            nullptr, "PSMainVelocity", "ps_5_0", compileFlags, 0, &pixelShader, nullptr), "Unable to find shader basic_sample_shaders/hlsl/shader_xess_fg.hlsl");
+        ThrowIfFailed(
+            D3DCompileFromFile(
+                GetAssetFullPath(L"basic_sample_shaders/hlsl/shader_xess_fg.hlsl").c_str(),
+                nullptr,
+                nullptr,
+                "VSMainVelocity",
+                "vs_5_0",
+                compileFlags,
+                0,
+                &vertexShader,
+                nullptr),
+            "Failed to find shader basic_sample_shaders/hlsl/shader_xess_fg.hlsl");
+
+        ThrowIfFailed(
+            D3DCompileFromFile(
+                GetAssetFullPath(L"basic_sample_shaders/hlsl/shader_xess_fg.hlsl").c_str(),
+                nullptr,
+                nullptr,
+                "PSMainVelocity",
+                "ps_5_0",
+                compileFlags,
+                0,
+                &pixelShader,
+                nullptr),
+            "Failed to find shader basic_sample_shaders/hlsl/shader_xess_fg.hlsl");
 
         // Define the vertex input layout.
         D3D12_INPUT_ELEMENT_DESC inputElementDescs[] = {
@@ -756,13 +900,17 @@ void BasicSample::LoadAssets()
         // recommended. Every time the GPU needs it, the upload heap will be marshalled 
         // over. Please read up on Default Heap usage. An upload heap is used here for 
         // code simplicity and because there are very few verts to actually transfer.
-        ThrowIfFailed(m_device->CreateCommittedResource(
-            &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
-            D3D12_HEAP_FLAG_NONE,
-            &CD3DX12_RESOURCE_DESC::Buffer(vertexBufferSize),
-            D3D12_RESOURCE_STATE_GENERIC_READ,
-            nullptr,
-            IID_PPV_ARGS(&m_vertexBuffer)));
+        {
+            CD3DX12_HEAP_PROPERTIES heapProps(D3D12_HEAP_TYPE_UPLOAD);
+            CD3DX12_RESOURCE_DESC resourceDesc = CD3DX12_RESOURCE_DESC::Buffer(vertexBufferSize);
+            ThrowIfFailed(m_device->CreateCommittedResource(
+                &heapProps,
+                D3D12_HEAP_FLAG_NONE,
+                &resourceDesc,
+                D3D12_RESOURCE_STATE_GENERIC_READ,
+                nullptr,
+                IID_PPV_ARGS(&m_vertexBuffer)));
+        }
 
         // Copy the triangle data to the vertex buffer.
         UINT8* pVertexDataBegin;
@@ -781,10 +929,12 @@ void BasicSample::LoadAssets()
     {
         const UINT constantBufferSize = sizeof(SceneConstantBuffer);    // CB size is required to be 256-byte aligned.
 
+        CD3DX12_HEAP_PROPERTIES heapProps(D3D12_HEAP_TYPE_UPLOAD);
+        CD3DX12_RESOURCE_DESC resourceDesc = CD3DX12_RESOURCE_DESC::Buffer(constantBufferSize);
         ThrowIfFailed(m_device->CreateCommittedResource(
-            &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+            &heapProps,
             D3D12_HEAP_FLAG_NONE,
-            &CD3DX12_RESOURCE_DESC::Buffer(constantBufferSize),
+            &resourceDesc,
             D3D12_RESOURCE_STATE_GENERIC_READ,
             nullptr,
             IID_PPV_ARGS(&m_constantBuffer)));
@@ -806,13 +956,6 @@ void BasicSample::LoadAssets()
     {
         ThrowIfFailed(m_device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_fence)));
         m_fenceValue = 1;
-
-        // Create an event handle to use for frame synchronization.
-        m_fenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
-        if (m_fenceEvent == nullptr)
-        {
-            ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
-        }
 
         // Wait for the command list to execute; we are reusing the same command 
         // list in our main loop but for now, we just want to wait for setup to 
@@ -927,10 +1070,31 @@ void BasicSample::CreateFSQPipeline()
         UINT compileFlags = 0;
 #endif
 
-        ThrowIfFailed(D3DCompileFromFile(GetAssetFullPath(L"basic_sample_shaders/hlsl/shader_xess_fg.hlsl").c_str(), nullptr,
-            nullptr, "VSMainFSQ", "vs_5_0", compileFlags, 0, &vertexShader, nullptr), "Unable to find shader basic_sample_shaders/hlsl/shader_xess_fg.hlsl");
-        ThrowIfFailed(D3DCompileFromFile(GetAssetFullPath(L"basic_sample_shaders/hlsl/shader_xess_fg.hlsl").c_str(), nullptr,
-            nullptr, "PSMainFSQ", "ps_5_0", compileFlags, 0, &pixelShader, nullptr), "Unable to find shader basic_sample_shaders/hlsl/shader_xess_fg.hlsl");
+        ThrowIfFailed(
+            D3DCompileFromFile(
+                GetAssetFullPath(L"basic_sample_shaders/hlsl/shader_xess_fg.hlsl").c_str(),
+                nullptr,
+                nullptr,
+                "VSMainFSQ",
+                "vs_5_0",
+                compileFlags,
+                0,
+                &vertexShader,
+                nullptr),
+            "Failed to find shader basic_sample_shaders/hlsl/shader_xess_fg.hlsl");
+
+        ThrowIfFailed(
+            D3DCompileFromFile(
+                GetAssetFullPath(L"basic_sample_shaders/hlsl/shader_xess_fg.hlsl").c_str(),
+                nullptr,
+                nullptr,
+                "PSMainFSQ",
+                "ps_5_0",
+                compileFlags,
+                0,
+                &pixelShader,
+                nullptr),
+            "Failed to find shader basic_sample_shaders/hlsl/shader_xess_fg.hlsl");
 
         // Describe and create the graphics pipeline state object (PSO).
         D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
@@ -956,7 +1120,6 @@ void BasicSample::CreateFSQPipeline()
 // Update frame-based values.
 void BasicSample::OnUpdate()
 {
-#if ENABLE_XEFG_SWAPCHAIN
     ThrowIfFailed(xellAddMarkerData(m_xellContext, m_frameCounter, XELL_SIMULATION_START),
                   "Failed to add XeLL marker XELL_SIMULATION_START");
 
@@ -981,16 +1144,8 @@ void BasicSample::OnUpdate()
 
         LoadPipeline();
         PopulateDescriptorHeap();
-
-        if (!m_fullScreen && m_enableXeFG)
-        {
-            // If the application enters fullscreen exclusive mode while XeSS-FG is enabled,
-            // frame generation will be disabled.
-            // After leaving fullscreen exclusive mode, xefgSwapChainSetEnabled
-            // must be called again to enable frame generation.
-            xefgSwapChainSetEnabled(m_xefgSwapChain, m_enableXeFG);
-        }
     }
+
     if (m_switchResolution)
     {
         WaitForExec();
@@ -1020,6 +1175,29 @@ void BasicSample::OnUpdate()
                                DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED,
                                DXGI_MODE_SCALING_STRETCHED};
 
+        // Query the minimum required heap size for the new resolution. This will tell us how much
+        // heap space XeSS-FG will use after resize.
+        //
+        // Note that if we don't take extra care, XeSS-FG may start aliasing unexpected resources
+        // after resize: higher resolutions require more heap space.
+        ThrowIfFailed(xefgSwapChainD3D12GetProperties(
+                          m_xefgSwapChain,
+                          nullptr,
+                          m_width,
+                          m_height,
+                          m_format,
+                          &m_xefgProperties),
+                      "Failed to query XeSS-FG properties");
+
+        // In this sample we always prepare new heaps for illustration purposes.
+        // In practice, if the old heaps have enough space we don't have to do anything.
+        m_fgBufferHeap = CreateExternalBufferHeap(m_device.Get(), m_xefgProperties.tempBufferHeapSize);
+        m_fgTextureHeap = CreateExternalTextureHeap(m_device.Get(), m_xefgProperties.tempTextureHeapSize);
+
+        ThrowIfFailed(
+            xefgSwapChainD3D12UpdateExternalHeapOnResize(
+                m_xefgSwapChain, m_fgBufferHeap.Get(), 0U, m_fgTextureHeap.Get(), 0U));
+
         ThrowIfFailed(m_swapChain->ResizeTarget(&mode));
         ThrowIfFailed(m_swapChain->ResizeBuffers(FrameCount, m_width, m_height, m_format, DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING));
         m_rtvHeap.Reset();
@@ -1028,26 +1206,18 @@ void BasicSample::OnUpdate()
         LoadPipeline();
         PopulateDescriptorHeap();
     }
-    if(m_switchEnablement)
+
+    if (m_lastUpdateTime.time_since_epoch().count() == 0)
     {
-        m_switchEnablement = false;
-        xefgSwapChainSetEnabled(m_xefgSwapChain, m_enableXeFG);
-        std::stringstream ss;
-        ss << "XeFG " << (m_enableXeFG ? "ON" : "OFF") << std::endl;
-        OutputDebugStringA(ss.str().c_str());
-    }
-#endif
-    if (last_time.time_since_epoch().count() == 0)
-    {
-        last_time = std::chrono::high_resolution_clock::now();
+        m_lastUpdateTime = std::chrono::high_resolution_clock::now();
     }
 
-    auto current_time = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> elapsed_seconds = current_time - last_time;
-    last_time = current_time;
+    const auto currentTime = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsedSeconds = currentTime - m_lastUpdateTime;
+    m_lastUpdateTime = currentTime;
 
     const double speed = 1.0 / 2; 
-    float translationSpeed = m_pause ? 0.f : (float)(speed * elapsed_seconds.count());
+    float translationSpeed = m_pause ? 0.f : (float)(speed * elapsedSeconds.count());
     const float offsetBounds = 1.25f;
 
     m_constantBufferData.offset.y = m_verticalOffset;
@@ -1061,21 +1231,15 @@ void BasicSample::OnUpdate()
 
     memcpy(m_pCbvDataBegin, &m_constantBufferData, sizeof(m_constantBufferData));
 
-#ifdef ENABLE_XEFG_SWAPCHAIN
     ThrowIfFailed(xellAddMarkerData(m_xellContext, m_frameCounter, XELL_SIMULATION_END),
                   "Failed to add XELL_SIMULATION_END marker");
-#endif
 }
 
 // Render the scene.
-// 
-// TODO: This is full of non-efficient sync waits: refactor to allow full async operation across multiple command lists
 void BasicSample::OnRender()
 {
-#ifdef ENABLE_XEFG_SWAPCHAIN
     ThrowIfFailed(xellAddMarkerData(m_xellContext, m_frameCounter, XELL_RENDERSUBMIT_START),
                   "Failed to add XELL_RENDERSUBMIT_START marker");
-#endif
 
     // Record all the commands we need to render the scene into the command list.
     PopulateCommandList();
@@ -1090,8 +1254,7 @@ void BasicSample::OnRender()
     ID3D12CommandList* ppCommandLists2[] = { m_commandList.Get() };
     m_commandQueue->ExecuteCommandLists(_countof(ppCommandLists2), ppCommandLists2);
 
-#ifdef ENABLE_XEFG_SWAPCHAIN
-    lastPresentStatus = {};
+    m_lastPresentStatus = {};
     if(m_enableXeFG)
     {
         ThrowIfFailed(m_commandList->Reset(m_commandAllocator.Get(), nullptr));
@@ -1153,7 +1316,7 @@ void BasicSample::OnRender()
 
             constData.jitterOffsetX = constData.jitterOffsetY = 0.0f;
             constData.motionVectorScaleX = constData.motionVectorScaleY = 1.0f;
-            constData.frameRenderTime = m_last_frameMS;
+            constData.frameRenderTime = m_lastFrameTimeMS;
 
             ThrowIfFailed(xefgSwapChainTagFrameConstants(m_xefgSwapChain, m_frameCounter, &constData),
                           "Failed to tag frame constants");
@@ -1167,22 +1330,26 @@ void BasicSample::OnRender()
             m_commandQueue->ExecuteCommandLists(_countof(command_lists), command_lists);
         }
 
-        if (m_enableExternalDH)
+        if (m_enableExternalDescriptorHeap)
         {
-            ThrowIfFailed(xefgSwapChainD3D12SetDescriptorHeap(
-                              m_xefgSwapChain, m_pDH.Get(),
-                              (requiredDescriptorCount * (m_frameCounter % FrameCount)) * m_uavDescriptorSize),
-                          "Failed to set descriptor heap");
+            const uint32_t offsetInBytes =
+                m_xefgProperties.requiredDescriptorCount * (m_frameCounter % FrameCount) * m_uavDescriptorSize;
+
+            ThrowIfFailed(
+                xefgSwapChainD3D12SetDescriptorHeap(m_xefgSwapChain, m_xefgDescriptorHeap.Get(), offsetInBytes),
+                "Failed to set descriptor heap");
         }
 
         ThrowIfFailed(xefgSwapChainSetPresentId(m_xefgSwapChain, m_frameCounter), "Failed to set presentation Id");
     }
 
-    ThrowIfFailed(xellAddMarkerData(m_xellContext, m_frameCounter, XELL_RENDERSUBMIT_END),
-                  "Failed to add XELL_RENDERSUBMIT_END marker");
-    ThrowIfFailed(xellAddMarkerData(m_xellContext, m_frameCounter, XELL_PRESENT_START),
-                  "Failed to add XELL_PRESENT_START marker");
-#endif
+    ThrowIfFailed(
+        xellAddMarkerData(m_xellContext, m_frameCounter, XELL_RENDERSUBMIT_END),
+        "Failed to add XELL_RENDERSUBMIT_END marker");
+
+    ThrowIfFailed(
+        xellAddMarkerData(m_xellContext, m_frameCounter, XELL_PRESENT_START),
+        "Failed to add XELL_PRESENT_START marker");
 
     if (m_useAsyncFlip)
     {
@@ -1196,27 +1363,29 @@ void BasicSample::OnRender()
         ThrowIfFailed(m_swapChain->Present(1, 0));
     }
 
-#ifdef ENABLE_XEFG_SWAPCHAIN
     ThrowIfFailed(xellAddMarkerData(m_xellContext, m_frameCounter, XELL_PRESENT_END),
                   "Failed to add XELL_PRESENT_END marker");
 
-    ThrowIfFailed(xefgSwapChainGetLastPresentStatus(m_xefgSwapChain, &lastPresentStatus),
+    ThrowIfFailed(xefgSwapChainGetLastPresentStatus(m_xefgSwapChain, &m_lastPresentStatus),
                   "Failed to get last presentation status from XeSS-FG");
 
-    if (lastPresentStatus.frameGenResult != XEFG_SWAPCHAIN_RESULT_SUCCESS)
+    if (m_lastPresentStatus.frameGenResult != XEFG_SWAPCHAIN_RESULT_SUCCESS)
     {
-        std::stringstream ss;
-        ss << "XeSS-FG frame generation failed with error code: " << lastPresentStatus.frameGenResult << "\n";
-        OutputDebugStringA(ss.str().c_str());
+        DebugPrintf(
+            "Frame generation for frame %u failed with: %s (%d)\n",
+            m_frameCounter,
+            ToString(m_lastPresentStatus.frameGenResult),
+            m_lastPresentStatus.frameGenResult);
     }
 
-#endif
     m_frameCounter++;
     WaitForPreviousFrame();
 
     m_frameIndex++;
     if (m_frameIndex >= FrameCount)
+    {
         m_frameIndex = 0;
+    }
 }
 
 void BasicSample::OnDestroy()
@@ -1229,16 +1398,17 @@ void BasicSample::OnDestroy()
     // Swap chain must be windowed before shutdown
     if (m_fullScreen) 
     {
-        //TODO: sample hangs here
         m_swapChain->SetFullscreenState(false, nullptr);
     }
-    CloseHandle(m_fenceEvent);
 
-#ifdef ENABLE_XEFG_SWAPCHAIN
+    if (m_frameLatencyWaitableObject)
+    {
+        CloseHandle(m_frameLatencyWaitableObject);
+    }
+
     m_swapChain.Reset();
     ThrowIfFailed(xefgSwapChainDestroy(m_xefgSwapChain), "Failed to destroy XeSS-FG swap chain context");
     ThrowIfFailed(xellDestroyContext(m_xellContext), "Failed to destroy XeLL context");
-#endif
 }
 
 // Fill the command list with all the render commands and dependent state.
@@ -1402,8 +1572,7 @@ void BasicSample::WaitForExec()
     // Wait until the previous frame is finished.
     if (m_fence->GetCompletedValue() < fence)
     {
-        ThrowIfFailed(m_fence->SetEventOnCompletion(fence, m_fenceEvent));
-        WaitForSingleObject(m_fenceEvent, INFINITE);
+        ThrowIfFailed(m_fence->SetEventOnCompletion(fence, nullptr));
     }
 }
 
@@ -1431,4 +1600,37 @@ void BasicSample::WaitForPreviousFrame()
     }
 
     m_backBufferIndex = m_swapChain->GetCurrentBackBufferIndex();
+}
+
+void BasicSample::CycleNumInterpolatedFrames()
+{
+    ++m_numInterpolatedFrames;
+
+    if (m_numInterpolatedFrames > m_maxInterpolatedFrames)
+    {
+        m_numInterpolatedFrames = 1;
+    }
+
+    DebugPrintf("Setting number of interpolated frames to %u\n", m_numInterpolatedFrames);
+    ThrowIfFailed(
+        xefgSwapChainSetNumInterpolatedFrames(m_xefgSwapChain, m_numInterpolatedFrames),
+        "Failed to set number of interpolated frames");
+}
+
+void BasicSample::CycleUiCompositionState()
+{
+    if (m_uiCompositionState == XEFG_SWAPCHAIN_UI_COMPOSITION_STATE_DISABLED)
+    {
+        m_uiCompositionState = XEFG_SWAPCHAIN_UI_COMPOSITION_STATE_ENABLED;
+        DebugPrintf("Enabling UI composition\n");
+    }
+    else
+    {
+        m_uiCompositionState = XEFG_SWAPCHAIN_UI_COMPOSITION_STATE_DISABLED;
+        DebugPrintf("Disabling UI composition\n");
+    }
+
+    ThrowIfFailed(
+        xefgSwapChainSetUiCompositionState(m_xefgSwapChain, m_uiCompositionState),
+        "Failed to set UI composition state");
 }

@@ -7,5 +7,6 @@ var searchData=
   ['xefg_5fswapchain_5fpack_5fb_5fx_4',['XEFG_SWAPCHAIN_PACK_B_X',['../xefg__swapchain_8h.html#a4b0de771302c8e6174f942b9993bd9ce',1,'xefg_swapchain.h']]],
   ['xefg_5fswapchain_5fpack_5fe_5',['XEFG_SWAPCHAIN_PACK_E',['../xefg__swapchain_8h.html#a333c83bf005356bed6724c5f5b51d7d6',1,'xefg_swapchain.h']]],
   ['xefg_5fswapchain_5fpragma_6',['XEFG_SWAPCHAIN_PRAGMA',['../xefg__swapchain_8h.html#a441be7eb9434e15555d72275f1f09a76',1,'xefg_swapchain.h']]],
-  ['xefg_5fswapchain_5fstatic_5fassert_7',['XEFG_SWAPCHAIN_STATIC_ASSERT',['../xefg__swapchain_8h.html#aa4f6797e657a445fe2335f9ed143074f',1,'xefg_swapchain.h']]]
+  ['xefg_5fswapchain_5fstatic_5fassert_7',['XEFG_SWAPCHAIN_STATIC_ASSERT',['../xefg__swapchain_8h.html#aa4f6797e657a445fe2335f9ed143074f',1,'xefg_swapchain.h']]],
+  ['xefg_5fswapchain_5fuse_5fmax_5fsupported_5finterpolated_5fframes_8',['XEFG_SWAPCHAIN_USE_MAX_SUPPORTED_INTERPOLATED_FRAMES',['../xefg__swapchain_8h.html#a789d70e7403b3d91c776c84599cd7adc',1,'xefg_swapchain.h']]]
 ];

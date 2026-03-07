@@ -37,8 +37,6 @@ private:
     const HRESULT m_hr;
 };
 
-#define SAFE_RELEASE(p) if (p) (p)->Release()
-
 inline void ThrowIfFailed(HRESULT hr)
 {
     if (FAILED(hr))
@@ -72,7 +70,6 @@ inline HRESULT ReadDataFromFile(LPCWSTR filename, byte** data, UINT* size)
 {
     using namespace Microsoft::WRL;
 
-#if WINVER >= _WIN32_WINNT_WIN8
     CREATEFILE2_EXTENDED_PARAMETERS extendedParams = {};
     extendedParams.dwSize = sizeof(CREATEFILE2_EXTENDED_PARAMETERS);
     extendedParams.dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
@@ -82,9 +79,7 @@ inline HRESULT ReadDataFromFile(LPCWSTR filename, byte** data, UINT* size)
     extendedParams.hTemplateFile = nullptr;
 
     Wrappers::FileHandle file(CreateFile2(filename, GENERIC_READ, FILE_SHARE_READ, OPEN_EXISTING, &extendedParams));
-#else
-    Wrappers::FileHandle file(CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN | SECURITY_SQOS_PRESENT | SECURITY_ANONYMOUS, nullptr));
-#endif
+
     if (file.Get() == INVALID_HANDLE_VALUE)
     {
         throw std::exception();
@@ -253,4 +248,15 @@ void ResetUniquePtrArray(T* uniquePtrArray)
     {
         i.reset();
     }
+}
+
+inline void DebugPrintf(_Printf_format_string_ const char* format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    char buffer[1024];
+    vsnprintf_s(buffer, std::size(buffer), _TRUNCATE, format, args);
+    va_end(args);
+
+    OutputDebugStringA(buffer);
 }

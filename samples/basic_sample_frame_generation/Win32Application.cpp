@@ -20,23 +20,10 @@ HANDLE hWindowCreated = nullptr;
 BOOL m_firstPaint = false;
 HANDLE hRenderThread = 0;
 
-//#define _STATS
-#ifdef _STATS
-#include <algorithm>
-#include <numeric>
-#include <thread>
-#define DBG_PRINTF(...) {char cad[512]; sprintf(cad, __VA_ARGS__);  OutputDebugStringA(cad);}
-#endif
-
 DWORD WINAPI RenderThread(LPVOID lpParam)
 {
     auto pSample = static_cast<DXSample*>(lpParam);
-    auto last_frame = std::chrono::high_resolution_clock::now();
-
-#ifdef _STATS
-    auto last_report = std::chrono::high_resolution_clock::now();
-    std::list<float> frametime;
-#endif
+    auto previousTime = std::chrono::high_resolution_clock::now();
 
     try
     {
@@ -45,36 +32,44 @@ DWORD WINAPI RenderThread(LPVOID lpParam)
         // Wait for window creation
         WaitForSingleObject(hWindowCreated, INFINITE);
 
+        const auto targetInterval =
+            std::chrono::microseconds(static_cast<int>(pSample->m_minimumFrameTimeMS * 1000.0f));
+
+        int frameCount = 0;
+
         while (!m_exit)
         {
             // Allow the sample to pace/delay to minimize latency
             pSample->OnSleep();
-            //std::this_thread::sleep_for(std::chrono::milliseconds(1)); // Note: This is commented out as it causes large variance in frame times.  Without it we spin in this loop on the CPU
-            auto current_time = std::chrono::high_resolution_clock::now();
-            float duration = std::chrono::duration_cast<std::chrono::microseconds>(current_time - last_frame).count() / 1000.0f;
-            if (duration >= pSample->m_frameMS)
+
+            // Spin-wait to maintain the target application frame rate.
+            //
+            // We (optionally) maintain a fixed application frame rate to clearly
+            // show the effects of enabling XeSS Frame Generation.
+            //
+            // We don't use XeLL's frame limiter for simplicity. XeLL caps the display frame rate,
+            // which includes both application and generated frames, so using XeLL would require
+            // extra logic which may obscure the sample's purpose.
+            while (previousTime + targetInterval > std::chrono::high_resolution_clock::now())
             {
-                last_frame = current_time;
-#ifdef _STATS
-                frametime.push_back(duration);
-#endif
-                pSample->SetFrameTime(duration);
-                pSample->OnUpdate();
-                pSample->OnRender();
+                YieldProcessor();
             }
 
-#ifdef _STATS
-            // Report stats once per second
-            if (!frametime.empty() && std::chrono::duration_cast<std::chrono::seconds>(current_time - last_report).count())
+            const auto currentTime = std::chrono::high_resolution_clock::now();
+            const auto duration = std::chrono::duration<float, std::milli>(currentTime - previousTime);
+            previousTime = currentTime;
+
+            pSample->SetFrameTime(duration.count());
+            pSample->OnUpdate();
+            pSample->OnRender();
+
+            ++frameCount;
+
+            if (frameCount >= pSample->m_maxFrames)
             {
-                float min = *std::min_element(frametime.begin(), frametime.end());
-                float average = std::accumulate(frametime.begin(), frametime.end(), 0.0f) / frametime.size();
-                float max = *std::max_element(frametime.begin(), frametime.end());
-                DBG_PRINTF("[Stats] Frame min:average:max %fms, %fms, %fms\n", min, average, max);
-                frametime.clear();
-                last_report = current_time;
+                m_exit = true;
+                break;
             }
-#endif
         }
 
         pSample->OnDestroy();
@@ -82,7 +77,11 @@ DWORD WINAPI RenderThread(LPVOID lpParam)
     catch (const std::runtime_error& err)
     {
         m_exit = true;
-        MessageBoxA(NULL, (std::string("XeSS-FG sample error: ") + err.what()).c_str(), "Error", MB_OK | MB_TOPMOST | MB_ICONINFORMATION);
+        MessageBoxA(
+            NULL,
+            (std::string("XeSS-FG sample error: ") + err.what()).c_str(),
+            "Error",
+            MB_OK | MB_TOPMOST | MB_ICONINFORMATION);
         return 1;
     }
     return 0;

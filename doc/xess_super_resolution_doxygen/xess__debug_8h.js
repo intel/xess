@@ -4,7 +4,6 @@ var xess__debug_8h =
     [ "_xess_profiled_frame_data_t", "struct__xess__profiled__frame__data__t.html", "struct__xess__profiled__frame__data__t" ],
     [ "_xess_profiling_data_t", "struct__xess__profiling__data__t.html", "struct__xess__profiling__data__t" ],
     [ "XESS_DEBUG_ENABLE_PROFILING", "xess__debug_8h.html#a0d5aa6c3abdd6c49ec991416a75a5e66", null ],
-    [ "sizecheck__LINE__", "xess__debug_8h.html#a368b9d0a82e205f30f7e7c0da413e318", null ],
     [ "xess_dump_element_bits_t", "xess__debug_8h.html#a516d71b76c0d19198beed6465eb4535c", null ],
     [ "xess_dump_elements_mask_t", "xess__debug_8h.html#a508c6f679546883d9c849cbfd3615363", null ],
     [ "xess_dump_parameters_t", "xess__debug_8h.html#a7a40b052b76b6b70177eb6bca388a214", null ],
