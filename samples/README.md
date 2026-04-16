@@ -136,21 +136,29 @@ cmake --build build --config Debug --target ALL_BUILD
 
 ### Command Line Options
 
+- `-warp`: Use WARP (Windows Advanced Rasterization Platform) device.
 - `-gpu_id value`: Selects GPU by ID.
-- `-async`: Enables asynchronous flip.
+- `-debug`: Enable debug device.
 - `-fps value`: Forces the sample to run at a specified FPS.
+- `-fullscreen`: Starts the application in exclusive fullscreen mode.
+- `-borderless`: Start the application in borderless windowed mode.
 - `-maximized`: Maximizes the application window.
 - `-width value`: Sets the window width.
 - `-height value`: Sets the window height.
 - `-top`: Makes the window topmost.
-- `-tag_interpolated_frames value`: Tags interpolated frames with purple stripes (default: true).
-- `-fullscreen`: Starts the application in exclusive fullscreen mode.
+- `-tag_interpolated_frames value`: Tags interpolated frames with purple stripes (0 or 1).
+- `-max_frames value`: Maximum number of frames to run before exiting.
+- `-init_from_swap_chain`: Initialize XeSS-FG from application swap chain.
+- `-external_descriptor_heap`: Enable external descriptor heap.
+- `-mfg_count value`: Set the maximum number of interpolated frames.
+- `-waitable`: Use waitable swap chain.
 
 ### Keyboard Shortcuts
 
 - `3`: Toggle frame interpolation ON/OFF.
 - `4`: Cycle number of interpolated frames.
 - `5`: Toggle UI composition ON/OFF.
+- `v`: Toggle VSYNC ON/OFF.
 - `space`: Pause animation.
 - `F3`: Switch between 1080p and 1440p.
 - `F4`: Switch between exclusive fullscreen and windowed mode.

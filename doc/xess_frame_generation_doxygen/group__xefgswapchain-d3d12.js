@@ -1,6 +1,6 @@
 var group__xefgswapchain_d3d12 =
 [
-    [ "xefgSwapChainD3D12BuildPipelines", "group__xefgswapchain-d3d12.html#ga65ae23e57239395a0004c76bbe856bc1", null ],
+    [ "xefgSwapChainD3D12BuildPipelines", "group__xefgswapchain-d3d12.html#ga387f52f3dfd993a7d786fc2c73b1a3bb", null ],
     [ "xefgSwapChainD3D12CreateContext", "group__xefgswapchain-d3d12.html#gad79053e072e6d5d9c209f30b913c3f3e", null ],
     [ "xefgSwapChainD3D12GetInitializationParameters", "group__xefgswapchain-d3d12.html#gab01a48a9ed276762b9ad5ad186406eba", null ],
     [ "xefgSwapChainD3D12GetProperties", "group__xefgswapchain-d3d12.html#ga608c366f83d236d9ffcb75ac2869f01b", null ],

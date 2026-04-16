@@ -137,7 +137,7 @@ XEFG_SWAPCHAIN_PACK_E()
  * @param initFlags Initialization flags. *Must* be identical to flags passed to initialization function
  */
 XEFG_SWAPCHAIN_API xefg_swapchain_result_t xefgSwapChainD3D12BuildPipelines(xefg_swapchain_handle_t hSwapChain,
-    ID3D12PipelineLibrary* pPipelineLibrary, bool blocking, uint32_t initFlags);
+    ID3D12PipelineLibrary* pPipelineLibrary, uint8_t blocking, uint32_t initFlags);
 
  /**
  * @brief Queries properties (including required heap sizes) given desired initialization parameters.

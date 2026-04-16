@@ -236,7 +236,7 @@ LRESULT CALLBACK Win32Application::WindowProc(HWND hWnd, UINT message, WPARAM wP
         return 0;
 
     case WM_MOUSEWHEEL:
-            pSample->OnMouseWheel(HIWORD(wParam));
+        pSample->OnMouseWheel(wParam);
         return 0;
 
     case WM_PAINT:

@@ -33,7 +33,7 @@ public:
     // Samples override the event handlers to handle specific messages.
     virtual void OnKeyDown(UINT8 /*key*/)      {}
     virtual void OnKeyUp(UINT8 /*key*/)        {}
-    virtual void OnMouseWheel(WORD /*wValue*/) {}
+    virtual void OnMouseWheel(WPARAM /*wParam*/) {}
     virtual void OnSleep() = 0;
 
     // Accessors.
@@ -43,9 +43,6 @@ public:
     void SetFrameTime(float duration) { m_lastFrameTimeMS = duration; };
 
     void ParseCommandLineArgs(_In_reads_(argc) WCHAR* argv[], int argc);
-
-    // Flip mode
-    bool m_useAsyncFlip = false;
 
     // Target FPS
     float m_minimumFrameTimeMS = 0; // as fast as possible

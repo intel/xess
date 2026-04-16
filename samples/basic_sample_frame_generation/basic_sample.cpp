@@ -182,7 +182,6 @@ static ComPtr<ID3D12Heap> CreateExternalTextureHeap(ID3D12Device* device, uint64
 
 BasicSample::BasicSample(UINT width, UINT height, std::wstring name) :
     DXSample(width, height, std::move(name)),
-    m_frameIndex(0),
     m_backBufferIndex(0),
     m_fenceValue(0),
     m_pCbvDataBegin(nullptr),
@@ -193,7 +192,6 @@ BasicSample::BasicSample(UINT width, UINT height, std::wstring name) :
     m_rtvDescriptorSize(0),
     m_dsvDescriptorSize(0),
     m_uavDescriptorSize(0),
-    blankResDesc(),
     m_vertexBufferView(),
     m_constantBufferData{}
 {
@@ -217,8 +215,11 @@ void BasicSample::OnKeyUp(UINT8 key)
     case 0x34: // Key 4
         CycleNumInterpolatedFrames();
         break;
-    case 0x35:
-        CycleUiCompositionState();
+    case 0x35: // Key 5
+        ToggleUiCompositionState();
+        break;
+    case 0x56:  // V
+        ToggleVerticalSynchronization();
         break;
     case VK_F3: // Key F3
         m_switchResolution = true;
@@ -260,12 +261,12 @@ void BasicSample::SetViewPort(UINT width, UINT height)
     m_scissorRect.bottom = height;
 }
 
-void BasicSample::OnMouseWheel(WORD wValue)
+void BasicSample::OnMouseWheel(WPARAM wParam)
 {
     ThrowIfFailed(xellAddMarkerData(m_xellContext, m_frameCounter, XELL_INPUT_SAMPLE),
                   "Failed to XeLL input sample marker");
 
-    m_verticalOffset += wValue > 1 ? 0.1f : -0.1f;
+    m_verticalOffset += GET_WHEEL_DELTA_WPARAM(wParam) > 0 ? 0.1f : -0.1f;
 
     m_verticalOffset = Clamp(m_verticalOffset, -1.0f, 1.0f);
 }
@@ -314,7 +315,7 @@ void BasicSample::LoadDX12()
     }
 #endif
 
-    auto get_adapter_description_wstrings = [](IDXGIAdapter* adapter, std::wstring& shortDesc, std::wstring& fullDesc)
+    auto getAdapterDescription = [](IDXGIAdapter* adapter, std::wstring& shortDesc, std::wstring& fullDesc)
     {
         DXGI_ADAPTER_DESC desc;
         ThrowIfFailed(adapter->GetDesc(&desc), "Cannot obtain adapter description");
@@ -334,14 +335,15 @@ void BasicSample::LoadDX12()
     ComPtr<IDXGIFactory4> factory;
     ThrowIfFailed(CreateDXGIFactory2(dxgiFactoryFlags, IID_PPV_ARGS(&factory)));
 
-    std::wstring selectedAdapterShortDesc, selectedAdapterFullDesc;
+    std::wstring selectedAdapterShortDesc;
+    std::wstring selectedAdapterFullDesc;
 
     if (m_useWarpDevice)
     {
         ComPtr<IDXGIAdapter> warpAdapter;
         ThrowIfFailed(factory->EnumWarpAdapter(IID_PPV_ARGS(&warpAdapter)));
 
-        get_adapter_description_wstrings(warpAdapter.Get(), selectedAdapterShortDesc, selectedAdapterFullDesc);
+        getAdapterDescription(warpAdapter.Get(), selectedAdapterShortDesc, selectedAdapterFullDesc);
 
         ThrowIfFailed(D3D12CreateDevice(
             warpAdapter.Get(),
@@ -372,7 +374,7 @@ void BasicSample::LoadDX12()
             spDebugController1->SetEnableGPUBasedValidation(true);
         }
 
-        get_adapter_description_wstrings(hardwareAdapter.Get(), selectedAdapterShortDesc, selectedAdapterFullDesc);
+        getAdapterDescription(hardwareAdapter.Get(), selectedAdapterShortDesc, selectedAdapterFullDesc);
 
         ThrowIfFailed(D3D12CreateDevice(
             hardwareAdapter.Get(),
@@ -569,10 +571,10 @@ void BasicSample::CreateFrameResources()
             ThrowIfFailed(m_swapChain->GetBuffer(n, IID_PPV_ARGS(&m_presentRenderTargets[n])));
 
             D3D12_CLEAR_VALUE clear_value;
-            clear_value.Color[0] = clearColor[0];
-            clear_value.Color[1] = clearColor[1];
-            clear_value.Color[2] = clearColor[2];
-            clear_value.Color[3] = clearColor[3];
+            clear_value.Color[0] = m_clearColor[0];
+            clear_value.Color[1] = m_clearColor[1];
+            clear_value.Color[2] = m_clearColor[2];
+            clear_value.Color[3] = m_clearColor[3];
             clear_value.Format = fmt;
 
             // Render target
@@ -1130,7 +1132,7 @@ void BasicSample::OnUpdate()
 
         ThrowIfFailed(m_swapChain->SetFullscreenState(m_fullScreen, nullptr));
 
-        for (int i=0; i<FrameCount; i++)
+        for (int i = 0; i < FrameCount; ++i)
         {
             m_renderTargets[i].Reset();
             m_depthTargets[i].Reset();
@@ -1144,6 +1146,12 @@ void BasicSample::OnUpdate()
 
         LoadPipeline();
         PopulateDescriptorHeap();
+
+        // Entering fullscreen disables XeSS-FG. Restore the state if we are exiting fullscreen.
+        if (!m_fullScreen)
+        {
+            ThrowIfFailed(xefgSwapChainSetEnabled(m_xefgSwapChain, m_enableXeFG), "Failed to toggle XeSS-FG");
+        }
     }
 
     if (m_switchResolution)
@@ -1158,7 +1166,7 @@ void BasicSample::OnUpdate()
         {
             SetViewPort(2560, 1440);
         }
-        for (int i = 0; i < FrameCount; i++)
+        for (int i = 0; i < FrameCount; ++i)
         {
             m_renderTargets[i].Reset();
             m_depthTargets[i].Reset();
@@ -1270,7 +1278,7 @@ void BasicSample::OnRender()
             hudlessColor.validity = XEFG_SWAPCHAIN_RV_UNTIL_NEXT_PRESENT;
             hudlessColor.resourceBase = { 0, 0 };
             hudlessColor.resourceSize = { m_width, m_height };
-            hudlessColor.pResource = m_renderTargets[m_frameIndex].Get();
+            hudlessColor.pResource = m_renderTargets[m_backBufferIndex].Get();
             hudlessColor.incomingState = D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
             xefgSwapChainD3D12TagFrameResource(m_xefgSwapChain, nullptr, m_frameCounter, &hudlessColor);
         }
@@ -1280,8 +1288,8 @@ void BasicSample::OnRender()
             xefg_swapchain_d3d12_resource_data_t velocity = {};
             velocity.type = XEFG_SWAPCHAIN_RES_MOTION_VECTOR;
             velocity.validity = XEFG_SWAPCHAIN_RV_ONLY_NOW;
-            velocity.pResource = m_renderTargetsVelocity[m_frameIndex].Get();
-            D3D12_RESOURCE_DESC desc = m_renderTargetsVelocity[m_frameIndex]->GetDesc();
+            velocity.pResource = m_renderTargetsVelocity[m_backBufferIndex].Get();
+            D3D12_RESOURCE_DESC desc = m_renderTargetsVelocity[m_backBufferIndex]->GetDesc();
             velocity.resourceSize = { (std::uint32_t)desc.Width, (std::uint32_t)desc.Height };
             velocity.resourceBase = { 0, 0 };
             velocity.incomingState = D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
@@ -1293,8 +1301,8 @@ void BasicSample::OnRender()
             xefg_swapchain_d3d12_resource_data_t depth = {};
             depth.type = XEFG_SWAPCHAIN_RES_DEPTH;
             depth.validity = XEFG_SWAPCHAIN_RV_ONLY_NOW;
-            depth.pResource = m_depthTargets[m_frameIndex].Get();
-            D3D12_RESOURCE_DESC desc = m_depthTargets[m_frameIndex]->GetDesc();
+            depth.pResource = m_depthTargets[m_backBufferIndex].Get();
+            D3D12_RESOURCE_DESC desc = m_depthTargets[m_backBufferIndex]->GetDesc();
             depth.resourceSize = { (std::uint32_t)desc.Width, (std::uint32_t)desc.Height };
             depth.resourceBase = { 0, 0 };
             depth.incomingState = D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
@@ -1351,17 +1359,15 @@ void BasicSample::OnRender()
         xellAddMarkerData(m_xellContext, m_frameCounter, XELL_PRESENT_START),
         "Failed to add XELL_PRESENT_START marker");
 
-    if (m_useAsyncFlip)
+    UINT presentFlags = 0U;
+    const UINT syncInterval = m_syncInterval.load();
+
+    if ((syncInterval == 0U) && !m_fullScreen)
     {
-        ThrowIfFailed(m_swapChain->Present(
-            0, m_fullScreen
-                   ? 0
-                   : DXGI_PRESENT_ALLOW_TEARING)); // DXGI_PRESENT_ALLOW_TEARING not allowed in full screen mode
+        presentFlags |= DXGI_PRESENT_ALLOW_TEARING;
     }
-    else
-    {
-        ThrowIfFailed(m_swapChain->Present(1, 0));
-    }
+
+    ThrowIfFailed(m_swapChain->Present(syncInterval, presentFlags));
 
     ThrowIfFailed(xellAddMarkerData(m_xellContext, m_frameCounter, XELL_PRESENT_END),
                   "Failed to add XELL_PRESENT_END marker");
@@ -1378,19 +1384,12 @@ void BasicSample::OnRender()
             m_lastPresentStatus.frameGenResult);
     }
 
-    m_frameCounter++;
+    ++m_frameCounter;
     WaitForPreviousFrame();
-
-    m_frameIndex++;
-    if (m_frameIndex >= FrameCount)
-    {
-        m_frameIndex = 0;
-    }
 }
 
 void BasicSample::OnDestroy()
 {
-    m_useAsyncFlip = false;
     // Ensure that the GPU is no longer referencing resources that are about to be
     // cleaned up by the destructor.
     WaitForPreviousFrame();
@@ -1414,13 +1413,10 @@ void BasicSample::OnDestroy()
 // Fill the command list with all the render commands and dependent state.
 void BasicSample::PopulateCommandList()
 {
-    if (!m_useAsyncFlip && (m_frameCounter > 0 && m_frameIndex % FrameCount == 0))
-    {
-        // Command list allocators can only be reset when the associated 
-        // command lists have finished execution on the GPU; apps should use 
-        // fences to determine GPU execution progress.
-        ThrowIfFailed(m_commandAllocator->Reset());
-    }
+    // Command list allocators can only be reset when the associated 
+    // command lists have finished execution on the GPU; apps should use 
+    // fences to determine GPU execution progress.
+    ThrowIfFailed(m_commandAllocator->Reset());
 
     // However, when ExecuteCommandList() is called on a particular command 
     // list, that command list can then be reset at any time and must be before 
@@ -1442,9 +1438,9 @@ void BasicSample::PopulateCommandList()
 
         // Transition Color buffer to render target
         std::vector<CD3DX12_RESOURCE_BARRIER> transition =
-        { CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex].Get(),
+        { CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_backBufferIndex].Get(),
             D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET),
-        CD3DX12_RESOURCE_BARRIER::Transition(m_depthTargets[m_frameIndex].Get(),
+        CD3DX12_RESOURCE_BARRIER::Transition(m_depthTargets[m_backBufferIndex].Get(),
             D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_DEPTH_WRITE),
 
         };
@@ -1452,14 +1448,14 @@ void BasicSample::PopulateCommandList()
 
         CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle =
             CD3DX12_CPU_DESCRIPTOR_HANDLE(m_rtvHeap->GetCPUDescriptorHandleForHeapStart(),
-                (INT)(m_frameIndex * RTCount + RT_Color), m_rtvDescriptorSize);
+                (INT)(m_backBufferIndex * RTCount + RT_Color), m_rtvDescriptorSize);
         CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle =
             CD3DX12_CPU_DESCRIPTOR_HANDLE(m_dsvHeap->GetCPUDescriptorHandleForHeapStart(),
-                (INT)(m_frameIndex), m_dsvDescriptorSize);
+                (INT)(m_backBufferIndex), m_dsvDescriptorSize);
         m_commandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
 
         // Record commands.
-        m_commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
+        m_commandList->ClearRenderTargetView(rtvHandle, m_clearColor, 0, nullptr);
         m_commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 0.0f, 0, 0, nullptr);
         m_commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
         m_commandList->IASetVertexBuffers(0, 1, &m_vertexBufferView);
@@ -1474,30 +1470,30 @@ void BasicSample::PopulateCommandList()
 
         // Indicate that the back buffer will be used as a render target.
         CD3DX12_RESOURCE_BARRIER transition =
-            CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargetsVelocity[m_frameIndex].Get(),
+            CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargetsVelocity[m_backBufferIndex].Get(),
                 D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
         m_commandList->ResourceBarrier(1, &transition);
 
         CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle =
             CD3DX12_CPU_DESCRIPTOR_HANDLE(m_rtvHeap->GetCPUDescriptorHandleForHeapStart(),
-                (INT)(m_frameIndex * RTCount + RT_Velocity), m_rtvDescriptorSize);
+                (INT)(m_backBufferIndex * RTCount + RT_Velocity), m_rtvDescriptorSize);
         m_commandList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
 
-        m_commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
+        m_commandList->ClearRenderTargetView(rtvHandle, m_clearColor, 0, nullptr);
 
         // Record commands.
-        m_commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
+        m_commandList->ClearRenderTargetView(rtvHandle, m_clearColor, 0, nullptr);
         m_commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
         m_commandList->IASetVertexBuffers(0, 1, &m_vertexBufferView);
         m_commandList->DrawInstanced(3, 1, 0, 0);
     }
 
     std::vector<CD3DX12_RESOURCE_BARRIER> transitions = {
-            CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex].Get(),
+            CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_backBufferIndex].Get(),
                 D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
-        CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargetsVelocity[m_frameIndex].Get(),
+        CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargetsVelocity[m_backBufferIndex].Get(),
             D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
-        CD3DX12_RESOURCE_BARRIER::Transition(m_depthTargets[m_frameIndex].Get(),
+        CD3DX12_RESOURCE_BARRIER::Transition(m_depthTargets[m_backBufferIndex].Get(),
             D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
     };
     m_commandList->ResourceBarrier((UINT)transitions.size(), transitions.data());
@@ -1520,7 +1516,7 @@ void BasicSample::PopulateRenderTargetCommandList()
         // Use selected output 
         CD3DX12_GPU_DESCRIPTOR_HANDLE gpuDescHandle(
             m_appDescriptorHeap->GetGPUDescriptorHandleForHeapStart(),
-            (INT)((DescriptorsPerFrame * m_frameIndex) + RT_Color), m_uavDescriptorSize);
+            (INT)((DescriptorsPerFrame * m_backBufferIndex) + RT_Color), m_uavDescriptorSize);
         m_commandList->SetGraphicsRootDescriptorTable(0, gpuDescHandle);
         m_commandList->RSSetViewports(1, &m_viewport);
         m_commandList->RSSetScissorRects(1, &m_scissorRect);
@@ -1530,7 +1526,7 @@ void BasicSample::PopulateRenderTargetCommandList()
             std::vector<CD3DX12_RESOURCE_BARRIER> transitions = {
                 CD3DX12_RESOURCE_BARRIER::Transition(m_presentRenderTargets[m_backBufferIndex].Get(),
                     D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET),
-                CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex].Get(),
+                CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_backBufferIndex].Get(),
                     D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE),
             };
             // Transition RT to present
@@ -1542,7 +1538,7 @@ void BasicSample::PopulateRenderTargetCommandList()
         m_commandList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
 
         // Record commands.
-        m_commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
+        m_commandList->ClearRenderTargetView(rtvHandle, m_clearColor, 0, nullptr);
         m_commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
         m_commandList->IASetVertexBuffers(0, 1, &m_vertexBufferView);
         m_commandList->DrawInstanced(3, 1, 0, 0);
@@ -1551,7 +1547,7 @@ void BasicSample::PopulateRenderTargetCommandList()
             std::vector<CD3DX12_RESOURCE_BARRIER> transitions = {
                 CD3DX12_RESOURCE_BARRIER::Transition(m_presentRenderTargets[m_backBufferIndex].Get(),
                     D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT),
-                CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex].Get(),
+                CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_backBufferIndex].Get(),
                     D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
             };
             // Transition RT to present
@@ -1582,22 +1578,7 @@ void BasicSample::WaitForPreviousFrame()
     // This is code implemented as such for simplicity. This
     // sample illustrates how to use fences for efficient resource usage and to
     // maximize GPU utilization.
-
-    if (m_useAsyncFlip)
-    {
-        if (m_frameCounter > 0 && (m_frameIndex % FrameCount) == 0)
-        {
-            WaitForExec();
-            // Command list allocators can only be reset when the associated 
-            // command lists have finished execution on the GPU; apps should use 
-            // fences to determine GPU execution progress.
-            ThrowIfFailed(m_commandAllocator->Reset());
-        }
-    }
-    else
-    {
-        WaitForExec();
-    }
+    WaitForExec();
 
     m_backBufferIndex = m_swapChain->GetCurrentBackBufferIndex();
 }
@@ -1617,7 +1598,7 @@ void BasicSample::CycleNumInterpolatedFrames()
         "Failed to set number of interpolated frames");
 }
 
-void BasicSample::CycleUiCompositionState()
+void BasicSample::ToggleUiCompositionState()
 {
     if (m_uiCompositionState == XEFG_SWAPCHAIN_UI_COMPOSITION_STATE_DISABLED)
     {
@@ -1633,4 +1614,10 @@ void BasicSample::CycleUiCompositionState()
     ThrowIfFailed(
         xefgSwapChainSetUiCompositionState(m_xefgSwapChain, m_uiCompositionState),
         "Failed to set UI composition state");
+}
+
+void BasicSample::ToggleVerticalSynchronization()
+{
+    // Alternate between zero and one.
+    m_syncInterval = (m_syncInterval + 1U) & 0x1;
 }

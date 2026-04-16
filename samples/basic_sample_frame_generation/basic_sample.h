@@ -18,6 +18,7 @@
 #include <xefg_swapchain_d3d12.h>
 #include <xell_d3d12.h>
 
+#include <atomic>
 #include <chrono>
 
 using namespace DirectX;
@@ -39,7 +40,7 @@ public:
     void OnRender() override;
     void OnDestroy() override;
     void SetViewPort(UINT width, UINT height) override;
-    void OnMouseWheel(WORD wValue) override;
+    void OnMouseWheel(WPARAM wParam) override;
     void OnKeyUp(UINT8 key) override;
     void OnSleep() override;
 
@@ -61,6 +62,7 @@ private:
         RT_COUNT
     };
 
+    // Swap chain will have this many back buffers.
     static const UINT FrameCount = 4;
     static const UINT DescriptorsPerFrame = RT_COUNT;
     static const uint32_t AppDescriptorCount = 64;
@@ -90,7 +92,7 @@ private:
     ComPtr<ID3D12Resource> m_renderTargetsVelocity[FrameCount];
     ComPtr<ID3D12Resource> m_presentRenderTargets[FrameCount];
     ComPtr<ID3D12Resource> m_interpolatedTargets[FrameCount];
-    ComPtr<ID3D12Resource> m_sapmlerFSQ;
+
     ComPtr<ID3D12CommandAllocator> m_commandAllocator;
     ComPtr<ID3D12CommandQueue> m_commandQueue;
     ComPtr<ID3D12RootSignature> m_rootSignature;
@@ -108,11 +110,8 @@ private:
     UINT m_rtvDescriptorSize;
     UINT m_dsvDescriptorSize;
     UINT m_uavDescriptorSize;
-    const FLOAT clearColor[4] = { 0.0f, 0.2f, 0.4f, 1.0f };
+    const FLOAT m_clearColor[4] = { 0.0f, 0.2f, 0.4f, 1.0f };
 
-    D3D12_SHADER_RESOURCE_VIEW_DESC blankResDesc;
-    ComPtr<ID3D12Resource> blankRes = nullptr;
-        
     // App resources.
     ComPtr<ID3D12Resource> m_vertexBuffer;
     D3D12_VERTEX_BUFFER_VIEW m_vertexBufferView;
@@ -124,15 +123,14 @@ private:
     bool m_pause = false;
 
     // Synchronization objects.
-    UINT m_frameIndex;
     UINT m_backBufferIndex;
     ComPtr<ID3D12Fence> m_fence;
     UINT64 m_fenceValue;
-    //That format is used for creating backbuffers, interpolation resources and views, so please check compliance before use
-    //DXGI_FORMAT m_format = DXGI_FORMAT_R10G10B10A2_UNORM;
+
     DXGI_FORMAT m_format = DXGI_FORMAT_R8G8B8A8_UNORM;
 
-    // XeFG
+    std::atomic<UINT> m_syncInterval = 0;
+
     bool m_enableXeFG = true;
     xefg_swapchain_handle_t m_xefgSwapChain = nullptr;
     xefg_swapchain_present_status_t m_lastPresentStatus = {};
@@ -168,8 +166,8 @@ private:
     void WaitForPreviousFrame();
 
     void CycleNumInterpolatedFrames();
-
-    void CycleUiCompositionState();
+    void ToggleUiCompositionState();
+    void ToggleVerticalSynchronization();
 
     static void LogCallback(const char* message, xefg_swapchain_logging_level_t /*level*/, void* userData)
     {

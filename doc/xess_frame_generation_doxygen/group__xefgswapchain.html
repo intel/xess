@@ -150,7 +150,7 @@ Functions</h2></td></tr>
 <tr><td class="fieldname"><a id="gga3de391f3527dc0698a4167957926dba5a3da6fdec9b9ec3ec908dd65eba79d1dd" name="gga3de391f3527dc0698a4167957926dba5a3da6fdec9b9ec3ec908dd65eba79d1dd"></a>XEFG_SWAPCHAIN_UI_COMPOSITION_STATE_ENABLED&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="xefg__swapchain_8h_source.html#l00490">490</a> of file <a class="el" href="xefg__swapchain_8h_source.html">xefg_swapchain.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="xefg__swapchain_8h_source.html#l00492">492</a> of file <a class="el" href="xefg__swapchain_8h_source.html">xefg_swapchain.h</a>.</p>
 
 </div>
 </div>
@@ -228,7 +228,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Returns current state of the pipeline build. </p>
-<p>This function can only be called after <a class="el" href="group__xefgswapchain-d3d12.html#ga65ae23e57239395a0004c76bbe856bc1" title="xefgSwapChainD3D12BuildPipelines">xefgSwapChainD3D12BuildPipelines</a> but before XeSS-FG swap chain initialization (<a class="el" href="group__xefgswapchain-d3d12.html#gaba813bce521f4c803e3d04cd0be9810d" title="xefgSwapChainD3D12InitFromSwapChain">xefgSwapChainD3D12InitFromSwapChain</a> or <a class="el" href="group__xefgswapchain-d3d12.html#gaf7ea0fd5979500a8c96972cb5b7638b4" title="xefgSwapChainD3D12InitFromSwapChainDesc">xefgSwapChainD3D12InitFromSwapChainDesc</a>).</p>
+<p>This function can only be called after <a class="el" href="group__xefgswapchain-d3d12.html#ga387f52f3dfd993a7d786fc2c73b1a3bb" title="xefgSwapChainD3D12BuildPipelines">xefgSwapChainD3D12BuildPipelines</a> but before XeSS-FG swap chain initialization (<a class="el" href="group__xefgswapchain-d3d12.html#gaba813bce521f4c803e3d04cd0be9810d" title="xefgSwapChainD3D12InitFromSwapChain">xefgSwapChainD3D12InitFromSwapChain</a> or <a class="el" href="group__xefgswapchain-d3d12.html#gaf7ea0fd5979500a8c96972cb5b7638b4" title="xefgSwapChainD3D12InitFromSwapChainDesc">xefgSwapChainD3D12InitFromSwapChainDesc</a>).</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">hSwapChain</td><td>The XeSS-FG Swap Chain context handle. </td></tr>
@@ -423,11 +423,11 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Adjust the number of interpolated frames after initialization. </p>
-<p>By default, XeSS-FG swap chain will produce the maximum number of interpolated frames specified during initialization.</p>
-<p>Use this function to change the number of interpolated frames without reinitializing the swap chain. The number of interpolated frames must be between 1 and the maximum provided during swap chain initialization.</p>
-<p>Avoid frequent calls to this function: changing the number of interpolated frames may trigger a reallocation of internal resources.</p>
-<p>If this function fails for any reason other than an invalid argument, it is recommended to reinitialize the swap chain.</p>
-<p>This function is not thread-safe with regard to calls to <a class="el" href="group__xefgswapchain-d3d12.html#gaba813bce521f4c803e3d04cd0be9810d" title="xefgSwapChainD3D12InitFromSwapChain">xefgSwapChainD3D12InitFromSwapChain</a>, <a class="el" href="group__xefgswapchain-d3d12.html#gaf7ea0fd5979500a8c96972cb5b7638b4" title="xefgSwapChainD3D12InitFromSwapChainDesc">xefgSwapChainD3D12InitFromSwapChainDesc</a>, and <a class="el" href="#ga1dc325c074ef6ca284dad9e6d864687b" title="xefgSwapChainDestroy">xefgSwapChainDestroy</a>. Do not call <a class="el" href="#ga205a4ecca9f3ea3731bdca7975aba918" title="xefgSwapChainSetNumInterpolatedFrames">xefgSwapChainSetNumInterpolatedFrames</a> if another thread might be initializing or destroying the same context. </p>
+<p>By default, XeSS-FG swap chain will produce the maximum number of interpolated frames specified during initialization. Use this function to change the number of interpolated frames without reinitializing the swap chain.</p>
+<p>The number of interpolated frames must be between 1 and the maximum provided during swap chain initialization, otherwise the function returns <a class="el" href="xefg__swapchain_8h.html#afd4162fa9f2d864f1a9126eea6245fa0a0f6105be9558139ad1713e0506d49eae" title="XEFG_SWAPCHAIN_RESULT_ERROR_INVALID_ARGUMENT">XEFG_SWAPCHAIN_RESULT_ERROR_INVALID_ARGUMENT</a>.</p>
+<p><b>Performance Note:</b> Avoid frequent calls to this function, as changing the number of interpolated frames may trigger shader compilation and reallocation of internal resources.</p>
+<p><b>Error Handling:</b> If this function fails for any reason other than <a class="el" href="xefg__swapchain_8h.html#afd4162fa9f2d864f1a9126eea6245fa0a0f6105be9558139ad1713e0506d49eae" title="XEFG_SWAPCHAIN_RESULT_ERROR_INVALID_ARGUMENT">XEFG_SWAPCHAIN_RESULT_ERROR_INVALID_ARGUMENT</a>, reinitialize the swap chain (this is rare). Ignoring such errors may lead to unexpected behavior. On non-argument errors, XeSS-FG automatically disables frame generation to keep the swap chain operational (e.g., it can still display error messages).</p>
+<p><b>Thread-Safety:</b> This function is not thread-safe with regard to calls to <a class="el" href="group__xefgswapchain-d3d12.html#gaba813bce521f4c803e3d04cd0be9810d" title="xefgSwapChainD3D12InitFromSwapChain">xefgSwapChainD3D12InitFromSwapChain</a>, <a class="el" href="group__xefgswapchain-d3d12.html#gaf7ea0fd5979500a8c96972cb5b7638b4" title="xefgSwapChainD3D12InitFromSwapChainDesc">xefgSwapChainD3D12InitFromSwapChainDesc</a>, and <a class="el" href="#ga1dc325c074ef6ca284dad9e6d864687b" title="xefgSwapChainDestroy">xefgSwapChainDestroy</a>. Do not call <a class="el" href="#ga205a4ecca9f3ea3731bdca7975aba918" title="xefgSwapChainSetNumInterpolatedFrames">xefgSwapChainSetNumInterpolatedFrames</a> if another thread might be initializing or destroying the swap chain. </p>
 
 </div>
 </div>

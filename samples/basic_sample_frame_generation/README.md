@@ -14,7 +14,6 @@ cmake --build build --config Debug --target ALL_BUILD
 ## Command Line Options
 
 - `-gpu_id <value>`: Select a specific GPU.
-- `-async`: Enable asynchronous flip mode.
 - `-fps <value>`: Lock the application to a specific framerate.
 - `-maximized`: Launch with maximized window.
 - `-width <value>`: Set custom window width.
@@ -30,7 +29,8 @@ cmake --build build --config Debug --target ALL_BUILD
 
 - `3`: Toggle frame interpolation ON/OFF.
 - `4`: Cycle through number of generated frames (1 to maximum supported).
-- `5`: Toggle frame generation mode between auto and application-controlled.
+- `5`: Toggle UI composition ON/OFF.
+- `v`: Toggle vertical synchronization ON/OFF.
 - `Space`: Pause animation.
 - `F3`: Switch between 1080p and 1440p resolution.
 - `F4`: Toggle between exclusive fullscreen and windowed modes.

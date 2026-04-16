@@ -461,25 +461,27 @@ XEFG_SWAPCHAIN_API xefg_swapchain_result_t xefgSwapChainGetPipelineBuildStatus(x
 
 /**
  * @brief Adjust the number of interpolated frames after initialization.
- * 
+ *
  * By default, XeSS-FG swap chain will produce the maximum number of interpolated frames
- * specified during initialization.
- * 
- * Use this function to change the number of interpolated frames without reinitializing the swap chain.
+ * specified during initialization. Use this function to change the number of interpolated frames
+ * without reinitializing the swap chain.
+ *
  * The number of interpolated frames must be between 1 and the maximum provided during swap chain
- * initialization.
- * 
- * Avoid frequent calls to this function: changing the number of interpolated frames may trigger
- * a reallocation of internal resources.
- * 
- * If this function fails for any reason other than an invalid argument, it is recommended to
- * reinitialize the swap chain.
- * 
- * This function is not thread-safe with regard to calls to @ref xefgSwapChainD3D12InitFromSwapChain,
- * @ref xefgSwapChainD3D12InitFromSwapChainDesc, and @ref xefgSwapChainDestroy. Do not call
- * @ref xefgSwapChainSetNumInterpolatedFrames if another thread might be initializing or
- * destroying the same context.
- * 
+ * initialization, otherwise the function returns @ref XEFG_SWAPCHAIN_RESULT_ERROR_INVALID_ARGUMENT.
+ *
+ * **Performance Note:** Avoid frequent calls to this function, as changing the number of
+ * interpolated frames may trigger shader compilation and reallocation of internal resources.
+ *
+ * **Error Handling:** If this function fails for any reason other than
+ * @ref XEFG_SWAPCHAIN_RESULT_ERROR_INVALID_ARGUMENT, reinitialize the swap chain (this is rare).
+ * Ignoring such errors may lead to unexpected behavior. On non-argument errors, XeSS-FG automatically
+ * disables frame generation to keep the swap chain operational (e.g., it can still display error messages).
+ *
+ * **Thread-Safety:** This function is not thread-safe with regard to calls to
+ * @ref xefgSwapChainD3D12InitFromSwapChain, @ref xefgSwapChainD3D12InitFromSwapChainDesc, and
+ * @ref xefgSwapChainDestroy. Do not call @ref xefgSwapChainSetNumInterpolatedFrames if another
+ * thread might be initializing or destroying the swap chain.
+ *
  */
 XEFG_SWAPCHAIN_API xefg_swapchain_result_t xefgSwapChainSetNumInterpolatedFrames(
     xefg_swapchain_handle_t hSwapChain, uint32_t numInterpolatedFrames);

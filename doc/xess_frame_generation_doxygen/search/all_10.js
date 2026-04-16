@@ -90,7 +90,7 @@ var searchData=
   ['xefg_5fswapchain_5fui_5fmode_5ft_87',['xefg_swapchain_ui_mode_t',['../xefg__swapchain_8h.html#a04441532f3c62c75c028786cec47b3ab',1,'xefg_swapchain.h']]],
   ['xefg_5fswapchain_5fuse_5fmax_5fsupported_5finterpolated_5fframes_88',['XEFG_SWAPCHAIN_USE_MAX_SUPPORTED_INTERPOLATED_FRAMES',['../xefg__swapchain_8h.html#a789d70e7403b3d91c776c84599cd7adc',1,'xefg_swapchain.h']]],
   ['xefg_5fswapchain_5fversion_5ft_89',['xefg_swapchain_version_t',['../xefg__swapchain_8h.html#a95ac528c9ff36ff94014cf817cabddc0',1,'xefg_swapchain.h']]],
-  ['xefgswapchaind3d12buildpipelines_90',['xefgSwapChainD3D12BuildPipelines',['../group__xefgswapchain-d3d12.html#ga65ae23e57239395a0004c76bbe856bc1',1,'xefg_swapchain_d3d12.h']]],
+  ['xefgswapchaind3d12buildpipelines_90',['xefgSwapChainD3D12BuildPipelines',['../group__xefgswapchain-d3d12.html#ga387f52f3dfd993a7d786fc2c73b1a3bb',1,'xefg_swapchain_d3d12.h']]],
   ['xefgswapchaind3d12createcontext_91',['xefgSwapChainD3D12CreateContext',['../group__xefgswapchain-d3d12.html#gad79053e072e6d5d9c209f30b913c3f3e',1,'xefg_swapchain_d3d12.h']]],
   ['xefgswapchaind3d12getinitializationparameters_92',['xefgSwapChainD3D12GetInitializationParameters',['../group__xefgswapchain-d3d12.html#gab01a48a9ed276762b9ad5ad186406eba',1,'xefg_swapchain_d3d12.h']]],
   ['xefgswapchaind3d12getproperties_93',['xefgSwapChainD3D12GetProperties',['../group__xefgswapchain-d3d12.html#ga608c366f83d236d9ffcb75ac2869f01b',1,'xefg_swapchain_d3d12.h']]],

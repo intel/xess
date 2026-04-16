@@ -143,12 +143,6 @@ void DXSample::ParseCommandLineArgs(WCHAR* argv[], int argc)
             m_title = m_title + L" (DEBUG)";
         }
 
-        if (_wcsnicmp(argv[i], L"-async", wcslen(argv[i])) == 0 ||
-            _wcsnicmp(argv[i], L"/async", wcslen(argv[i])) == 0)
-        {
-            m_useAsyncFlip = true;
-        }
-
         if ((_wcsnicmp(argv[i], L"-fps", wcslen(argv[i])) == 0 ||
             _wcsnicmp(argv[i], L"/fps", wcslen(argv[i])) == 0) && (i + 1 < argc))
         {
