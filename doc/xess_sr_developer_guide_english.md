@@ -202,7 +202,7 @@ DLSS\*, AMD FSR\*, and TAA, to reduce the possibility of any incompatibility iss
 The XeSS-SR preset selected by default in the game's menu should be based on the target resolution
 that the user has set. The entries below are the recommended default settings.
 
-| **Default XeSS -SR recommendations** | **Description** | **Recommended Setting** |
+| **Default XeSS-SR recommendations** | **Description** | **Recommended Setting** |
 | --- | --- | --- |
 | Resolution specific | Game adjusts the XeSS-SR default preset based on the output resolution | 1080p and lower set to ‘Balanced’ 1440p and higher set to ‘Performance’ |
 | General | Game selects one XeSS-SR preset as default. | Intel XeSS-SR ON set to ‘Performance’ |
@@ -359,7 +359,7 @@ the output color.
 
 XeSS-SR maintains an internal history state to perform temporal accumulation of incoming samples.
 That means the history should be dropped if the scene or view suddenly changes. This is achieved by
-setting  `xess_*_execute_params_t::resetHistory`.
+setting `xess_*_execute_params_t::resetHistory`.
 
 The output must be in the same color space as the input. It can be any linear color format similar
 to the input.
@@ -778,7 +778,7 @@ XeSS-SR uses three types of storage:
 
 Persistent storage is always owned by XeSS-SR. The application can optionally provide resource heaps
 for temporary storage via `xess_vk_init_params_t::tempTextureHeap` and
-`xess_vk_init_params_t::tempBufferHeap`. Allocated resource heaps should be allocated form device
+`xess_vk_init_params_t::tempBufferHeap`. Allocated resource heaps should be allocated from device
 local memory. These heaps can be reused after XeSS-SR execution. Required sizes for these heaps can
 be obtained by calling `xessGetProperties`.
 
@@ -1008,7 +1008,7 @@ newer driver. `XESS_RESULT_WARNING_OLD_DRIVER` is not a fatal error, and the use
 to continue.
 
 **Note:** On Vulkan, `XESS_RESULT_WARNING_OLD_DRIVER` may be also returned when
-'VK_LAYER_KHRONOS_validation` layer from Vulkan SDK is enabled, even if the latest driver 
+`VK_LAYER_KHRONOS_validation` layer from Vulkan SDK is enabled, even if the latest driver 
 is installed. Running with the validation layer enabled may have performance impact on XeSS-SR.
 
 ### Debugging Tips
@@ -1030,7 +1030,7 @@ motion vector scale factors to appropriately align the coordinate axis.
 
 #### Jitter Offset Debugging
 
-If the static scene does not look good, try experimenting with  `+1` or `-1` jitter offset scaling
+If the static scene does not look good, try experimenting with `+1` or `-1` jitter offset scaling
 values to appropriately align the coordinate axis. Make sure jitter does not fall off outside of
 `[-0.5, 0.5]` bounds.
 

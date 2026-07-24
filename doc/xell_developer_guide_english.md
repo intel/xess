@@ -158,10 +158,10 @@ no render-to-screen delay, only input-to-render is lowered.
 On Intel GPUs, in no-tearing mode, XeLL will additionally try to align render end with VSync intervals of the
 monitor if the performance of the application is equal or higher than monitor's refresh rate. Such
 approach, combined with ensuring that the render queue is almost empty, enhances both
-input-to-render and render-to-screen latency. In figure 2 each frame has minimal input-to-render
+input-to-render and render-to-screen latency. In Figure 2 each frame has minimal input-to-render
 latency, work starts immediately. After the frame is rendered, XeLL maintains a small safety band to
 ensure the frame does not miss its VSync Interval as the present would have to wait for the next
-one, increasing render-o-screen latency.
+one, increasing render-to-screen latency.
 
 ![xell_vsync_and_ll](images/xell_vsync_and_ll.png) *Figure 2. VSync and Low Latency Enabled.*
 
