@@ -1,15 +1,7 @@
 /*******************************************************************************
- * Copyright (C) 2021 Intel Corporation
- * 
- * This software and the related documents are Intel copyrighted materials, and
- * your use of them is governed by the express license under which they were
- * provided to you ("License"). Unless the License provides otherwise, you may
- * not use, modify, copy, publish, distribute, disclose or transmit this
- * software or the related documents without Intel's prior written permission.
- * 
- * This software and the related documents are provided as is, with no express
- * or implied warranties, other than those that are expressly stated in the
- * License.
+ * Copyright (c) 2026 Intel Corporation
+ *
+ * SPDX-License-Identifier: MIT
  ******************************************************************************/
 
 #ifndef XESS_H
@@ -162,7 +154,7 @@ typedef enum _xess_result_t
     XESS_RESULT_ERROR_INVALID_ARGUMENT = -4,
     /** Not enough available GPU memory. */
     XESS_RESULT_ERROR_DEVICE_OUT_OF_MEMORY = -5,
-    /** Device function such as resource or descriptor creation. */
+    /** Device function failed, such as resource or descriptor creation. */
     XESS_RESULT_ERROR_DEVICE = -6,
     /** The function is not implemented */
     XESS_RESULT_ERROR_NOT_IMPLEMENTED = -7,
@@ -194,7 +186,7 @@ typedef enum _xess_logging_level_t
 
 /**
  * A logging callback provided by the application. This callback can be called from other threads.
- * Message pointer are only valid inside function and may be invalid right after return call.
+ * Message pointer is only valid inside function and may be invalid right after return call.
  * Message is a null-terminated utf-8 string
  */
  typedef void (*xess_app_log_callback_t)(const char *message, xess_logging_level_t loggingLevel);
@@ -405,13 +397,13 @@ XESS_API xess_result_t xessForceLegacyScaleFactors(xess_context_handle_t hContex
  * This function can only be called after xess*BuildPipelines and
  * before corresponding xess*Init.
  * This call returns XESS_RESULT_SUCCESS if pipelines already built, and
- * XESS_RESULT_ERROR_OPERATION_IN_PROGRESS if pipline build is in progress.
+ * XESS_RESULT_ERROR_OPERATION_IN_PROGRESS if pipeline build is in progress.
  * If function called before @ref xess*BuildPipelines or after @ref xess*Init -
  * XESS_RESULT_ERROR_WRONG_CALL_ORDER will be returned.
  *
  * @param hContext The XeSS context handle.
  * @return XESS_RESULT_SUCCESS if pipelines already built.
- *         XESS_RESULT_ERROR_OPERATION_IN_PROGRESS if pipeline build are in progress.
+ *         XESS_RESULT_ERROR_OPERATION_IN_PROGRESS if pipeline build is in progress.
  *         XESS_RESULT_ERROR_WRONG_CALL_ORDER if the function is called out of order.
  */
 XESS_API xess_result_t xessGetPipelineBuildStatus(xess_context_handle_t hContext);
